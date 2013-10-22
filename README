@@ -2,3 +2,21 @@ mfes
 ====
 
 mFES - molecular finite element solver
+
+INSTALL
+=======
+
+sudo -s
+mkdir -p /opt/mfes/sources
+cd /opt/mfes/sources
+wget http://downloads.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.gz
+tar xfvz boost_1_54_0.tar.gz
+cd boost_1_54_0/
+./bootstrap.sh
+./b2 install
+
+cd /opt/mfes/sources
+wget <mfes.tar.gz>
+tar xfvz ...
+cd mfes
+make
