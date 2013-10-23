@@ -25,7 +25,20 @@
 using namespace std;
 namespace po = boost::program_options;
 
+void calcDeltaG(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
+	for (int i = 0; i < pqrList.size(); i++){
+		PQR currentPQR = pqrList.at(i);
+		currentPQR.calcModel();
+		currentPQR.calcDeltaG();
+		currentPQR.writeOutDeltaG();
+	}
 
+
+}
+
+void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
+
+}
 
 
 int main(int argc, char* argv[]) {
@@ -90,10 +103,10 @@ int main(int argc, char* argv[]) {
         cout << pqrList.size() << " molecule(s) found." << endl;
         if ( mode == "energy") {
         	cout << "Calculation of energy difference selected." << endl;
-//            calcDeltaG( &pqrList, &ini )
+            calcDeltaG( pqrList, ini );
         } else { // pKa calculation
         	cout << "Calculation pKa values selected." << endl;
-         //   calcpKa( &pqrList, &ini)
+            calcpKa( pqrList, ini);
         }
 
     }

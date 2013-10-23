@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include "Atom.h"
 #include "Residue.h"
@@ -16,7 +17,124 @@ public:
 	PQR(string _fileName):
 	    fileName(_fileName)
 	{
-//	      parse();
+	      if(parse())
+	    	  cout << atomList.size() << " atoms found." << endl;
+	      else {
+	    	  cout << "An error occured while parsing file..." << endl;
+	    	  exit(0);
+	      }
+	}
+
+	int parse(){
+		vector<Atom> atomList;
+		string temp;
+		double x, y, z;
+ 
+		ifstream in(fileName.c_str());
+
+		if (!in) {
+		  in.close();
+		  cout << "Cannot open molecule file:" << fileName << endl;
+		  exit(0);
+		}
+		string pqrline;
+
+		while( !in.eof() ) {
+			getline(in, pqrline);
+			if ( pqrline.find("ATOM", 0)==string::npos ) continue;
+
+			 if ( pqrline.size() < 72 ){
+				 cout << "Molecule file is not well structured. Example: " << endl;
+				 cout << "ATOM      1  N   VAL A   3      16.875  37.901  43.478-0.470 1.850      A" << endl;
+				 exit(0);
+			 }
+
+			int atomNumber; string atomName; string residueName; char confID; char chainID;
+			int residueNumber; double charge; double radius; string segName;
+
+			// atom number
+			temp = pqrline.substr(6,5);
+			if( sscanf(temp.c_str(), "%i", &(atomNumber))!=1 )
+				return 0;
+
+			// atom name
+			temp = pqrline.substr(12,4);
+			istringstream ss(temp);
+			ss >> atomName;
+
+			// conformer id
+			temp = pqrline.substr(16,1);
+			if( sscanf(temp.c_str(), "%c", &(confID))!=1 )
+				confID = ' ';
+
+			// residue name
+			residueName = pqrline.substr(17,3);
+
+			// chain id
+			temp = pqrline.substr(21,1);
+			if( sscanf(temp.c_str(), "%c", &(chainID))!=1 )
+			chainID = ' ';
+
+			// residue number
+			temp = pqrline.substr(22,4);
+			if( sscanf(temp.c_str(), "%i", &(residueNumber))!=1 )
+				return 0;
+
+			// coordinates
+			double x, y, z;
+			temp = pqrline.substr(30,8);
+			if( sscanf(temp.c_str(), "%lg", &x)!=1 )
+				return 0;
+
+			temp = pqrline.substr(38,8);
+			if( sscanf(temp.c_str(), "%lg", &y)!=1 )
+				return 0;
+			temp = pqrline.substr(46,8);
+			if( sscanf(temp.c_str(), "%lg", &z)!=1 )
+				return 0;
+
+			Point3 coord(x, y, z);
+
+			// charge
+			temp = pqrline.substr(54,6);
+			if( sscanf(temp.c_str(), "%lg", &(charge))!=1 )
+				return 0;
+ 
+			// radius
+			temp = pqrline.substr(60,6);
+			if( sscanf(temp.c_str(), "%lg", &(radius))!=1 )
+				return 0;
+
+			// segment name
+			try
+			{
+				temp = pqrline.substr(72,4);
+				istringstream ss(temp);
+				ss >> segName;
+			}
+			catch(out_of_range& x)
+			{
+				segName = "    ";
+			}
+			Atom newAtom(atomNumber, atomName, confID, residueName, chainID, residueNumber, coord, charge, radius, segName);
+			this->atomList.push_back(newAtom);
+		}
+
+		return 1;
+
+	}
+
+	void calcModel(){
+
+	}
+
+	void calcDeltaG(){
+
+	}
+
+	void writeOutDeltaG(){
+
+
 	}
 
 	static bool STparsed;
@@ -24,16 +142,17 @@ public:
 	static bool patchCTE;
 	static bool explicitModels;
 
+
 private:
-  string fileName;
-  string stFilesFolder;
-  Model molecule;
-  vector<Atom> atomList;
-  vector<Residue> residueList;
-  vector<Residue> titGroupList;
-  vector<ST> stList;
-  tCycle cycle;
-  vector< vector< vector< vector<double> > > > wmatrix;
+	string fileName;
+	string stFilesFolder;
+	Model molecule;
+	vector<Atom> atomList;
+	vector<Residue> residueList;
+	vector<Residue> titGroupList;
+	vector<ST> stList;
+	tCycle cycle;
+	vector< vector< vector< vector<double> > > > wmatrix;
 };
 
 bool PQR::STparsed = false;
