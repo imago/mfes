@@ -1,0 +1,12 @@
+lGrid createGrid(short);
+void initGrid(lGrid);
+void signDistanceGrid(lGrid, Molecule);
+void signDistanceGridPR(lGrid, Molecule, float);
+void setCoordinateGridPoint(GridPoint*, short, short, short);
+char containsMoleculePR(Molecule, float, float, float, float);
+char containsMolecule(Molecule, float, float, float);
+void perturbMolecule(Molecule, float);
+void signDistanceGridMol(lGrid, Molecule, double);
+void shrink(lGrid, double);
+int findProbesMol(lGrid, float);
+int fastMarching(lGrid, char);

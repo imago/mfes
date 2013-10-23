@@ -50,7 +50,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_mfes_OBJECTS = mfes.$(OBJEXT)
+am_mfes_OBJECTS = mfes.$(OBJEXT) grid.$(OBJEXT) sceneBuilder.$(OBJEXT)
 mfes_OBJECTS = $(am_mfes_OBJECTS)
 mfes_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -193,8 +193,8 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-mfes_SOURCES = mfes.cpp 
-#AM_CPPFLAGS = 
+mfes_SOURCES = mfes.cpp lib/LSMS/grid.cpp lib/LSMS/sceneBuilder.cpp
+AM_CPPFLAGS = -I./lib/vcglib
 AM_LDFLAGS = -L/usr/local/lib -lboost_system -lboost_filesystem -lboost_program_options
 all: all-am
 
@@ -283,7 +283,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/grid.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mfes.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sceneBuilder.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -305,6 +307,34 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+grid.o: lib/LSMS/grid.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT grid.o -MD -MP -MF $(DEPDIR)/grid.Tpo -c -o grid.o `test -f 'lib/LSMS/grid.cpp' || echo '$(srcdir)/'`lib/LSMS/grid.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/grid.Tpo $(DEPDIR)/grid.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='lib/LSMS/grid.cpp' object='grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o grid.o `test -f 'lib/LSMS/grid.cpp' || echo '$(srcdir)/'`lib/LSMS/grid.cpp
+
+grid.obj: lib/LSMS/grid.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT grid.obj -MD -MP -MF $(DEPDIR)/grid.Tpo -c -o grid.obj `if test -f 'lib/LSMS/grid.cpp'; then $(CYGPATH_W) 'lib/LSMS/grid.cpp'; else $(CYGPATH_W) '$(srcdir)/lib/LSMS/grid.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/grid.Tpo $(DEPDIR)/grid.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='lib/LSMS/grid.cpp' object='grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o grid.obj `if test -f 'lib/LSMS/grid.cpp'; then $(CYGPATH_W) 'lib/LSMS/grid.cpp'; else $(CYGPATH_W) '$(srcdir)/lib/LSMS/grid.cpp'; fi`
+
+sceneBuilder.o: lib/LSMS/sceneBuilder.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT sceneBuilder.o -MD -MP -MF $(DEPDIR)/sceneBuilder.Tpo -c -o sceneBuilder.o `test -f 'lib/LSMS/sceneBuilder.cpp' || echo '$(srcdir)/'`lib/LSMS/sceneBuilder.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/sceneBuilder.Tpo $(DEPDIR)/sceneBuilder.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='lib/LSMS/sceneBuilder.cpp' object='sceneBuilder.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o sceneBuilder.o `test -f 'lib/LSMS/sceneBuilder.cpp' || echo '$(srcdir)/'`lib/LSMS/sceneBuilder.cpp
+
+sceneBuilder.obj: lib/LSMS/sceneBuilder.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT sceneBuilder.obj -MD -MP -MF $(DEPDIR)/sceneBuilder.Tpo -c -o sceneBuilder.obj `if test -f 'lib/LSMS/sceneBuilder.cpp'; then $(CYGPATH_W) 'lib/LSMS/sceneBuilder.cpp'; else $(CYGPATH_W) '$(srcdir)/lib/LSMS/sceneBuilder.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/sceneBuilder.Tpo $(DEPDIR)/sceneBuilder.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='lib/LSMS/sceneBuilder.cpp' object='sceneBuilder.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o sceneBuilder.obj `if test -f 'lib/LSMS/sceneBuilder.cpp'; then $(CYGPATH_W) 'lib/LSMS/sceneBuilder.cpp'; else $(CYGPATH_W) '$(srcdir)/lib/LSMS/sceneBuilder.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

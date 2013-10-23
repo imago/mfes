@@ -1,0 +1,46 @@
+10
+
+dir
+4976
+svn://svn.code.sf.net/p/vcg/code/trunk/vcglib/vcg
+svn://svn.code.sf.net/p/vcg/code
+
+
+
+2013-10-10T10:36:39.459903Z
+4976
+cignoni
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+e8973e21-934d-0410-ac44-de4585f5606d
+
+container
+dir
+
+complex
+dir
+
+math
+dir
+
+space
+dir
+
+connectors
+dir
+
+simplex
+dir
+

@@ -9,8 +9,10 @@
 #include "ST.h"
 #include "tCycle.h"
 
+
 using namespace std;
 
+typedef boost::property_tree::ptree INI;
 
 class PQR {
 public:
@@ -18,7 +20,7 @@ public:
 	    fileName(_fileName)
 	{
 	      if(parse())
-	    	  cout << atomList.size() << " atoms found." << endl;
+	    	  cout << atomList.size() << " atom(s) found." << endl;
 	      else {
 	    	  cout << "An error occured while parsing file..." << endl;
 	    	  exit(0);
@@ -93,7 +95,7 @@ public:
 			if( sscanf(temp.c_str(), "%lg", &z)!=1 )
 				return 0;
 
-			Point3 coord(x, y, z);
+			Point3<float> coord(x, y, z);
 
 			// charge
 			temp = pqrline.substr(54,6);
@@ -124,7 +126,11 @@ public:
 
 	}
 
-	void calcModel(){
+	void calcModel(INI& ini){
+		molecule.calcSurface(atomList, ini);
+		molecule.calcVolume();
+		molecule.saveSTL(fileName+".stl");
+		molecule.saveVOL(fileName+".vol");
 
 	}
 

@@ -1,11 +1,12 @@
 #include <string>
-#include "Point3.h"
+#include <vcg/space/point3.h>
 
+using namespace vcg;
 using namespace std;
 
 class Atom {
 public:
-	Atom(int _atomNumber, string _atomName, char _confID, string _residueName, char _chainID, int _residueNumber, Point3 _coord, float _charge, float _radius, string _segName):
+	Atom(int _atomNumber, string _atomName, char _confID, string _residueName, char _chainID, int _residueNumber, Point3<float> _coord, float _charge, float _radius, string _segName):
 		    atomNumber(_atomNumber),
 		    atomName(_atomName),
 		    confID(_confID),
@@ -27,13 +28,20 @@ public:
 		cout << "Residue name: " << residueName << endl;
 		cout << "Chain nr    : " << chainID << endl;
 		cout << "Residue nr  : " << residueNumber << endl;
-		cout << "Coordinates : " << coord << endl;
+		cout << "Coordinates : (" << coord.X() << ", " << coord.Y() << ", " << coord.Z() << ")" << endl;
 		cout << "Charge      : " << charge << endl;
 		cout << "Radius      : " << radius << endl;
 		cout << "Segment name: " << segName << endl;
-
-
 	}
+
+	Point3<float> getCoord(){
+		return coord;
+	}
+
+	float getRadius(){
+		return radius;
+	}
+
 protected:
    string atomName;
    float charge;
@@ -45,7 +53,7 @@ private:
    string residueName;
    char chainID;
    int residueNumber;
-   Point3 coord;
+   Point3<float> coord;
    float radius;
    string segName;
 

@@ -8,8 +8,6 @@
  ============================================================================
  */
 
-#define CNAME mfes
-
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/program_options.hpp>
@@ -20,15 +18,16 @@
 #include <vector>
 #include <string>
 
+#include "lib/Defs.h"
 #include "lib/PQR.h"
 
 using namespace std;
 namespace po = boost::program_options;
 
-void calcDeltaG(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
+void calcDeltaG(vector<PQR> &pqrList, INI &ini){
 	for (int i = 0; i < pqrList.size(); i++){
 		PQR currentPQR = pqrList.at(i);
-		currentPQR.calcModel();
+		currentPQR.calcModel(ini);
 		currentPQR.calcDeltaG();
 		currentPQR.writeOutDeltaG();
 	}
