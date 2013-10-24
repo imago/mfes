@@ -127,11 +127,7 @@ public:
 	}
 
 	void calcModel(INI& ini){
-		molecule.calcSurface(atomList, ini);
-		molecule.calcVolume();
-		molecule.saveSTL(fileName+".stl");
-		molecule.saveVOL(fileName+".vol");
-
+		molecule.calcModel(atomList, ini);
 	}
 
 	void calcDeltaG(){
