@@ -15,12 +15,6 @@ namespace nglib {
 }
 
 
-namespace netgen
-{
-  int h_argc;
-  char ** h_argv;
-}
-
 typedef boost::property_tree::ptree INI;
 
 class Model {
@@ -229,9 +223,6 @@ private:
 		mp.optsurfmeshenable = 1;
 		mp.optvolmeshenable  = 1;
 
-		char **argv;
-		ngsolve::MyMPI mympi(0, argv);
-		ngsolve::PDE pde;
 
 		cout << "Initialise the STL Geometry structure...." << endl;
 		ngSurface = Ng_STL_InitSTLGeometry(stl_geom);
@@ -288,6 +279,7 @@ private:
 			cout << "Saving Mesh in VOL Format...." << endl;
 			Ng_SaveMesh(ngVolume,volumeVol.c_str());
 		}
+
 	}
 
 	void clean(mMesh &mSurface){

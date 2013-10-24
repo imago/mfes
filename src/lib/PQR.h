@@ -1,3 +1,4 @@
+#include <solve.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,8 +10,22 @@
 #include "ST.h"
 #include "tCycle.h"
 
-
 using namespace std;
+
+namespace nglib {
+  #include <nglib.h>
+}
+
+
+namespace netgen
+{
+  int h_argc;
+  char ** h_argv;
+}
+
+char **argv;
+ngsolve::MyMPI mympi(0, argv);
+
 
 typedef boost::property_tree::ptree INI;
 
@@ -131,7 +146,20 @@ public:
 	}
 
 	void calcDeltaG(){
+		cout << "Calculating deltaG ..." << endl;
+		ngsolve::PDE pde;
 
+		using namespace nglib;
+
+		string pdeFile = "test.pde";
+
+		try {
+		    pde.LoadPDE (pdeFile.c_str());
+		    pde.Solve();
+		  } catch(ngstd::Exception & e) {
+		    std::cout << "Caught exception: " << std::endl
+			      << e.What() << std::endl;
+		  }
 	}
 
 	void writeOutDeltaG(){
