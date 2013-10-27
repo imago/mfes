@@ -15,7 +15,7 @@ define coefficient epsilon_solv
 define coefficient epsilon_ref
 (4*eps0),(4*eps0),(4*eps0)
 
-define fespace v -order=2 -type=h1ho -dirichlet=[1]
+define fespace v -order=4 -type=h1ho -dirichlet=[1]
 
 define gridfunction u_solv -fespace=v
 define gridfunction u_ref -fespace=v

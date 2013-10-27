@@ -29,7 +29,6 @@ void calcDeltaG(vector<PQR> &pqrList, INI &ini){
 		PQR currentPQR = pqrList.at(i);
 		currentPQR.calcModel(ini);
 		currentPQR.calcDeltaG();
-		currentPQR.writeOutDeltaG();
 	}
 
 

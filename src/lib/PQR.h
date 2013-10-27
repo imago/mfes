@@ -12,9 +12,12 @@
 
 using namespace std;
 
+//#include "lib/NG/nglib.h"
+/*
 namespace nglib {
   #include <nglib.h>
 }
+*/
 
 
 namespace netgen
@@ -149,7 +152,7 @@ public:
 		cout << "Calculating deltaG ..." << endl;
 		ngsolve::PDE pde;
 
-		using namespace nglib;
+	//	using namespace nglib;
 
 		string pdeFile = "test.pde";
 
@@ -160,11 +163,6 @@ public:
 		    std::cout << "Caught exception: " << std::endl
 			      << e.What() << std::endl;
 		  }
-	}
-
-	void writeOutDeltaG(){
-
-
 	}
 
 	static bool STparsed;

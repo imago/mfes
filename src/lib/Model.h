@@ -1,4 +1,4 @@
-#include <solve.hpp>
+//#include <solve.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -10,9 +10,11 @@
 using namespace std;
 using namespace vcg;
 
+
 namespace nglib {
-  #include <nglib.h>
+	#include <nglib.h>
 }
+using namespace nglib;
 
 
 typedef boost::property_tree::ptree INI;
@@ -40,7 +42,7 @@ public:
 
 private:
 
-	void setMeshingOptions(nglib::Ng_Meshing_Parameters &mp, string optFile){
+	void setMeshingOptions(Ng_Meshing_Parameters &mp, string optFile){
 		ifstream in(optFile.c_str());
 		if (!in) {
 			in.close();
@@ -170,7 +172,7 @@ private:
 
 	void convert(mMesh &mSurface, INI &ini){
 
-		using namespace nglib;
+//		using namespace nglib;
 
 		Ng_STL_Geometry *stl_geom = Ng_STL_NewGeometry();
 
@@ -245,21 +247,25 @@ private:
 		    exit(1);
 		}
 
+		cout << "Loading boundary settings ....." << endl;
 		string boundary = ini.get<string>("model.boundary");
+		Ng_Mesh* bSurface;
+		bSurface = nglib::Ng_LoadMesh(boundary.c_str());
+
+		Ng_SetBCProp(bSurface, 1);
+		Ng_SetBCProp(ngVolume, 2);
+
 		cout << "Merging Mesh with boundary....." << endl;
-		ngSurface = Ng_MergeMesh( ngVolume, boundary.c_str());
+     	ngSurface = Ng_MergeMesh( bSurface, ngVolume );
 		if(ngSurface != NG_OK) {
 			cout << "Error in Surface merging....Aborting!!" << endl;
 			exit(1);
 		}
-		string volumeSTL = ini.get<string>("model.volume_stl");
-		if (volumeSTL != ""){
-			Ng_SaveMesh(ngVolume,volumeSTL.c_str());
-		}
+
 		mp.maxh = 1e6;
 
 		cout << "Start Volume Meshing...." << endl;
-		ngSurface = Ng_GenerateVolumeMesh (ngVolume, &mp);
+		ngSurface = Ng_GenerateVolumeMesh (bSurface, &mp);
 		if(ngSurface != NG_OK) {
 			cout << "Error in Volume Meshing....Aborting!!" << endl;
 		    exit(1);
@@ -268,16 +274,16 @@ private:
 		cout << "Meshing successfully completed....!!" << endl;
 
 		// volume mesh output
-		np = Ng_GetNP(ngVolume);
+		np = Ng_GetNP(bSurface);
 		cout << "Points: " << np << endl;
 
-		ne = Ng_GetNE(ngVolume);
+		ne = Ng_GetNE(bSurface);
 		cout << "Elements: " << ne << endl;
 
 		string volumeVol = ini.get<string>("model.volume_vol");
 		if (volumeVol != ""){
 			cout << "Saving Mesh in VOL Format...." << endl;
-			Ng_SaveMesh(ngVolume,volumeVol.c_str());
+			Ng_SaveMesh(bSurface,volumeVol.c_str());
 		}
 
 	}
@@ -329,7 +335,7 @@ private:
 
 	}
 
-	nglib::Ng_Result ngSurface;
-	nglib::Ng_Mesh *ngVolume;
+	Ng_Result ngSurface;
+	Ng_Mesh *ngVolume;
 
 };

@@ -101,7 +101,7 @@ public:
 		t.radius = atof(line.substr(60,6).c_str());
 
 		molecule.push_back(t);
-		cout << i << ": " << t.fieldName << " " << t.x << " " << t.y  << " " << t.z  << " " << t.charge  << " " << t.radius <<  endl; 
+		cout << i << ": " << t.fieldName << " " << t.x << " " << t.y  << " " << t.z  << " " << t.charge  << " " << t.radius <<  endl;
 	}
   }
   

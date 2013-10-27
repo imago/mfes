@@ -155,11 +155,25 @@ public:
 
 		cout << "Counting " << result.size() << " triangles." << endl;
 
+		float minMaxX = minx + maxx;
+		float minMaxY = miny + maxy;
+		float minMaxZ = minz + maxz;
+
 		for (int i = 0; i < result.size(); i++){
 			Triangle currentTriangle = result.at(i);
 			STLFacet f;
 
 			f.n = currentTriangle.normal;
+			currentTriangle.t1.X() = (currentTriangle.t1.X()*1/(s) + (minMaxX/2));
+			currentTriangle.t1.Y() = (currentTriangle.t1.Y()*1/(s) + (minMaxY/2));
+			currentTriangle.t1.Z() = (currentTriangle.t1.Z()*1/(s) + (minMaxZ/2));
+			currentTriangle.t2.X() = (currentTriangle.t2.X()*1/(s) + (minMaxX/2));
+			currentTriangle.t2.Y() = (currentTriangle.t2.Y()*1/(s) + (minMaxY/2));
+			currentTriangle.t2.Z() = (currentTriangle.t2.Z()*1/(s) + (minMaxZ/2));
+			currentTriangle.t3.X() = (currentTriangle.t3.X()*1/(s) + (minMaxX/2));
+			currentTriangle.t3.Y() = (currentTriangle.t3.Y()*1/(s) + (minMaxY/2));
+			currentTriangle.t3.Z() = (currentTriangle.t3.Z()*1/(s) + (minMaxZ/2));
+
 			f.v[0] = currentTriangle.t1;
 			f.v[1] = currentTriangle.t2;
 			f.v[2] = currentTriangle.t3;
@@ -234,7 +248,7 @@ private:
 	/*			sx = SIZEMAX/(maxx-minx);
 				sy = SIZEMAX/(maxy-miny);
 				sz = SIZEMAX/(maxz-minz);
-				*/
+    */
 			}
 			else
 			{

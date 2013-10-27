@@ -3,6 +3,9 @@
 #include <solve.hpp>
 using namespace ngsolve;
 #include <vector>
+#include <limits>
+
+typedef std::numeric_limits< double > dbl;
 
 class NumProcEnergyCalc : public NumProc
 {
@@ -200,6 +203,8 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 	const BilinearFormIntegrator & bfi = (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
 	const BilinearFormIntegrator & bfi2 =  (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
 	
+	cout.precision(dbl::digits10);
+
 	for(unsigned int kk=0; kk<molecule.size(); kk++)	
 	{
 		Atom currentAtom = molecule.at(kk);
@@ -212,18 +217,23 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 				pflux, bfi, applyd, lh, component);
 	      
 		result = pflux(0);
+		cout << "(" << pflux(0);
 	      
 		CalcPointFlux (ma, *gfu0, point, domains,
 				pflux, bfi2, applyd, lh, component);
 
 		result -= pflux(0); 
+		cout << " - " << pflux(0) << ")*" << currentAtom.charge;
 
 	      
-		potential += currentAtom.charge * result;	  
+		potential += currentAtom.charge * result;
+
+		cout << " = " << currentAtom.charge * result << endl;
+
 	}
 
 	double energy;
-	energy = (1.60217646e-19 * 6.0221415e23 * 0.5 * potential)/1000;
+	energy = (1.602176565e-19 * 6.02214129e23 * 0.5 * potential)/1000;
 
 	if (MyMPI_GetNTasks() == 1 || MyMPI_GetId() != 0){
 		ofstream resultFile;
