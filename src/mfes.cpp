@@ -35,7 +35,16 @@ void calcDeltaG(vector<PQR> &pqrList, INI &ini){
 }
 
 void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
+	for (int i = 0; i < pqrList.size(); i++){
+		PQR currentPQR = pqrList.at(i);
+		currentPQR.addInfo(ini);
+		if (!currentPQR.STparsed)
+			currentPQR.parseSTFiles();
+		currentPQR.calcResidues();
+		currentPQR.calcModel(ini);
 
+
+	}
 }
 
 
@@ -102,9 +111,11 @@ int main(int argc, char* argv[]) {
         if ( mode == "energy") {
         	cout << "Calculation of energy difference selected." << endl;
             calcDeltaG( pqrList, ini );
-        } else { // pKa calculation
+        } else if (mode == "pka") { // pKa calculation
         	cout << "Calculation pKa values selected." << endl;
             calcpKa( pqrList, ini);
+        } else {
+        	cout << "Please set 'mode' to 'energy' or 'pka' in your configuration!" << endl;
         }
 
     }

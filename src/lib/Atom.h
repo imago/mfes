@@ -1,3 +1,6 @@
+#ifndef ATOM_H
+#define ATOM_H
+
 #include <string>
 #include <vcg/space/point3.h>
 
@@ -6,6 +9,8 @@ using namespace std;
 
 class Atom {
 public:
+	Atom(){};
+
 	Atom(int _atomNumber, string _atomName, char _confID, string _residueName, char _chainID, int _residueNumber, Point3<float> _coord, float _charge, float _radius, string _segName):
 		    atomNumber(_atomNumber),
 		    atomName(_atomName),
@@ -42,9 +47,18 @@ public:
 		return radius;
 	}
 
-protected:
-   string atomName;
-   float charge;
+	int getResidueNumber(){
+		return residueNumber;
+	}
+
+	string getResidueName(){
+		return residueName;
+	}
+
+	char getChainID(){
+		return chainID;
+	}
+
 
 private:
    string fieldName;
@@ -56,5 +70,9 @@ private:
    Point3<float> coord;
    float radius;
    string segName;
+   string atomName;
+   float charge;
 
 };
+
+#endif
