@@ -230,7 +230,7 @@ private:
 
 
 			for (i=0;i<mol->npoints;i++){
-	//			cout << "x, y, z, r: " << mol->xpoints[i] << ", " << mol->ypoints[i] << ", " << mol->zpoints[i] << ", " << mol->rpoints[i] << endl;
+				cout << "x, y, z, r: " << mol->xpoints[i] << ", " << mol->ypoints[i] << ", " << mol->zpoints[i] << ", " << mol->rpoints[i] << endl;
 				if (mol->xpoints[i]-mol->rpoints[i]<minx)	minx=mol->xpoints[i]-mol->rpoints[i];
 				if (mol->xpoints[i]+mol->rpoints[i]>maxx)	maxx=mol->xpoints[i]+mol->rpoints[i];
 				if (mol->ypoints[i]-mol->rpoints[i]<miny)	miny=mol->ypoints[i]-mol->rpoints[i];
@@ -252,9 +252,9 @@ private:
 			}
 			else
 			{
-				sx = SIZEMAX/(maxx-minx);
-				sy = SIZEMAX/(maxy-miny);
-				sz = SIZEMAX/(maxz-minz);
+				sx = SIZEMAX/(maxx-minx+2);
+				sy = SIZEMAX/(maxy-miny+2);
+				sz = SIZEMAX/(maxz-minz+2);
 
 			}
 			s = 0.0f;

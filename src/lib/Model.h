@@ -22,20 +22,35 @@ typedef boost::property_tree::ptree INI;
 class Model {
 
 public:
-	void calcModel(vector<Atom> &atomList, INI &ini){
+	void calcModel(vector<Atom> &atomList, INI &ini, string fname = ""){
 	    LSMS lmSurface;
 	    mMesh mSurface;
 
-	    lmSurface.calcMC(mSurface, atomList, ini);
+	    string volume_vol = ini.get<string>("model.volume_vol");
+    	string surface_stl = ini.get<string>("model.surface_stl");
 
-	    clean(mSurface);
-	    smooth(mSurface, ini);
+	    if ( fname == "" && !boost::filesystem::exists( volume_vol ) ){
+	    // protein model is calculating
+	    	lmSurface.calcMC(mSurface, atomList, ini);
 
-	    string surface_stl = ini.get<string>("model.surface_stl");
-	    if (surface_stl != "" )
-	    	tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
+	    	clean(mSurface);
+	    	smooth(mSurface, ini);
 
-	    convert(mSurface, ini);
+	    	if (surface_stl != "" )
+	    		tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
+
+	    	convert(mSurface, ini);
+	    } else if ( fname != "" ){
+	    	// group model with id nr is calculating
+	    	if ( !boost::filesystem::exists( fname ) ){
+	    		    lmSurface.calcMC(mSurface, atomList, ini);
+
+	    		    clean(mSurface);
+	    		    smooth(mSurface, ini);
+
+	    		    convert(mSurface, ini, fname);
+	    	}
+	    }
 	}
 
 
@@ -170,7 +185,7 @@ private:
 		in.close();
 	}
 
-	void convert(mMesh &mSurface, INI &ini){
+	void convert(mMesh &mSurface, INI &ini, string fname = ""){
 
 //		using namespace nglib;
 
@@ -281,6 +296,10 @@ private:
 		cout << "Elements: " << ne << endl;
 
 		string volumeVol = ini.get<string>("model.volume_vol");
+
+		if (fname != "")
+			volumeVol = fname;
+
 		if (volumeVol != ""){
 			cout << "Saving Mesh in VOL Format...." << endl;
 			Ng_SaveMesh(bSurface,volumeVol.c_str());

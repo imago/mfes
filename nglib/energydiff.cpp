@@ -217,18 +217,18 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 				pflux, bfi, applyd, lh, component);
 	      
 		result = pflux(0);
-		cout << "(" << pflux(0);
+//		cout << "(" << pflux(0);
 	      
 		CalcPointFlux (ma, *gfu0, point, domains,
 				pflux, bfi2, applyd, lh, component);
 
 		result -= pflux(0); 
-		cout << " - " << pflux(0) << ")*" << currentAtom.charge;
+//		cout << " - " << pflux(0) << ")*" << currentAtom.charge;
 
 	      
 		potential += currentAtom.charge * result;
 
-		cout << " = " << currentAtom.charge * result << endl;
+//		cout << " = " << currentAtom.charge * result << endl;
 
 	}
 

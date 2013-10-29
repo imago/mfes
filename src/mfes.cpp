@@ -40,8 +40,11 @@ void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 		currentPQR.addInfo(ini);
 		if (!currentPQR.STparsed)
 			currentPQR.parseSTFiles();
-		currentPQR.calcResidues();
+		currentPQR.calcResidues(ini);
 		currentPQR.calcModel(ini);
+		 if (currentPQR.explicitModels)
+			currentPQR.calcExplicitModels(ini);
+		currentPQR.calcPkint();
 
 
 	}

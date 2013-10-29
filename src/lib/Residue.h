@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
+#include <string>
 #include "Atom.h"
 #include "tCycle.h"
 
@@ -16,9 +18,13 @@ public:
 	    resNumber(-1)
 	{}
 
+	int getNrStates(){
+	  map<string, int> nrStates  = { {"ARG", 2}, {"CTE", 2}, {"DPP", 3}, {"EPP", 3}, {"HSP", 3}, {"LYS", 2}, {"NTE", 2}, {"TYR", 2}, {"CYS", 2}};
+	  return nrStates.at(resName);
+	}
+
 	bool isTitGroup(){
-		string groups[] = {"ARG","DPP", "HSP", "NTE", "CTE", "EPP", "LYS", "TYR"};
-		set<string> validGroups(groups, groups + 8);
+		set<string> validGroups = {"ARG","DPP", "HSP", "NTE", "CTE", "EPP", "LYS", "TYR", "CYS"};
 		if(validGroups.find(resName.c_str())!=validGroups.end()){
 	      return true;
 		}
@@ -27,6 +33,10 @@ public:
 
 	void setResidueName(string _resName){
 	  resName = _resName;
+	}
+
+	string getResidueName(){
+		return resName;
 	}
 
 	void setResidueNumber(int _resNumber){
@@ -41,9 +51,22 @@ public:
 	  atomList = _atomList;
 	}
 
+	vector<Atom>& getAtomList(){
+		return atomList;
+	}
+
 	void setChainID(char _chainID){
 	    chainID = _chainID;
 	}
+
+	string getIdentifier(){
+		stringstream result;
+		result << resName << "-" << resNumber;
+		if (chainID != ' ')
+			result << "_" << chainID;
+		return result.str();
+	}
+
 
 private:
 	string resName;

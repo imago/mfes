@@ -2,6 +2,7 @@
 #define ATOM_H
 
 #include <string>
+#include <iomanip>
 #include <vcg/space/point3.h>
 
 using namespace vcg;
@@ -55,10 +56,31 @@ public:
 		return residueName;
 	}
 
+	void setResidueName(string _residueName){
+		residueName = _residueName;
+	}
+
 	char getChainID(){
 		return chainID;
 	}
 
+	string getAtomName(){
+		return atomName;
+	}
+
+	void setCharge(float _charge){
+		charge = _charge;
+	}
+
+	string pqrLine(){
+		stringstream ss;
+		ss << "ATOM" << setw(7) << atomNumber << setw(5) << atomName << setw(1)
+				<< confID << setw(3) << residueName << setw(2) << chainID << setw(4)
+				<< residueNumber << setw(12) << coord.X() << setw(8) << coord.Y()
+				<< setw(8) << coord.Z() << setw(6) << charge << setw(6)
+				<< radius << setw(7) << segName;
+		return ss.str();
+	}
 
 private:
    string fieldName;

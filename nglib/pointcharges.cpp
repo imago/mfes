@@ -45,7 +45,7 @@ public:
     : NumProc (apde)
   {
       lff = pde.GetLinearForm (flags.GetStringFlag ("linearform", "f"));
-      pqrfile = flags.GetStringFlag ("pqrfile","pqr");
+      pqrfile = flags.GetStringFlag ("pqrfile","");
       interpolate = flags.GetDefineFlag ("interpolate");
       
       readMolecule();
@@ -70,11 +70,9 @@ public:
   {
 	  string line;
 	  ifstream in(pqrfile.c_str());
-
 	  int i = 0;
 	  while( !in.eof() ) {
 		getline(in, line);
-		
 		if ( line.find("ATOM", 0)==string::npos ) continue;
 
 		Atom t;

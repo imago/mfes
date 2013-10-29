@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <set>
 
 #include "Atom.h"
 #include "Charge.h"
@@ -63,7 +64,7 @@ public:
 		for ( boost::filesystem::directory_iterator it( full_path );
 				it != boost::filesystem::directory_iterator(); ++it )
 		{
-			string titGroupName = it->path().filename().string();
+			string titGroupName = it->path().stem().string();
 			string ext = it->path().extension().string();
 			boost::to_lower(ext);
 
@@ -233,7 +234,7 @@ public:
 
 	//	using namespace nglib;
 
-		string pdeFile = "test.pde";
+		string pdeFile = "energy.pde";
 
 		try {
 		    pde.LoadPDE (pdeFile.c_str());
@@ -244,7 +245,7 @@ public:
 		  }
 	}
 
-	void calcResidues(){
+	void calcResidues(INI &ini){
 	  Residue newResidue;
 	  vector<Atom> currentAtomList;
 	  Atom lastAtom;
@@ -270,14 +271,63 @@ public:
 		      newResidue.setChainID(lastAtom.getChainID());
 		      newResidue.setAtomList(currentAtomList);
 		      residueList.push_back(newResidue);
-		      if (newResidue.isTitGroup()){
-		    	  titGroupList.push_back(newResidue);
-		      }
+//		      if (newResidue.isTitGroup()){
+//		    	  titGroupList.push_back(newResidue);
+//		      }
 		      currentAtomList.clear();
 		  }
 		  currentAtomList.push_back(currentAtom);
 		  lastAtom = currentAtom;
 		  oldResID = currentResID;
+	  }
+
+	  // Read in sites file
+	  string sitesFile = ini.get<string>("pka.sites_file");
+	  set<string> sitesData;
+	  ifstream in(sitesFile.c_str());
+	  if (!in) {
+		  in.close();
+		  cout << "Cannot open sites file:" << sitesFile << endl;
+		  exit(0);
+	  }
+	  string currentLine, _chainID, _resNumber, _resName;
+
+	  while( !in.eof() ) {
+		  getline(in, currentLine);
+		  stringstream ss(currentLine);
+		  ss >> _chainID >> _resNumber >> _resName ;
+		  string name = _resName+"-"+_resNumber+"_"+_chainID;
+		  sitesData.insert(name);
+
+	  }
+	  // Insert residues into titGroupList
+	  for (int i = 0; i < residueList.size(); i++){
+		  Residue currentResidue = residueList.at(i);
+		  if (currentResidue.isTitGroup() && sitesData.find(currentResidue.getIdentifier()) != sitesData.end()){
+			  vector<Atom> currentAtomList = currentResidue.getAtomList();
+			  if (i >= 1){
+				  Residue before = residueList.at(i-1);
+				  vector<Atom> newAtomList = before.getAtomList();
+				  unsigned int atomListSize = newAtomList.size();
+				  Atom C = newAtomList.at(atomListSize-2);
+				  Atom O = newAtomList.at(atomListSize-1);;
+				  currentAtomList.insert(currentAtomList.begin(), O);
+				  currentAtomList.insert(currentAtomList.begin(), C);
+			  }
+
+			  if (i+1 < residueList.size()){
+				  Residue after = residueList.at(i+1);
+				  vector<Atom> newAtomList = after.getAtomList();
+				  Atom N = newAtomList.at(0);
+				  Atom HN = newAtomList.at(1);
+				  Atom CA = newAtomList.at(2);
+				  currentAtomList.insert(currentAtomList.end(), N);
+				  currentAtomList.insert(currentAtomList.end(), HN);
+				  currentAtomList.insert(currentAtomList.end(), CA);
+			  }
+			  currentResidue.setAtomList(currentAtomList);
+			  titGroupList.push_back(currentResidue);
+		  }
 	  }
 
 	   // Patching also N-terminus?
@@ -286,7 +336,19 @@ public:
 	     firstResidue.setResidueName("NTE");
 	     int residueNumber = firstResidue.getResidueNumber();
 	     firstResidue.setResidueNumber(residueNumber--);
-	  //   residueList.insert(residueList.begin(), firstResidue);
+	     vector<Atom> currentAtomList = firstResidue.getAtomList();
+
+	     Residue after = residueList.at(1);
+	     vector<Atom> newAtomList = after.getAtomList();
+	     Atom N = newAtomList.at(0);
+	     Atom HN = newAtomList.at(1);
+	     Atom CA = newAtomList.at(2);
+	     for (int i = 0; i < currentAtomList.size(); i++)
+	    	 currentAtomList.at(i).setResidueName("NTE");
+	     currentAtomList.insert(currentAtomList.end(), N);
+	     currentAtomList.insert(currentAtomList.end(), HN);
+	     currentAtomList.insert(currentAtomList.end(), CA);
+	     firstResidue.setAtomList(currentAtomList);
 	     titGroupList.insert(titGroupList.begin(), firstResidue);
 	   }
 
@@ -296,13 +358,99 @@ public:
 	     lastResidue.setResidueName("CTE");
 	     int residueNumber = lastResidue.getResidueNumber();
 	     lastResidue.setResidueNumber(residueNumber++);
-	   //  residueList.insert(residueList.end(), lastResidue);
+	     vector<Atom> currentAtomList = lastResidue.getAtomList();
+
+	     Residue before = residueList.at(residueList.size()-2);
+	     vector<Atom> newAtomList = before.getAtomList();
+	     unsigned int atomListSize = newAtomList.size();
+	     Atom C = newAtomList.at(atomListSize-2);
+	     Atom O = newAtomList.at(atomListSize-1);
+	     for (int i = 0; i < currentAtomList.size(); i++)
+	    	 currentAtomList.at(i).setResidueName("CTE");
+	     currentAtomList.insert(currentAtomList.begin(), O);
+	     currentAtomList.insert(currentAtomList.begin(), C);
+	     lastResidue.setAtomList(currentAtomList);
 	     titGroupList.insert(titGroupList.end(), lastResidue);
 	   }
 
 	   cout << residueList.size() << " residue(s) with " << titGroupList.size() << " titratable group(s) found." << endl;
 
 	}
+
+	void calcExplicitModels(INI &ini){
+		for (int i = 0; i < titGroupList.size(); i++){
+			Residue currentTitGroup = titGroupList.at(i);
+			string fname = currentTitGroup.getIdentifier()+".vol";
+			vector<Atom> currentAtomList = currentTitGroup.getAtomList();
+			molecule.calcModel(currentAtomList, ini, fname);
+			// Write out PQR files
+			for (int j = 1; j <= currentTitGroup.getNrStates(); j++){
+				writePQR(currentTitGroup, j);
+			}
+		}
+
+	}
+
+	void writePQR(Residue &titGroup, int stateNr){
+		for (int i = 0; i < stList.size(); i++){
+			ST currentST = stList.at(i);
+			if (currentST.getTitGroupName() == titGroup.getResidueName() &&
+					currentST.getStateNr() == stateNr){
+					vector<Atom> currentAtomList = titGroup.getAtomList();
+					patch(currentAtomList, currentST);
+					stringstream ss;
+					ss << titGroup.getIdentifier() << ".state" << stateNr << ".pqr";
+					ofstream pqr;
+					pqr.open (ss.str());
+					for (int j = 0; j < currentAtomList.size(); j++){
+						Atom currentAtom = currentAtomList.at(j);
+						pqr << currentAtom.pqrLine() << endl;
+					}
+					pqr.close();
+				break;
+			}
+		}
+	}
+
+	void patch(vector<Atom> &atomList, ST &st){
+		vector<Charge> rules = st.getRules();
+		for (int i = 0; i < atomList.size(); i++){
+			Atom currentAtom = atomList.at(i);
+			bool found = false;
+			for (int j = 0; j < rules.size(); j++){
+				Charge currentRule = rules.at(j);
+				if (currentRule.getAtomName() == currentAtom.getAtomName() &&
+						st.getTitGroupName() == currentAtom.getResidueName()){
+					currentAtom.setCharge(currentRule.getCharge());
+					found = true;
+					break;
+				}
+			}
+			if (!found){
+				currentAtom.setCharge(0);
+			}
+			atomList.at(i) = currentAtom;
+		}
+	}
+
+	void calcPkint(){
+		cout << "Calculation of pkint started..." << endl;
+		ngsolve::PDE pde;
+
+	//	using namespace nglib;
+
+		string pdeFile = "pka.pde";
+
+		try {
+		    pde.LoadPDE (pdeFile.c_str());
+		    pde.Solve();
+		  } catch(ngstd::Exception & e) {
+		    std::cout << "Caught exception: " << std::endl
+			      << e.What() << std::endl;
+		  }
+	}
+
+
 	static bool STparsed;
 	static bool calcNTE;
 	static bool calcCTE;
