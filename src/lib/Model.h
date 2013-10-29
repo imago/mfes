@@ -57,6 +57,27 @@ public:
 
 private:
 
+	void printMeshingOptions(Ng_Meshing_Parameters &mp){
+		cout << endl;
+		cout << "Current meshing options:" << endl;
+		cout << "========================" << endl;
+		cout << "options.localh = " << mp.uselocalh << endl;
+		cout << "options.meshsize = " << mp.maxh << endl;
+		cout << "options.minmeshsize = " << mp.minh << endl;
+		cout << "meshoptions.fineness = " << mp.fineness << endl;
+		cout << "options.grading = " << mp.grading << endl;
+		cout << "options.curvaturesafety = " << mp.elementspercurve << endl;
+		cout << "options.segmentsperedge = " << mp.elementsperedge << endl;
+		cout << "options.secondorder = " << mp.second_order << endl;
+		cout << "options.quad = " << mp.quad_dominated << endl;
+		cout << "stloptions.resthcloseedgeenable = " << mp.closeedgeenable << endl;
+		cout << "stloptions.resthcloseedgefac = " << mp.closeedgefact << endl;
+		cout << "options.optsteps2d = " << mp.optsteps_2d << endl;
+		cout << "options.optsteps3d = " << mp.optsteps_3d << endl;
+		cout << "options.inverttets = " << mp.invert_tets << endl;
+		cout << "options.inverttrigs = " << mp.invert_trigs << endl;
+		cout << "options.checkoverlap = " << mp.check_overlap << endl << endl;
+	}
 	void setMeshingOptions(Ng_Meshing_Parameters &mp, string optFile){
 		ifstream in(optFile.c_str());
 		if (!in) {
@@ -236,10 +257,10 @@ private:
 		string meshOptions = ini.get<string>("model.options");
 		Ng_Meshing_Parameters mp;
 		setMeshingOptions(mp, meshOptions);
-
 		mp.optsurfmeshenable = 1;
 		mp.optvolmeshenable  = 1;
 
+		printMeshingOptions(mp);
 
 		cout << "Initialise the STL Geometry structure...." << endl;
 		ngSurface = Ng_STL_InitSTLGeometry(stl_geom);
@@ -275,6 +296,33 @@ private:
 		if(ngSurface != NG_OK) {
 			cout << "Error in Surface merging....Aborting!!" << endl;
 			exit(1);
+		}
+
+		string refineFile = ini.get<string>("model.refine_file");
+		if (refineFile != ""){
+			cout << "Setting local refinement ....." << endl;
+			ifstream in(refineFile.c_str());
+			if (!in) {
+				in.close();
+				cout << "Cannot open refinement file:" << refineFile << endl;
+				exit(0);
+			}
+
+			string currentLine;
+			double p[3]; double h;
+			unsigned int refPoints = 0;
+			while( !in.eof() ) {
+				getline(in, currentLine);
+				if (currentLine != ""){
+					istringstream ss(currentLine);
+					ss >> p[0] >> p[1] >> p[2] >> h;
+					Ng_RestrictMeshSizePoint (bSurface, p, h);
+					refPoints++;
+				}
+				// global refinement
+				// void Ng_RestrictMeshSizeGlobal (Ng_Mesh * mesh, double h);
+			}
+			cout << refPoints << " local refinement point(s) set." << endl;
 		}
 
 		mp.maxh = 1e6;
