@@ -61,7 +61,7 @@ public:
 		mol->zpoints = (float *)malloc(mol->npoints*sizeof(float));
 		mol->rpoints = (float *)malloc(mol->npoints*sizeof(float));
 
-		for (int i = 0; i<atomList.size() ; i++) {
+		for (unsigned int i = 0; i<atomList.size() ; i++) {
 			Atom currentAtom = atomList.at(i);
 			Point3<float> currentCoord = currentAtom.getCoord();
 			mol->xpoints[i] = currentCoord.X();
@@ -72,29 +72,20 @@ public:
 		}
 
 
-		clock_t t;
 		char inner = 0;
 		float k = 0;
 
-		t = clock();
-
-	//	printf("Molecule loading time %f seconds\n",(clock()-t)/(float)CLOCKS_PER_SEC);
 		N = gridSize;
 		PR = probeRadius;
-		//inner = argv[4][0]-'0';
 		if (calc_cavity)
 			inner = 1; //calc_cavity-'0';
 		else
 			inner = 0;
-	//	printf("Number of atoms: %d\n",mol->npoints);
-		t = clock();
-		ttime = clock();
+
 		s = centerMolecule(mol);
-	//	printf("Molecule centering time %f seconds\n",(clock()-t)/(float)CLOCKS_PER_SEC);
 
 		PR = PR*s;
 
-		t = clock();
 		//grid = createGrid(N);
 		short s2;
 		int i = N;
@@ -123,12 +114,7 @@ public:
 					g->matrix[m2][n2][k2].dist= 0;
 				}
 
-	//	printf("Grid creation time %f seconds\n",(clock()-t)/(float)CLOCKS_PER_SEC);
-		t = clock();
-
 		signDistanceGridMol(g,mol,PR);
-
-		t = clock();
 
 		// Don't do shrinking, if PR == 0
 		if (PR == 0)
@@ -136,20 +122,13 @@ public:
 		else
 			shrink(g,PR);
 
-
-
-		t = clock();
 		k = s/(512/N);
 		k = k * k * k;
-		float sas = 0;
 
 		vector<Triangle> result;
 
 		float volume = fastMarching(g,inner)/k;
 		printf("\nTotal cavity/molecule volume = %f A^3\n", volume);
-	//	printf("Fast marching time %f seconds\n",(clock()-t)/(float)CLOCKS_PER_SEC);
-
-//		setVolume(volume);
 
 		init(result, g);
 
@@ -159,7 +138,7 @@ public:
 		float minMaxY = miny + maxy;
 		float minMaxZ = minz + maxz;
 
-		for (int i = 0; i < result.size(); i++){
+		for (unsigned int i = 0; i < result.size(); i++){
 			Triangle currentTriangle = result.at(i);
 			STLFacet f;
 
@@ -204,20 +183,14 @@ public:
 private:
 
 	void init(vector<Triangle>& result, lGrid &grid){
-		clock_t t;
-
-		t = clock();
 		buildScene(result, grid);
-	//	printf("Scene building time %f seconds\n",(clock()-t)/(float)CLOCKS_PER_SEC);
-		t = clock();
-	//	printf("Total Molecular Surface Generation Time : %f seconds\n",(clock()-ttime)/(float)CLOCKS_PER_SEC);
-
 	}
 
 	double centerMolecule(Molecule mol)
 	{
 		// scale and translate the molecule so that the atom coordinates are between -250 and 250
-		double sx,sy,sz,max;
+		double sx,sy,sz;
+		double max=0;
 		int i;
 
 		if (!usePredef){

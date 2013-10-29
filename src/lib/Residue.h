@@ -18,7 +18,7 @@ public:
 	    resNumber(-1)
 	{}
 
-	int getNrStates(){
+	unsigned int getNrStates(){
 	  map<string, int> nrStates  = { {"ARG", 2}, {"CTE", 2}, {"DPP", 3}, {"EPP", 3}, {"HSP", 3}, {"LYS", 2}, {"NTE", 2}, {"TYR", 2}, {"CYS", 2}};
 	  return nrStates.at(resName);
 	}

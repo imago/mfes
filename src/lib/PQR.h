@@ -128,8 +128,7 @@ public:
 	int parse(){
 		vector<Atom> atomList;
 		string temp;
-		double x, y, z;
- 
+
 		ifstream in(fileName.c_str());
 
 		if (!in) {
@@ -252,7 +251,7 @@ public:
 	  int oldResID = -1;
 	  int currentResID = oldResID;
 
-	  for (int i = 0; i < atomList.size(); i++){
+	  for (unsigned int i = 0; i < atomList.size(); i++){
 		  Atom currentAtom = atomList.at(i);
 		  currentResID = currentAtom.getResidueNumber();
 		  if (oldResID == -1){ // First element
@@ -301,7 +300,7 @@ public:
 
 	  }
 	  // Insert residues into titGroupList
-	  for (int i = 0; i < residueList.size(); i++){
+	  for (unsigned int i = 0; i < residueList.size(); i++){
 		  Residue currentResidue = residueList.at(i);
 		  if (currentResidue.isTitGroup() && sitesData.find(currentResidue.getIdentifier()) != sitesData.end()){
 			  vector<Atom> currentAtomList = currentResidue.getAtomList();
@@ -343,7 +342,7 @@ public:
 	     Atom N = newAtomList.at(0);
 	     Atom HN = newAtomList.at(1);
 	     Atom CA = newAtomList.at(2);
-	     for (int i = 0; i < currentAtomList.size(); i++)
+	     for (unsigned int i = 0; i < currentAtomList.size(); i++)
 	    	 currentAtomList.at(i).setResidueName("NTE");
 	     currentAtomList.insert(currentAtomList.end(), N);
 	     currentAtomList.insert(currentAtomList.end(), HN);
@@ -365,7 +364,7 @@ public:
 	     unsigned int atomListSize = newAtomList.size();
 	     Atom C = newAtomList.at(atomListSize-2);
 	     Atom O = newAtomList.at(atomListSize-1);
-	     for (int i = 0; i < currentAtomList.size(); i++)
+	     for (unsigned int i = 0; i < currentAtomList.size(); i++)
 	    	 currentAtomList.at(i).setResidueName("CTE");
 	     currentAtomList.insert(currentAtomList.begin(), O);
 	     currentAtomList.insert(currentAtomList.begin(), C);
@@ -378,13 +377,13 @@ public:
 	}
 
 	void calcExplicitModels(INI &ini){
-		for (int i = 0; i < titGroupList.size(); i++){
+		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
 			string fname = currentTitGroup.getIdentifier()+".vol";
 			vector<Atom> currentAtomList = currentTitGroup.getAtomList();
 			molecule.calcModel(currentAtomList, ini, fname);
 			// Write out PQR files
-			for (int j = 1; j <= currentTitGroup.getNrStates(); j++){
+			for (unsigned int j = 1; j <= currentTitGroup.getNrStates(); j++){
 				writePQR(currentTitGroup, j);
 			}
 		}
@@ -392,7 +391,7 @@ public:
 	}
 
 	void writePQR(Residue &titGroup, int stateNr){
-		for (int i = 0; i < stList.size(); i++){
+		for (unsigned int i = 0; i < stList.size(); i++){
 			ST currentST = stList.at(i);
 			if (currentST.getTitGroupName() == titGroup.getResidueName() &&
 					currentST.getStateNr() == stateNr){
@@ -402,7 +401,7 @@ public:
 					ss << titGroup.getIdentifier() << ".state" << stateNr << ".pqr";
 					ofstream pqr;
 					pqr.open (ss.str());
-					for (int j = 0; j < currentAtomList.size(); j++){
+					for (unsigned int j = 0; j < currentAtomList.size(); j++){
 						Atom currentAtom = currentAtomList.at(j);
 						pqr << currentAtom.pqrLine() << endl;
 					}
@@ -414,10 +413,10 @@ public:
 
 	void patch(vector<Atom> &atomList, ST &st){
 		vector<Charge> rules = st.getRules();
-		for (int i = 0; i < atomList.size(); i++){
+		for (unsigned int i = 0; i < atomList.size(); i++){
 			Atom currentAtom = atomList.at(i);
 			bool found = false;
-			for (int j = 0; j < rules.size(); j++){
+			for (unsigned int j = 0; j < rules.size(); j++){
 				Charge currentRule = rules.at(j);
 				if (currentRule.getAtomName() == currentAtom.getAtomName() &&
 						st.getTitGroupName() == currentAtom.getResidueName()){

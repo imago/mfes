@@ -83,18 +83,16 @@ public:
 	}
 
 private:
-   string fieldName;
-   char confID;
-   int atomNumber;
-   string residueName;
-   char chainID;
-   int residueNumber;
-   Point3<float> coord;
-   float radius;
-   string segName;
-   string atomName;
-   float charge;
-
+	int atomNumber;
+	string atomName;
+	char confID;
+	string residueName;
+	char chainID;
+	int residueNumber;
+	Point3<float> coord;
+	float charge;
+	float radius;
+	string segName;
 };
 
 #endif

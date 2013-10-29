@@ -324,22 +324,22 @@ private:
 
 		while (ss >> mode >> steps){
 			if (mode == "t"){
-				for (int i = 0; i < steps; i++){
+				for (unsigned int i = 0; i < steps; i++){
 					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
 					tri::Smooth<mMesh>::VertexCoordTaubin(mSurface,1,TAUBIN_LAMBDA,TAUBIN_MU);
 				}
 			} else if (mode == "lap"){
-				for (int i = 0; i < steps; i++){
+				for (unsigned int i = 0; i < steps; i++){
 					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacian(mSurface,1);
 				}
 			} else if (mode == "hc"){
-				for (int i = 0; i < steps; i++){
+				for (unsigned int i = 0; i < steps; i++){
 					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacianHC(mSurface,1);
 				}
 			} else if (mode == "aw"){
-				for (int i = 0; i < steps; i++){
+				for (unsigned int i = 0; i < steps; i++){
 					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacianAngleWeighted(mSurface,1, CF_LAMBDA);
 				}

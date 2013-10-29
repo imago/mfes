@@ -25,7 +25,7 @@ using namespace std;
 namespace po = boost::program_options;
 
 void calcDeltaG(vector<PQR> &pqrList, INI &ini){
-	for (int i = 0; i < pqrList.size(); i++){
+	for (unsigned int i = 0; i < pqrList.size(); i++){
 		PQR currentPQR = pqrList.at(i);
 		currentPQR.calcModel(ini);
 		currentPQR.calcDeltaG();
@@ -35,7 +35,7 @@ void calcDeltaG(vector<PQR> &pqrList, INI &ini){
 }
 
 void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
-	for (int i = 0; i < pqrList.size(); i++){
+	for (unsigned int i = 0; i < pqrList.size(); i++){
 		PQR currentPQR = pqrList.at(i);
 		currentPQR.addInfo(ini);
 		if (!currentPQR.STparsed)
