@@ -214,14 +214,15 @@ private:
 
 			if (mol->npoints==1)
 			{
-					sx = 40.0f;
+	/*				sx = 40.0f;
 					sy = 40.0f;
 					sz = 40.0f;
+					*/
 
-	/*			sx = SIZEMAX/(maxx-minx);
-				sy = SIZEMAX/(maxy-miny);
-				sz = SIZEMAX/(maxz-minz);
-    */
+				sx = SIZEMAX/(maxx-minx+2);
+				sy = SIZEMAX/(maxy-miny+2);
+				sz = SIZEMAX/(maxz-minz+2);
+
 			}
 			else
 			{

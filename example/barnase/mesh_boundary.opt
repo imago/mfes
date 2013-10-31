@@ -20,8 +20,8 @@ options.quad  0
 options.inverttets  0
 options.inverttrigs  0
 options.autozrefine 0
-options.meshsize  3
-options.minmeshsize  0.5
+options.meshsize  1e6
+options.minmeshsize  0
 options.curvaturesafety  1
 options.segmentsperedge  0.3
 options.meshsizefilename  
@@ -29,7 +29,7 @@ options.badellimit  175
 options.optsteps2d  0
 options.optsteps3d  0
 options.opterrpow  2
-options.grading  0.7
+options.grading  1
 options.printmsg  2
 geooptions.drawcsg  1
 geooptions.detail  0.001

@@ -10,10 +10,10 @@ define constant q0 = 1.60217646e-19
 define constant heapsize = 2000000
 
 define coefficient epsilon_solv
-(80*eps0),(4*eps0),
+(80*eps0),(4*eps0)
 
 define coefficient epsilon_ref
-(4*eps0),(4*eps0),(4*eps0)
+(4*eps0),(4*eps0)
 
 define fespace v -order=4 -type=h1ho -dirichlet=[1]
 
@@ -33,7 +33,7 @@ numproc pointcharges ps1 -linearform=f -pqrfile=born.pqr -interpolate
 define preconditioner c -type=multigrid -bilinearform=a_solv -inverse=mumps
 define preconditioner c0 -type=multigrid -bilinearform=a_ref -inverse=mumps
 
-numproc bvp np1 -gridfunction=u_solv -bilinearform=a_solv -linearform=f -preconditioner=c  -maxsteps=2 
-numproc bvp np10 -gridfunction=u_ref -bilinearform=a_ref -linearform=f -preconditioner=c0  -maxsteps=2
+numproc bvp np1 -gridfunction=u_solv -bilinearform=a_solv -linearform=f -preconditioner=c  -maxsteps=10
+numproc bvp np10 -gridfunction=u_ref -bilinearform=a_ref -linearform=f -preconditioner=c0  -maxsteps=10
 
 numproc energydiff npeval -gridfunction=u_solv -gridfunction0=u_ref -pqrfile=born.pqr 
