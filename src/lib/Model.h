@@ -57,9 +57,9 @@ public:
 
 private:
 
-	void printMeshingOptions(Ng_Meshing_Parameters &mp){
+	void printMeshingOptions(Ng_Meshing_Parameters &mp, string prefix){
 		cout << endl;
-		cout << "Current meshing options:" << endl;
+		cout << prefix << endl;
 		cout << "========================" << endl;
 		cout << "options.localh = " << mp.uselocalh << endl;
 		cout << "options.meshsize = " << mp.maxh << endl;
@@ -254,13 +254,13 @@ private:
 		cout << "Successfully loaded VCG STL File" << endl;
 
 		// Set the Meshing Parameters to be used
-		string meshOptions = ini.get<string>("model.options");
+		string meshOptionsMolecule = ini.get<string>("model.options_molecule");
 		Ng_Meshing_Parameters mp;
-		setMeshingOptions(mp, meshOptions);
+		setMeshingOptions(mp, meshOptionsMolecule);
 		mp.optsurfmeshenable = 1;
 		mp.optvolmeshenable  = 1;
 
-		printMeshingOptions(mp);
+		printMeshingOptions(mp, "Meshing options for molecule");
 
 		cout << "Initialise the STL Geometry structure...." << endl;
 		ngSurface = Ng_STL_InitSTLGeometry(stl_geom);
@@ -283,13 +283,20 @@ private:
 		    exit(1);
 		}
 
+		cout << "Start Volume Meshing of molecule...." << endl;
+		ngSurface = Ng_GenerateVolumeMesh (ngVolume, &mp);
+		if(ngSurface != NG_OK) {
+			cout << "Error in Volume Meshing....Aborting!!" << endl;
+		    exit(1);
+		}
+
 		cout << "Loading boundary settings ....." << endl;
 		string boundary = ini.get<string>("model.boundary");
 		Ng_Mesh* bSurface;
 		bSurface = nglib::Ng_LoadMesh(boundary.c_str());
 
-		Ng_SetBCProp(bSurface, 1);
-		Ng_SetBCProp(ngVolume, 2);
+		Ng_SetProperties(ngVolume, 2, 2, 2, 1);
+		Ng_SetProperties(bSurface, 1, 1, 1, 0);
 
 		cout << "Merging Mesh with boundary....." << endl;
      	ngSurface = Ng_MergeMesh( bSurface, ngVolume );
@@ -325,9 +332,13 @@ private:
 			cout << refPoints << " local refinement point(s) set." << endl;
 		}
 
-		mp.maxh = 1e6;
+		string meshOptionsBoundary = ini.get<string>("model.options_boundary");
+		setMeshingOptions(mp, meshOptionsBoundary);
+		mp.optsurfmeshenable = 1;
+		mp.optvolmeshenable  = 1;
+		printMeshingOptions(mp, "Meshing options for boundary");
 
-		cout << "Start Volume Meshing...." << endl;
+		cout << "Start Volume meshing of whole model...." << endl;
 		ngSurface = Ng_GenerateVolumeMesh (bSurface, &mp);
 		if(ngSurface != NG_OK) {
 			cout << "Error in Volume Meshing....Aborting!!" << endl;

@@ -199,7 +199,8 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 	  
 	double result = 0;
 	double potential = 0;
-	  
+	double conversion = 1.602176565e-19 * 6.02214129e23 * 0.5 / 1000.0;
+
 	const BilinearFormIntegrator & bfi = (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
 	const BilinearFormIntegrator & bfi2 =  (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
 	
@@ -217,18 +218,18 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 				pflux, bfi, applyd, lh, component);
 	      
 		result = pflux(0);
-//		cout << "(" << pflux(0);
+		cout << "(" << pflux(0)*conversion;
 	      
 		CalcPointFlux (ma, *gfu0, point, domains,
 				pflux, bfi2, applyd, lh, component);
 
 		result -= pflux(0); 
-//		cout << " - " << pflux(0) << ")*" << currentAtom.charge;
+		cout << " - " << pflux(0)*conversion << ")*" << currentAtom.charge;
 
 	      
 		potential += currentAtom.charge * result;
 
-//		cout << " = " << currentAtom.charge * result << endl;
+		cout << " = " << currentAtom.charge * result*conversion << endl;
 
 	}
 
