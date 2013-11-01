@@ -13,3 +13,15 @@ wget <mfes.tar.gz>
 tar xfvz ...
 cd mfes
 make
+
+
+
+
+Changes in Netgen/Ngsolve
+=========================
+netgen-5.1/nglib/nglib.h
+netgen-5.1/nglib/nglib.cpp
+netgen-5.1/libsrc/meshing/meshclass.h
+netgen-5.1/libsrc/meshing/meshclass.cpp
+
+ngsolve-5.1/ngstd/profiler.hpp (number of timer to 10000)
