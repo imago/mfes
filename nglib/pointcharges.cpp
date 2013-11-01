@@ -70,6 +70,13 @@ public:
   {
 	  string line;
 	  ifstream in(pqrfile.c_str());
+
+	  if (!in) {
+		  in.close();
+		  cout << "Cannot open pqr file:" << pqrfile << endl;
+		  exit(0);
+	  }
+
 	  int i = 0;
 	  while( !in.eof() ) {
 		getline(in, line);
@@ -99,7 +106,7 @@ public:
 		t.radius = atof(line.substr(60,6).c_str());
 
 		molecule.push_back(t);
-		cout << i << ": " << t.fieldName << " " << t.x << " " << t.y  << " " << t.z  << " " << t.charge  << " " << t.radius <<  endl;
+//		cout << i << ": " << t.fieldName << " " << t.x << " " << t.y  << " " << t.z  << " " << t.charge  << " " << t.radius <<  endl;
 	}
   }
   

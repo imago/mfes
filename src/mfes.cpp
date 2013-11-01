@@ -44,9 +44,9 @@ void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 		currentPQR.calcModel(ini);
 		 if (currentPQR.explicitModels)
 			currentPQR.calcExplicitModels(ini);
-		currentPQR.calcPkint();
-
-
+		currentPQR.writePDE(ini);
+	//	currentPQR.calcPkint("pka_cycle0.pde");
+	//	currentPQR.calcPkint("pka_cycle1.pde");
 	}
 }
 

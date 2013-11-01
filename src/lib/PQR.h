@@ -11,6 +11,7 @@
 #include "Model.h"
 #include "ST.h"
 #include "tCycle.h"
+#include "PDE.h"
 
 using namespace std;
 
@@ -23,7 +24,6 @@ namespace netgen
 
 char **argv;
 ngsolve::MyMPI mympi(0, argv);
-
 
 typedef boost::property_tree::ptree INI;
 
@@ -238,10 +238,11 @@ public:
 		try {
 		    pde.LoadPDE (pdeFile.c_str());
 		    pde.Solve();
-		  } catch(ngstd::Exception & e) {
-		    std::cout << "Caught exception: " << std::endl
-			      << e.What() << std::endl;
-		  }
+		} catch(ngstd::Exception & e) {
+			std::cout << "Caught exception: " << std::endl
+				<< e.What() << std::endl;
+		}
+
 	}
 
 	void calcResidues(INI &ini){
@@ -432,23 +433,32 @@ public:
 		}
 	}
 
-	void calcPkint(){
+	void calcPkint(string pdeFile){
 		cout << "Calculation of pkint started..." << endl;
 		ngsolve::PDE pde;
-
 	//	using namespace nglib;
-
-		string pdeFile = "pka.pde";
 
 		try {
 		    pde.LoadPDE (pdeFile.c_str());
 		    pde.Solve();
-		  } catch(ngstd::Exception & e) {
-		    std::cout << "Caught exception: " << std::endl
+		} catch(ngstd::Exception & e) {
+			std::cout << "Caught exception: " << std::endl
 			      << e.What() << std::endl;
-		  }
+		}
+
+
 	}
 
+	void writePDE(INI &ini, string mode = "explicit"){
+		PDE currentPDE;
+		if (mode == "explicit"){
+			cout << "write cycle0 pde file ..." << endl;
+			currentPDE.writeCycle0(titGroupList, ini);
+		//	MPI_Waitall();
+			cout << "write cycle1 pde file ..." << endl;
+			currentPDE.writeCycle1(fileName, titGroupList, ini);
+		}
+	}
 
 	static bool STparsed;
 	static bool calcNTE;
