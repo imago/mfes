@@ -67,6 +67,22 @@ public:
 		return result.str();
 	}
 
+	void setTCycle(tCycle &_cycle){
+		cycle = _cycle;
+	}
+
+	tCycle getTCycle(){
+	    return cycle;
+	}
+
+	void setBorn(float bornEner){
+	    born = bornEner;
+	}
+
+	void setBack(float backEner){
+	    back = backEner;
+	}
+
 
 private:
 	string resName;

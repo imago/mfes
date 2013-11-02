@@ -433,29 +433,221 @@ public:
 		}
 	}
 
-	void calcPkint(string pdeFile){
-		cout << "Calculation of pkint started..." << endl;
+	void calcPkint(string cycleName){
+
+		for (unsigned int i = 0; i < titGroupList.size(); i++){
+			Residue currentTitGroup = titGroupList.at(i);
+			string fileName = cycleName+"."+currentTitGroup.getIdentifier()+".potat";
+			cout << "Reading " << fileName << " .... ";
+
+			tCycle cycle;
+			unsigned int nrStates = 0;
+			unsigned int nrAtoms = 0;
+			float potential = 0;
+			unsigned int potNr = 0;
+
+			ifstream in(fileName.c_str());
+			if (!in) {
+				in.close();
+				cout << "Cannot open potat file:" << fileName << endl;
+				exit(0);
+			}
+			string currentLine;
+			while( !in.eof() ) {
+				getline(in, currentLine);
+				nrStates = atoi(currentLine.c_str());
+				getline(in, currentLine);
+				nrAtoms  = atoi(currentLine.c_str());
+				for(unsigned int j = 0; j < nrStates; j++){
+					for(unsigned int k = 0; k < nrAtoms; k++){
+						Point3<float> newPoint;
+						getline(in, currentLine);
+						newPoint.X() = atof(currentLine.c_str());
+						getline(in, currentLine);
+						newPoint.Y() = atof(currentLine.c_str());
+						getline(in, currentLine);
+						newPoint.Z() = atof(currentLine.c_str());
+						getline(in, currentLine);
+						potential = atof(currentLine.c_str());
+						cycle.p[j].insert( {newPoint, potential} );
+						potNr++;
+					}
+					getline(in, currentLine);
+				}
+				nrStates = 0;
+				nrAtoms = 0;
+				nrStates = atoi(currentLine.c_str());
+				getline(in, currentLine);
+				nrAtoms  = atoi(currentLine.c_str());
+				for(unsigned int i = 0; i < nrStates; i++){
+					for(unsigned int j = 0; j < nrAtoms; j++){
+						Point3<float> newPoint;
+						getline(in, currentLine);
+						newPoint.X() = atof(currentLine.c_str());
+						getline(in, currentLine);
+						newPoint.Y() = atof(currentLine.c_str());
+						getline(in, currentLine);
+						newPoint.Z() = atof(currentLine.c_str());
+						getline(in, currentLine);
+						potential = atof(currentLine.c_str());
+						cycle.m[i].insert( {newPoint, potential} );
+						potNr++;
+					}
+					getline(in, currentLine);
+
+				}
+				cout << potNr << " potentials read in." << endl;
+
+			}
+			currentTitGroup.setTCycle(cycle);
+			titGroupList.at(i) = currentTitGroup;
+			in.close();
+
+		}
+
+		float bornEner = 0;
+		float backEner = 0;
+
+		for (unsigned int i = 0; i < titGroupList.size(); i++){
+			Residue currentOrigTitGroup = titGroupList.at(i);
+			Residue currentTitGroup = titGroupList.at(i);
+			unsigned int nrStates = currentTitGroup.getNrStates();
+			for (unsigned int stateNr = 1; stateNr < nrStates; stateNr++){
+				tCycle cycle = currentTitGroup.getTCycle();
+
+				vector<Atom> refAtomList = getAtoms(currentTitGroup, 0);
+				vector<Atom> compareAtomList = getAtoms(currentTitGroup, stateNr);
+
+				float born0 = 0;
+				float born1 = 0;
+
+			    for (unsigned int j = 0; j < refAtomList.size(); j++){
+			    	Atom currentRefAtom = refAtomList.at(j);
+			    	Atom currentCompareAtom = compareAtomList.at(j);
+//			    	cout << "currentRefAtom :";
+//			    	currentRefAtom.print();
+//			    	cout << "currentCompareAtom :";
+//			    	currentCompareAtom.print();
+
+			    	if (currentRefAtom.getCharge() != 0){
+//						cout << "born0 old: " << born0 << endl;
+						born0 += currentRefAtom.getCharge() * (cycle.p[0][currentRefAtom.getCoord()] - cycle.m[0][currentRefAtom.getCoord()]);
+//						cout << currentRefAtom.getCharge() << " * (" << cycle.p[0][currentRefAtom.getCoord()] << " - " << cycle.m[0][currentRefAtom.getCoord()] << ")" << endl;
+//						cout << "born0 new is:" << born0 << endl;
+			    	}
+
+			    	if (currentCompareAtom.getCharge() != 0){
+//			    		cout << "born1 old: " << born1 << endl;
+						born1 += currentCompareAtom.getCharge() * (cycle.p[stateNr][currentCompareAtom.getCoord()] - cycle.m[stateNr][currentCompareAtom.getCoord()]);
+//						cout << currentCompareAtom.getCharge() << " * (" << cycle.p[stateNr][currentCompareAtom.getCoord()] << " - " << cycle.m[stateNr][currentCompareAtom.getCoord()] << ")" << endl;
+//						cout << "born1 new is:" << born1 << endl;
+			    	}
+			    }
+		        bornEner = 0.5*(born0-born1);
+//			    cout << "Returning 0.5 * (" << born0 << " - " << born1 << ") = " << bornEner << endl;
+
+		        float back0 = 0;
+		        float back1 = 0;
+
+		        //Residue titGroup = titGroup !
+		        vector<Atom> pAtomList = deleteAtoms(atomList, refAtomList); // from whole protein without patched atoms in currentTitGroup
+		        vector<Atom> mAtomList = deleteAtoms(currentOrigTitGroup.getAtomList(), refAtomList); // not patched
+
+
+
+		        for (unsigned int j = 0; j < pAtomList.size(); j++){
+		        	Atom currentAtom = pAtomList.at(j);
+//		        	cout << "currentAtom (p)";
+//		        	currentAtom.print();
+
+//		    		cout << "back1 old: " << born1 << endl;
+		            back1 += currentAtom.getCharge() * (cycle.p[0][currentAtom.getCoord()] - cycle.p[stateNr][currentAtom.getCoord()]);
+//					cout << currentAtom.getCharge() << " * (" << cycle.p[0][currentAtom.getCoord()] << " - " << cycle.p[stateNr][currentAtom.getCoord()] << ")" << endl;
+//					cout << "back1 new is:" << born1 << endl;
+
+		        }
+
+		        for (unsigned int j = 0; j < mAtomList.size(); j++){
+		        	Atom currentAtom = mAtomList.at(j);
+//		        	cout << "currentAtom (m)";
+//		        	currentAtom.print();
+
+//		        	cout << "back0 old: " << born1 << endl;
+		        	back0 += currentAtom.getCharge() * (cycle.m[0][currentAtom.getCoord()] - cycle.m[stateNr][currentAtom.getCoord()]);
+//					cout << currentAtom.getCharge() << " * (" << cycle.m[0][currentAtom.getCoord()] << " - " <<  cycle.m[stateNr][currentAtom.getCoord()] << ")" << endl;
+//					cout << "back0 new is:" << born1 << endl;
+		        }
+
+		        backEner = (back1-back0);
+//		        cout << "Returning (" << back1 << " - " << back0 << ") = " << backEner << endl;
+
+			    currentTitGroup.setBorn(bornEner); // real titGroupList object
+			    currentTitGroup.setBack(backEner);
+			    cout << currentTitGroup.getResidueName() << " form R to current state " << stateNr << " has born energy of " <<
+			    		bornEner << " and back energy of " << backEner << "kJ/mol" << endl;
+			    titGroupList.at(i) = currentTitGroup;
+
+			}
+
+
+		}
+
+
+
+	}
+
+	vector<Atom> deleteAtoms(vector<Atom> result, vector<Atom>& compareAtomList){
+		// compareAtomList is << currentAtomList
+		for (unsigned int i = 0; i < compareAtomList.size(); i++){
+			Atom currentCompareAtom = compareAtomList.at(i);
+			if (currentCompareAtom.getCharge() != 0){
+				for (unsigned int j = 0; j < result.size(); j++){
+					Atom currentAtom = result.at(j);
+					if (currentAtom.getAtomNumber() == currentCompareAtom.getAtomNumber()){
+						result.erase(result.begin()+j);
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	vector<Atom> getAtoms(Residue currentTitGroup, int stateNr){
+		vector<Atom> currentAtomList = currentTitGroup.getAtomList();
+
+		for (unsigned int i = 0; i < stList.size(); i++){
+			ST currentST = stList.at(i);
+			if (currentST.getStateNr() == stateNr+1 && currentST.getTitGroupName() == currentTitGroup.getResidueName()){
+				patch(currentAtomList, currentST);
+			}
+		}
+
+		return currentAtomList;
+	}
+
+	void calcPotat(string cycleName){
 		ngsolve::PDE pde;
-	//	using namespace nglib;
+
+		string pdeFile = "pka_"+cycleName+".pde";
+		boost::filesystem::wpath file(pdeFile);
 
 		try {
-		    pde.LoadPDE (pdeFile.c_str());
-		    pde.Solve();
+			if(boost::filesystem::exists(file)){
+				pde.LoadPDE (pdeFile.c_str());
+				pde.Solve();
+			}
+
 		} catch(ngstd::Exception & e) {
 			std::cout << "Caught exception: " << std::endl
 			      << e.What() << std::endl;
 		}
-
 
 	}
 
 	void writePDE(INI &ini, string mode = "explicit"){
 		PDE currentPDE;
 		if (mode == "explicit"){
-			cout << "write cycle0 pde file ..." << endl;
 			currentPDE.writeCycle0(titGroupList, ini);
-		//	MPI_Waitall();
-			cout << "write cycle1 pde file ..." << endl;
 			currentPDE.writeCycle1(fileName, titGroupList, ini);
 		}
 	}

@@ -298,7 +298,6 @@ public:
     	ofile.precision(old_ofile_precision);
     	ofile.close();
 
-    	MyMPI_Barrier();
     }
 
     static NumProc * Create (PDE & pde, const Flags & flags)

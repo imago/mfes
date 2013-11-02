@@ -72,6 +72,14 @@ public:
 		charge = _charge;
 	}
 
+	float getCharge(){
+		return charge;
+	}
+
+	int getAtomNumber(){
+		return atomNumber;
+	}
+
 	string pqrLine(){
 		stringstream ss;
 		ss << "ATOM" << setw(7) << atomNumber << setw(5) << atomName << setw(1)
