@@ -201,6 +201,7 @@ public:
     void Do(LocalHeap & lh)
     {
     	double result = 0;
+    	double conversion = 1.602176565e-19 * 6.02214129e23 / 1000.0;
     	ofstream ofile (filename.c_str());
 
     	int old_cout_precision = cout.precision();
@@ -266,7 +267,6 @@ public:
     			for (it=molecule.begin(); it!=molecule.end(); ++it){
     				Atom line;
     				line = *it;
-    				float realX = line.x;
     				point(0) = line.x;
     				point(1) = line.y;
     				point(2) = line.z;
@@ -281,11 +281,12 @@ public:
     					result = pflux(0);
     					// Writing [V] into potat!
     					potfile.precision(-1);
-    					potfile << realX << endl;
+    					potfile << point(0) << endl;
     					potfile << point(1) << endl;
     					potfile << point(2) << endl;
     					potfile.precision(6);
-    					potfile << (1.60217646e-19 * 6.0221415e23 * 1 * pflux(0))/1000*1/(0.008314510*300) << endl;
+    					potfile << conversion * pflux(0) << endl;
+//    					potfile << (1.60217646e-19 * 6.0221415e23 * 1 * pflux(0))/1000*1/(0.008314510*300) << endl;
     					position++;
     				}
     			}

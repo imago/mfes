@@ -18,4 +18,7 @@ struct Triangle{
 // standard: mu = lambda = 0.5
 // meshlab: mu = -0.53, lambad = 0.5
 
+#define CONVERT 5.74346052632
+				//5.74342695
+
 #endif

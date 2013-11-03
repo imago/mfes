@@ -7,11 +7,11 @@ using namespace std;
 class ST {
 public:
 
-	ST(string _titGroupName, char _state, int _stateNr, float _deltaG, vector<Charge>_rules):
+	ST(string _titGroupName, char _state, int _stateNr, float _shift, vector<Charge>_rules):
     titGroupName(_titGroupName),
     state(_state),
     stateNr(_stateNr),
-    deltaG(_deltaG),
+    shift(_shift),
     rules(_rules){
 
 	}
@@ -28,6 +28,10 @@ public:
 	   return stateNr;
 	}
 
+	float getShift(){
+		return shift;
+	}
+
 	vector<Charge> getRules(){
 	    return rules;
 	}
@@ -36,6 +40,6 @@ private:
   string titGroupName;
   char state;
   int stateNr;
-  float deltaG;
+  float shift;
   vector<Charge> rules;
 };

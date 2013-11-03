@@ -75,12 +75,20 @@ public:
 	    return cycle;
 	}
 
-	void setBorn(float bornEner){
-	    born = bornEner;
+	void setBorn(float bornEner, unsigned int cycleNr, unsigned int stateNr){
+		born[cycleNr][stateNr] = bornEner;
 	}
 
-	void setBack(float backEner){
-	    back = backEner;
+	float getBorn(unsigned int cycleNr, unsigned int stateNr){
+		return born[cycleNr][stateNr];
+	}
+
+	void setBack(float backEner, unsigned int cycleNr, unsigned int stateNr){
+		back[cycleNr][stateNr] = backEner;
+	}
+
+	float getBack(unsigned int cycleNr, unsigned int stateNr){
+		return back[cycleNr][stateNr];
 	}
 
 
@@ -90,8 +98,8 @@ private:
 	char chainID;
 	vector<Atom> atomList;
 	tCycle cycle;
-	float back;
-	float born;
+	float born[2][3];
+	float back[2][3];
 };
 
 #endif
