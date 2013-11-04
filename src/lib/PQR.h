@@ -530,21 +530,21 @@ public:
 //			    	currentCompareAtom.print();
 
 			    	if (currentRefAtom.getCharge() != 0){
-						cout << "born0 old: " << born0 << endl;
+//						cout << "born0 old: " << born0 << endl;
 						born0 += currentRefAtom.getCharge() * (cycle.p[0][currentRefAtom.getCoord()] - cycle.m[0][currentRefAtom.getCoord()]);
-						cout << currentRefAtom.getCharge() << " * (" << cycle.p[0][currentRefAtom.getCoord()] << " - " << cycle.m[0][currentRefAtom.getCoord()] << ") = " << currentRefAtom.getCharge() * (cycle.p[0][currentRefAtom.getCoord()] - cycle.m[0][currentRefAtom.getCoord()]) << endl;
-						cout << "born0 new is:" << born0 << endl;
+//						cout << currentRefAtom.getCharge() << " * (" << cycle.p[0][currentRefAtom.getCoord()] << " - " << cycle.m[0][currentRefAtom.getCoord()] << ") = " << currentRefAtom.getCharge() * (cycle.p[0][currentRefAtom.getCoord()] - cycle.m[0][currentRefAtom.getCoord()]) << endl;
+//						cout << "born0 new is:" << born0 << endl;
 			    	}
 
 			    	if (currentCompareAtom.getCharge() != 0){
-			    		cout << "born1 old: " << born1 << endl;
+//			    		cout << "born1 old: " << born1 << endl;
 						born1 += currentCompareAtom.getCharge() * (cycle.p[stateNr][currentCompareAtom.getCoord()] - cycle.m[stateNr][currentCompareAtom.getCoord()]);
-						cout << currentCompareAtom.getCharge() << " * (" << cycle.p[stateNr][currentCompareAtom.getCoord()] << " - " << cycle.m[stateNr][currentCompareAtom.getCoord()] << ") = " << currentCompareAtom.getCharge() * (cycle.p[stateNr][currentCompareAtom.getCoord()] - cycle.m[stateNr][currentCompareAtom.getCoord()]) << endl;
-						cout << "born1 new is:" << born1 << endl;
+//						cout << currentCompareAtom.getCharge() << " * (" << cycle.p[stateNr][currentCompareAtom.getCoord()] << " - " << cycle.m[stateNr][currentCompareAtom.getCoord()] << ") = " << currentCompareAtom.getCharge() * (cycle.p[stateNr][currentCompareAtom.getCoord()] - cycle.m[stateNr][currentCompareAtom.getCoord()]) << endl;
+//						cout << "born1 new is:" << born1 << endl;
 			    	}
 			    }
 		        bornEner = 0.5*(born1-born0);
-			    cout << "Returning 0.5 * (" << born1 << " - " << born0 << ") = " << bornEner << endl;
+//			    cout << "Returning 0.5 * (" << born1 << " - " << born0 << ") = " << bornEner << endl;
 
 		        float back0 = 0;
 		        float back1 = 0;
@@ -654,6 +654,8 @@ public:
 		if (mode == "explicit"){
 			currentPDE.writeCycle0(titGroupList, ini);
 			currentPDE.writeCycle1(fileName, titGroupList, ini);
+		} else {
+			currentPDE.writeEnergy(fileName, ini);
 		}
 	}
 

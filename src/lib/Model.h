@@ -254,6 +254,7 @@ private:
 		cout << "Successfully loaded VCG STL File" << endl;
 
 		// Set the Meshing Parameters to be used
+		string debug = ini.get<string>("model.debug");
 		string meshOptionsMolecule = ini.get<string>("model.options_molecule");
 		Ng_Meshing_Parameters mp;
 		setMeshingOptions(mp, meshOptionsMolecule);
@@ -283,11 +284,20 @@ private:
 		    exit(1);
 		}
 
+		if (debug == "analyze"){
+			Ng_SaveMesh(ngVolume,"proteinSurface.vol");
+		}
+
+
 		cout << "Start Volume Meshing of molecule...." << endl;
 		ngSurface = Ng_GenerateVolumeMesh (ngVolume, &mp);
 		if(ngSurface != NG_OK) {
 			cout << "Error in Volume Meshing....Aborting!!" << endl;
 		    exit(1);
+		}
+
+		if (debug == "analyze"){
+			Ng_SaveMesh(ngVolume,"proteinVolume.vol");
 		}
 
 		cout << "Loading boundary settings ....." << endl;

@@ -9,9 +9,59 @@ public:
 	PDE(){
 		;
 	}
+	void writeEnergy(string fileName, INI &ini){
+		string solOrder = ini.get<string>("solver.solution_order");
+		string maxsteps = ini.get<string>("solver.maxsteps");
+
+		ofstream energyFile;
+		energyFile.open("energy.pde");
+
+		energyFile << "mesh = protein.vol" << endl;
+		energyFile << endl;
+		energyFile << "shared = /home/parallels/git/mfes/nglib/pointcharges" << endl;
+		energyFile << "shared = /home/parallels/git/mfes/nglib/energydiff" << endl;
+		energyFile << "shared = /home/parallels/git/mfes/nglib/writePotatAscii" << endl;
+		energyFile << endl;
+		energyFile << "define constant eps0 = 8.8541878e-22" << endl;
+		energyFile << "define constant q0 = 1.60217646e-19" << endl;
+		energyFile << endl;
+		energyFile << "define constant heapsize = 2000000" << endl;
+		energyFile << endl;
+		energyFile << "define coefficient epsilon_solv" << endl;
+		energyFile << "(80*eps0),(4*eps0)" << endl;
+		energyFile << endl;
+		energyFile << "define coefficient epsilon_ref" << endl;
+		energyFile << "(4*eps0),(4*eps0)" << endl;
+		energyFile << endl;
+		energyFile << "define fespace v -order="<<solOrder<<" -type=h1ho -dirichlet=[1]" << endl;
+		energyFile << endl;
+		energyFile << "define gridfunction u_solv -fespace=v" << endl;
+		energyFile << "define gridfunction u_ref -fespace=v" << endl;
+		energyFile << endl;
+		energyFile << "define bilinearform a_solv -fespace=v -symmetric" << endl;
+		energyFile << "laplace epsilon_solv" << endl;
+		energyFile << endl;
+		energyFile << "define bilinearform a_ref -fespace=v -symmetric" << endl;
+		energyFile << "laplace epsilon_ref" << endl;
+		energyFile << endl;
+		energyFile << "define linearform f -fespace=v" << endl;
+		energyFile << endl;
+		energyFile << "numproc pointcharges ps1 -linearform=f -pqrfile="<<fileName<<" -interpolate" << endl;
+		energyFile << endl;
+		energyFile << "define preconditioner c -type=multigrid -bilinearform=a_solv -inverse=mumps" << endl;
+		energyFile << "define preconditioner c0 -type=multigrid -bilinearform=a_ref -inverse=mumps" << endl;
+		energyFile << endl;
+		energyFile << "numproc bvp np1 -gridfunction=u_solv -bilinearform=a_solv -linearform=f -preconditioner=c  -maxsteps=" << maxsteps << endl;
+		energyFile << "numproc bvp np10 -gridfunction=u_ref -bilinearform=a_ref -linearform=f -preconditioner=c0  -maxsteps=" << maxsteps << endl;
+		energyFile << endl;
+		energyFile << "numproc energydiff npeval -gridfunction=u_solv -gridfunction0=u_ref -pqrfile=" << fileName << endl;
+		energyFile.close();
+	}
 
 	void writeCycle0(vector<Residue> titGroupList, INI &ini){
 		bool init = true;
+		string solOrder = ini.get<string>("solver.solution_order");
+		string maxsteps = ini.get<string>("solver.maxsteps");
 
 		boost::filesystem::wpath file(L"pka_cycle0.pde");
 		if(boost::filesystem::exists(file))
@@ -23,8 +73,8 @@ public:
 
 			if ( !boost::filesystem::exists( "cycle0."+prefix+".potat" ) ){
 				ofstream potfile;
+				potfile.open("pka_cycle0.pde", ios::in | ios::out | ios::app);
 				if (init){
-					potfile.open("pka_cycle0.pde");
 					potfile << "shared = /home/parallels/git/mfes/nglib/pointcharges" << endl;
 					potfile << "shared = /home/parallels/git/mfes/nglib/energydiff" << endl;
 					potfile << "shared = /home/parallels/git/mfes/nglib/writePotatAscii" << endl;
@@ -53,7 +103,7 @@ public:
 				potfile << endl;
 				potfile << "mesh = " << prefix << ".vol" << endl;
 				potfile << endl;
-				potfile << "define fespace v -order=2 -type=h1ho -dirichlet=[1]" << endl;
+				potfile << "define fespace v -order="<< solOrder <<" -type=h1ho -dirichlet=[1]" << endl;
 				potfile << endl;
 				potfile << "define gridfunction u_solv_"<<prefix<<" -fespace=v" << endl;
 				potfile << "define gridfunction u_ref_"<<prefix<<" -fespace=v" << endl;
@@ -87,7 +137,7 @@ public:
 					potfile << "# state " << j << endl;
 					potfile << "define linearform f_state_solv_" << j << "_"<<prefix<<" -fespace=v" << endl;
 					potfile << "numproc pointcharges ps1_solv_"<<prefix<<" -linearform=f_state_solv_" << j << "_"<< prefix << " -pqrfile=" << prefix <<".state" << j <<".pqr   -interpolate " << endl;
-					potfile << "numproc bvp np_solv_"<< j <<"_"<<prefix<<" -gridfunction=u_solv_" << prefix <<" -bilinearform=a_solv_" << prefix <<" -linearform=f_state_solv_"<< j <<"_"<<prefix<<" -preconditioner=c_solv_"<< prefix <<" -maxsteps=10" << endl;
+					potfile << "numproc bvp np_solv_"<< j <<"_"<<prefix<<" -gridfunction=u_solv_" << prefix <<" -bilinearform=a_solv_" << prefix <<" -linearform=f_state_solv_"<< j <<"_"<<prefix<<" -preconditioner=c_solv_"<< prefix <<" -maxsteps=" << maxsteps << endl;
 					potfile << "numproc writepotat npeval_solv_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<prefix<<" -pqrfile=" << prefix << ".state" << j <<".pqr  -potatfile=cycle0."<<prefix<<".potat -statenr="<< stateIndex << " " << create << endl;
 					potfile  << endl;
 
@@ -111,7 +161,7 @@ public:
 					potfile << "# state " << j << endl;
 					potfile << "define linearform f_state_ref_" << j <<"_"<<prefix<<" -fespace=v" << endl;
 					potfile << "numproc pointcharges ps_ref_" << j <<"_"<<prefix<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -pqrfile=" << prefix <<".state" << j << ".pqr -interpolate" << endl;
-					potfile << "numproc bvp np_ref_" << j << "_"<<prefix<<" -gridfunction=u_ref_"<<prefix<<" -bilinearform=a_ref_"<<prefix<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -preconditioner=c_ref_"<<prefix<<"  -maxsteps=10" << endl;
+					potfile << "numproc bvp np_ref_" << j << "_"<<prefix<<" -gridfunction=u_ref_"<<prefix<<" -bilinearform=a_ref_"<<prefix<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -preconditioner=c_ref_"<<prefix<<"  -maxsteps=" << maxsteps << endl;
 					potfile << "numproc writepotat npeval_ref_"<<j<<"_"<<prefix<<" -gridfunction=u_ref_"<<prefix<<" -pqrfile=" << prefix << ".state" << j <<".pqr -potatfile=cycle0." << prefix << ".potat -statenr=" << stateIndex << endl;
 				}
 				potfile << endl;
@@ -126,6 +176,8 @@ public:
 
 	void writeCycle1(string molecule, vector<Residue> titGroupList, INI &ini){
 		string mol = "protein";
+		string solOrder = ini.get<string>("solver.solution_order");
+		string maxsteps = ini.get<string>("solver.maxsteps");
 
 		boost::filesystem::wpath file(L"pka_cycle1.pde");
 		if(boost::filesystem::exists(file))
@@ -139,8 +191,9 @@ public:
 
 			if ( !boost::filesystem::exists( "cycle1."+prefix+".potat" ) ){
 				ofstream potfile;
+				potfile.open("pka_cycle1.pde", ios::in | ios::out | ios::app);
 				if (init){
-					potfile.open("pka_cycle1.pde");
+
 					potfile << "shared = /home/parallels/git/mfes/nglib/pointcharges" << endl;
 					potfile << "shared = /home/parallels/git/mfes/nglib/energydiff" << endl;
 					potfile << "shared = /home/parallels/git/mfes/nglib/writePotatAscii" << endl;
@@ -163,7 +216,7 @@ public:
 					potfile << endl;
 					potfile << "mesh = "<<mol<<".vol" << endl;
 					potfile << endl;
-					potfile << "define fespace v -order=2 -type=h1ho -dirichlet=[1]" << endl;
+					potfile << "define fespace v -order="<< solOrder<<" -type=h1ho -dirichlet=[1]" << endl;
 					potfile << endl;
 					potfile << "define gridfunction u_solv_"<<mol<<" -fespace=v" << endl;
 					potfile << "define gridfunction u_ref_"<<mol<<" -fespace=v" << endl;
@@ -204,7 +257,7 @@ public:
 					potfile << "# state " << j << endl;
 					potfile << "define linearform f_state_solv_" << j << "_"<<prefix<<" -fespace=v" << endl;
 					potfile << "numproc pointcharges ps1_solv_"<<prefix<<" -linearform=f_state_solv_" << j << "_"<< prefix << " -pqrfile=" << prefix <<".state" << j <<".pqr   -interpolate " << endl;
-					potfile << "numproc bvp np_solv_"<< j <<"_"<<prefix<<" -gridfunction=u_solv_" << mol <<" -bilinearform=a_solv_" << mol <<" -linearform=f_state_solv_"<< j <<"_"<<prefix<<" -preconditioner=c_solv_"<< mol <<" -maxsteps=10" << endl;
+					potfile << "numproc bvp np_solv_"<< j <<"_"<<prefix<<" -gridfunction=u_solv_" << mol <<" -bilinearform=a_solv_" << mol <<" -linearform=f_state_solv_"<< j <<"_"<<prefix<<" -preconditioner=c_solv_"<< mol <<" -maxsteps=" << maxsteps << endl;
 					potfile << "numproc writepotat npeval_solv_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<mol<<" -pqrfile=" << molecule <<"  -potatfile=cycle1."<<prefix<<".potat -statenr="<< stateIndex << " " << create << endl;
 					potfile  << endl;
 
@@ -228,7 +281,7 @@ public:
 					potfile << "# state " << j << endl;
 					potfile << "define linearform f_state_ref_" << j <<"_"<<prefix<<" -fespace=v" << endl;
 					potfile << "numproc pointcharges ps_ref_" << j <<"_"<<prefix<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -pqrfile=" << prefix <<".state" << j << ".pqr -interpolate" << endl;
-					potfile << "numproc bvp np_ref_" << j << "_"<<prefix<<" -gridfunction=u_ref_"<<mol<<" -bilinearform=a_ref_"<<mol<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -preconditioner=c_ref_"<<mol<<"  -maxsteps=10" << endl;
+					potfile << "numproc bvp np_ref_" << j << "_"<<prefix<<" -gridfunction=u_ref_"<<mol<<" -bilinearform=a_ref_"<<mol<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -preconditioner=c_ref_"<<mol<<"  -maxsteps=" << maxsteps << endl;
 					potfile << "numproc writepotat npeval_ref_"<<j<<"_"<<prefix<<" -gridfunction=u_ref_"<<mol<<" -pqrfile=" << molecule << " -potatfile=cycle1." << prefix << ".potat -statenr=" << stateIndex << endl;
 
 				}

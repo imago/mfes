@@ -28,6 +28,7 @@ void calcDeltaG(vector<PQR> &pqrList, INI &ini){
 	for (unsigned int i = 0; i < pqrList.size(); i++){
 		PQR currentPQR = pqrList.at(i);
 		currentPQR.calcModel(ini);
+		currentPQR.writePDE(ini, "energy");
 		currentPQR.calcDeltaG();
 	}
 

@@ -20,7 +20,7 @@ options.quad  0
 options.inverttets  0
 options.inverttrigs  0
 options.autozrefine 0
-options.meshsize  0.5
+options.meshsize  0.25
 options.minmeshsize  0
 options.curvaturesafety  1
 options.segmentsperedge  0.3
