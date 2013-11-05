@@ -5,8 +5,13 @@ mFES - molecular finite element solver
 
 INSTALL
 =======
-
 sudo apt-get install libboost-all-dev
+
+sudo apt-get install git
+git clone ssh://git@github.com:22/imago/mfes.git
+cd mfes
+make
+
 
 cd /opt/mfes/sources
 wget <mfes.tar.gz>
