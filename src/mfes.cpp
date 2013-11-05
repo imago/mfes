@@ -13,6 +13,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/timer.hpp>
 
 #include <iostream>
 #include <vector>
@@ -68,6 +69,7 @@ void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 int main(int argc, char* argv[]) {
 
 	cout << "Hello World from mFES" << endl; /* prints Hello World from mFES */
+	boost::timer t;
 
     try {
 
@@ -144,6 +146,7 @@ int main(int argc, char* argv[]) {
         cerr << "Exception of unknown type!\n";
     }
 
+    cout << "mFES total execution time " << t.elapsed() << " seconds." <<endl;
 
-		return 0;
+    return 0;
 }

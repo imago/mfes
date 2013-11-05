@@ -36,4 +36,4 @@ define preconditioner c0 -type=multigrid -bilinearform=a_ref -inverse=mumps
 numproc bvp np1 -gridfunction=u_solv -bilinearform=a_solv -linearform=f -preconditioner=c  -maxsteps=10
 numproc bvp np10 -gridfunction=u_ref -bilinearform=a_ref -linearform=f -preconditioner=c0  -maxsteps=10
 
-numproc energydiff npeval -gridfunction=u_solv -gridfunction0=u_ref -pqrfile=born.pqr 
+numproc energydiff npeval -gridfunction=u_solv -gridfunction0=u_ref -pqrfile=born.pqr

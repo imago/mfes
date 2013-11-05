@@ -248,7 +248,7 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 		resultFile.open("result.out");
 		resultFile << "The energy difference is " << energy << " [kJ/mol].\n";
 		resultFile.close();
-		cout << "The energy difference is " << energy << " [kJ/mol].\n";
+		cout << "The energy difference is " << setprecision(12) << energy << " [kJ/mol].\n";
 	}
         
 	pde.GetVariable(variablename,true) = result;

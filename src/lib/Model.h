@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <boost/timer.hpp>
 
 #include "LSMS.h"
 #include "VCG.h"
@@ -23,6 +24,7 @@ class Model {
 
 public:
 	void calcModel(vector<Atom> &atomList, INI &ini, string fname = ""){
+
 	    LSMS lmSurface;
 	    mMesh mSurface;
 
@@ -31,6 +33,10 @@ public:
 
 	    if ( fname == "" && !boost::filesystem::exists( volume_vol ) ){
 	    // protein model is calculating
+			boost::timer t;
+			ofstream time;
+			time.open ("times");
+
 	    	lmSurface.calcMC(mSurface, atomList, ini);
 
 	    	clean(mSurface);
@@ -38,19 +44,41 @@ public:
 
 	    	if (surface_stl != "" )
 	    		tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
+	    	double currentTime = t.elapsed();
+	    	time << "protein_surface " << currentTime << " s" << endl;
+	    	cout << "mFES: protein model surface calculation took " << currentTime << " seconds." <<endl;
 
+	    	t.restart();
 	    	convert(mSurface, ini);
+	    	currentTime = t.elapsed();
+	    	time << "protein_volume " << currentTime << " s" << endl;
+	    	cout << "mFES: protein model VOL meshing took " << currentTime << " seconds." <<endl;
+	    	time.close();
 	    } else if ( fname != "" ){
 	    	// group model with id nr is calculating
+
 	    	if ( !boost::filesystem::exists( fname ) ){
-	    		    lmSurface.calcMC(mSurface, atomList, ini);
+				ofstream time;
+				time.open ("times", ios::app);
 
-	    		    clean(mSurface);
-	    		    smooth(mSurface, ini);
+				boost::timer t;
+	    		lmSurface.calcMC(mSurface, atomList, ini);
 
-	    		    convert(mSurface, ini, fname);
+	    		clean(mSurface);
+	    		smooth(mSurface, ini);
+		    	double currentTime = t.elapsed();
+		    	time << "model_surface " << currentTime << " s" << endl;
+	    		cout << "mFES: residue model surface calculation took " << currentTime << " seconds." <<endl;
+
+	    		t.restart();
+	    		convert(mSurface, ini, fname);
+		    	currentTime = t.elapsed();
+		    	time << "model_volume " << currentTime << " s" << endl;
+	    		cout << "mFES: residue model VOL meshing took " << currentTime << " seconds." <<endl;
+	    		time.close();
 	    	}
 	    }
+
 	}
 
 

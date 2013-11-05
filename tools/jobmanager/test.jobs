@@ -1,5 +1,0 @@
-# jobname pmax pminh lsmsN pgrading poptsteps_3d poptsteps_2d pfineness taubin hc lap bmaxh bgrading boptsteps_3d boptsteps_2d bfineness solver maxsteps order pqr boundary
-
-born 0.5 0 64 0.7 3 2 0.7 30 0 0 1e6 0.7 3 2 0.7 mumps-inverse 3 2 /home/parallels/git/mfes/example/born/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
-
-# born 0.5 0 128 0.7 3 2 0.7 30 0 0 1e6 0.7 3 2 0.7 mumps-inverse 3 2 /home/parallels/git/mfes/example/born/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
