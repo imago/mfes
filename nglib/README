@@ -1,0 +1,2 @@
+After compilation, please copy all *.so files to /opt/netgen/lib/ or
+just add nglib folder to your LD_LIBRARY_PATH

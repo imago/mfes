@@ -18,9 +18,9 @@ public:
 
 		energyFile << "mesh = protein.vol" << endl;
 		energyFile << endl;
-		energyFile << "shared = /home/parallels/git/mfes/nglib/pointcharges" << endl;
-		energyFile << "shared = /home/parallels/git/mfes/nglib/energydiff" << endl;
-		energyFile << "shared = /home/parallels/git/mfes/nglib/writePotatAscii" << endl;
+		energyFile << "shared = pointcharges" << endl;
+		energyFile << "shared = energydiff" << endl;
+		energyFile << "shared = writePotatAscii" << endl;
 		energyFile << endl;
 		energyFile << "define constant eps0 = 8.8541878e-22" << endl;
 		energyFile << "define constant q0 = 1.60217646e-19" << endl;
@@ -75,9 +75,9 @@ public:
 				ofstream potfile;
 				potfile.open("pka_cycle0.pde", ios::in | ios::out | ios::app);
 				if (init){
-					potfile << "shared = /home/parallels/git/mfes/nglib/pointcharges" << endl;
-					potfile << "shared = /home/parallels/git/mfes/nglib/energydiff" << endl;
-					potfile << "shared = /home/parallels/git/mfes/nglib/writePotatAscii" << endl;
+					potfile << "shared = pointcharges" << endl;
+					potfile << "shared = energydiff" << endl;
+					potfile << "shared = writePotatAscii" << endl;
 					potfile << endl;
 					potfile << "define constant eps0 = 8.8541878e-22" << endl;
 					potfile << "define constant q0 = 1.60217646e-19" << endl;
@@ -194,9 +194,9 @@ public:
 				potfile.open("pka_cycle1.pde", ios::in | ios::out | ios::app);
 				if (init){
 
-					potfile << "shared = /home/parallels/git/mfes/nglib/pointcharges" << endl;
-					potfile << "shared = /home/parallels/git/mfes/nglib/energydiff" << endl;
-					potfile << "shared = /home/parallels/git/mfes/nglib/writePotatAscii" << endl;
+					potfile << "shared = pointcharges" << endl;
+					potfile << "shared = energydiff" << endl;
+					potfile << "shared = writePotatAscii" << endl;
 					potfile << endl;
 					potfile << "define constant eps0 = 8.8541878e-22" << endl;
 					potfile << "define constant q0 = 1.60217646e-19" << endl;

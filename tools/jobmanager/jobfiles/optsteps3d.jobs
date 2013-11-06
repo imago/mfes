@@ -1,0 +1,24 @@
+# jobname localh pmax pminh lsmsN pgrading poptsteps_3d poptsteps_2d pfineness taubin hc lap blocalh bmaxh bgrading boptsteps_3d boptsteps_2d bfineness solver maxsteps order pqr boundary
+
+born 1 1 0 256 1 0 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 1 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 2 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 3 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 4 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 5 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 6 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 7 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 8 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 9 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
+born 1 1 0 256 1 10 0  1 30 0 0 1 1e6 1 3 2 0.7 mumps-inverse 10 2 /home/parallels/experiments/walter_analyt/born_r10/born.pqr /home/parallels/git/mfes/example/born/boundary.vol
+
