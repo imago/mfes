@@ -146,7 +146,11 @@ int main(int argc, char* argv[]) {
         cerr << "Exception of unknown type!\n";
     }
 
-    cout << "mFES total execution time " << t.elapsed() << " seconds." <<endl;
+    float totalTime = t.elapsed();
+    ofstream time;
+    time.open ("times", ios::app );
+    time << "total_time " << totalTime << " s" << endl;
+    cout << "mFES total execution time " << totalTime << " seconds." <<endl;
 
     return 0;
 }

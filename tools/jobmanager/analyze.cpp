@@ -409,7 +409,6 @@ void writeConfigMFES(Parameter& p){
 	c << endl;
 	c << "[model]" << endl;
 	c << "grid_resolution = " << p.lsmsN << endl;
-	c << "# t: taubin, lap: laplace, hc: hc laplace, aw: laplace angle weighted" << endl;
 	if (p.taubin > 0)
 		c << "smoothing = t " << p.taubin << endl;
 	else if (p.hc > 0)
@@ -421,11 +420,8 @@ void writeConfigMFES(Parameter& p){
 	c << "boundary = boundary.vol" << endl;
 	c << "options_molecule = mesh_molecule.opt" << endl;
 	c << "options_boundary = mesh_boundary.opt" << endl;
-	c << "# refine file: x y z h [..]" << endl;
 	c << "refine_file = " << endl;
-	c << "#refine.ref" << endl;
 	c << "surface_stl =" << endl;
-	c << "# born_vcg.stl" << endl;
 	c << "volume_vol  = protein.vol" << endl;
 	c << "debug = analyze" << endl;
 	c << endl;
@@ -461,9 +457,6 @@ void parse(string fileName, Result &result){
 			}
 			if (temp == "The"){
 				ss >> temp >> temp >> temp >> result.deltaG;
-			}
-			if (temp == "execution"){
-				ss >> temp >> result.timeTotal;
 			}
 		}
 
@@ -524,6 +517,10 @@ void parse(string fileName, Result &result){
 			result.timeResidueNg += time;
 			count++;
 		}
+		if (temp == "total_time"){
+		  if (result.timeTotal == -1)
+			result.timeTotal = time;
+		}
 
 	}
 	result.timeResidueStl /= count;
@@ -535,7 +532,7 @@ int main(int argc, char* argv[]) {
 
 	string jobName, pqrFile, jobFile, workDir;
 
-	if ( argc != 4 ) {
+	if ( argc != 5 ) {
 	    cout<<"usage: "<< argv[0] <<" <jobname> <pqr file> <job file> <working directory>\n";
 	    exit(0);
 	}
@@ -543,11 +540,11 @@ int main(int argc, char* argv[]) {
 		jobName  = argv[1];
 		pqrFile  = argv[2];
 		jobFile	 = argv[3];
-	    workDir  = argv[4];
+		workDir  = argv[4];
 	}
 
 	cout << "Job name: " << jobName << endl;
-	cout << "PQR file: " << jobFile << endl;
+	cout << "PQR file: " << pqrFile << endl;
 	cout << "Parsing job file: " << jobFile << endl;
 	cout << "Working dir     : " << workDir << endl;
 
@@ -570,10 +567,10 @@ int main(int argc, char* argv[]) {
 		p.jobname = jobName;
 		stringstream ss(pqrline);
 		ss >> p.plocalh;
-		if (p.plocalh.substr(0,1) == " " || p.plocalh.substr(0.1) == "#")
+		if (p.plocalh.substr(0,1) == "" || p.plocalh.substr(0.1) == "#")
 			continue;
 
-		ss >> p.pmaxh >> p.pminh >> p.lsmsN;
+       		ss >> p.pmaxh >> p.pminh >> p.lsmsN;
 		ss >> p.pgrading >> p.poptsteps_3d >> p.poptsteps_2d;
 		ss >> p.pfineness;
 
@@ -585,6 +582,7 @@ int main(int argc, char* argv[]) {
 		pList.push_back(p);
 
 		string uid = p.getIdentifier();
+
 		string cmd;
 		cmd = "mkdir -p "+workDir+"/"+uid;
 		system(cmd.c_str());
