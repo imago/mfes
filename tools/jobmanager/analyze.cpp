@@ -13,7 +13,7 @@ using namespace std;
 class Parameter {
 public:
 	string jobname;
-	float plocalh;
+	string plocalh;
 	float pmaxh;
 	float pminh;
 	unsigned int lsmsN;
@@ -533,18 +533,21 @@ void parse(string fileName, Result &result){
 
 int main(int argc, char* argv[]) {
 
-	string jobFile;
-	string workDir;
+	string jobName, pqrFile, jobFile, workDir;
 
-	if ( argc != 3 ) {
-	    cout<<"usage: "<< argv[0] <<" <job file> <working directory>\n";
+	if ( argc != 4 ) {
+	    cout<<"usage: "<< argv[0] <<" <jobname> <pqr file> <job file> <working directory>\n";
 	    exit(0);
 	}
 	else {
-		jobFile	 = argv[1];
-	    workDir  = argv[2];
+		jobName  = argv[1];
+		pqrFile  = argv[2];
+		jobFile	 = argv[3];
+	    workDir  = argv[4];
 	}
 
+	cout << "Job name: " << jobName << endl;
+	cout << "PQR file: " << jobFile << endl;
 	cout << "Parsing job file: " << jobFile << endl;
 	cout << "Working dir     : " << workDir << endl;
 
@@ -563,12 +566,14 @@ int main(int argc, char* argv[]) {
 	while( !in.eof() ) {
 		getline(in, pqrline);
 		Parameter p;
+		p.pqr = pqrFile;
+		p.jobname = jobName;
 		stringstream ss(pqrline);
-		ss >> p.jobname;
-		if (p.jobname == "" || p.jobname == "#")
+		ss >> p.plocalh;
+		if (p.plocalh.substr(0,1) == " " || p.plocalh.substr(0.1) == "#")
 			continue;
 
-		ss >> p.plocalh >> p.pmaxh >> p.pminh >> p.lsmsN;
+		ss >> p.pmaxh >> p.pminh >> p.lsmsN;
 		ss >> p.pgrading >> p.poptsteps_3d >> p.poptsteps_2d;
 		ss >> p.pfineness;
 
@@ -576,7 +581,7 @@ int main(int argc, char* argv[]) {
 
 		ss >> p.blocalh >> p.bmaxh >> p.bgrading >> p.boptsteps_3d;
 		ss >> p.boptsteps_2d >> p.bfineness >> p.solver;
-		ss >> p.maxsteps >> p.order >> p.pqr >> p.boundary ;
+		ss >> p.maxsteps >> p.order >> p.boundary ;
 		pList.push_back(p);
 
 		string uid = p.getIdentifier();
@@ -598,47 +603,47 @@ int main(int argc, char* argv[]) {
 
 		VOL proteinSurface;
 		proteinSurface.readNGVol("proteinSurface.vol");
-		cout << proteinSurface.elementList.size() << " elements read in." << endl;
-		cout << proteinSurface.pointList.size() << " points read in." << endl;
+//		cout << proteinSurface.elementList.size() << " elements read in." << endl;
+//		cout << proteinSurface.pointList.size() << " points read in." << endl;
 
 
-		cout << endl << "proteinSurface.vol: " << endl;
+//		cout << endl << "proteinSurface.vol: " << endl;
 		currentResult.gpOnSurface = proteinSurface.getNrPoints();
-		cout << "points on surface: " << currentResult.gpOnSurface << endl;
+//		cout << "points on surface: " << currentResult.gpOnSurface << endl;
 		currentResult.areaProtein = proteinSurface.getTotalArea();
-		cout << "current area: " << currentResult.areaProtein << endl;
+//		cout << "current area: " << currentResult.areaProtein << endl;
 
 
-		cout << endl << "proteinVolume.vol: " << endl;
+//		cout << endl << "proteinVolume.vol: " << endl;
 		VOL proteinVolume;
 		proteinVolume.readNGVol("proteinVolume.vol");
 		float total = proteinVolume.getNrPoints();
-		cout << "total points: " << total << endl;
+//		cout << "total points: " << total << endl;
 		currentResult.gpProtein = total - currentResult.gpOnSurface;
-		cout << "points inner protein: " << currentResult.gpProtein << endl;
+//		cout << "points inner protein: " << currentResult.gpProtein << endl;
 
 		currentResult.volumeProtein = proteinVolume.getTotalVolume();
-		cout << "current volume: " << currentResult.volumeProtein << endl;
-		cout << "current area: " << proteinVolume.getTotalArea() << endl;
+//		cout << "current volume: " << currentResult.volumeProtein << endl;
+//		cout << "current area: " << proteinVolume.getTotalArea() << endl;
 
-		cout << endl << "boundary.vol: " << endl;
+//		cout << endl << "boundary.vol: " << endl;
 		VOL boundarySurface;
 		boundarySurface.readNGVol("boundary.vol");
 		currentResult.gpOnBoundary = boundarySurface.getNrPoints();
-		cout << "points on surface: " << currentResult.gpOnBoundary << endl;
+//		cout << "points on surface: " << currentResult.gpOnBoundary << endl;
 		currentResult.areaBoundary = boundarySurface.getTotalArea();
-		cout << "current area: " << currentResult.areaBoundary << endl;
+//		cout << "current area: " << currentResult.areaBoundary << endl;
 		currentResult.volumeTotal = boundarySurface.getTotalVolume();
-		cout << "current total volume: " << currentResult.volumeTotal << endl;
+//		cout << "current total volume: " << currentResult.volumeTotal << endl;
 
-		cout << endl << "protein.vol: " << endl;
+//		cout << endl << "protein.vol: " << endl;
 		VOL protein;
 		protein.readNGVol("protein.vol");
 		currentResult.gpTotal = protein.getNrPoints();
-		cout << "total points: " << currentResult.gpTotal << endl;
+//		cout << "total points: " << currentResult.gpTotal << endl;
 
 		currentResult.volumeBetween = currentResult.volumeTotal - currentResult.volumeProtein;
-		cout << "volume between protein <> boundary: " << currentResult.volumeBetween << endl;
+//		cout << "volume between protein <> boundary: " << currentResult.volumeBetween << endl;
 
 		currentResult.densityTotal = currentResult.gpTotal/currentResult.volumeTotal;
 		currentResult.densityProtein = currentResult.gpOnSurface/currentResult.areaProtein;
@@ -648,11 +653,11 @@ int main(int argc, char* argv[]) {
 
 		currentResult.gpBetween = currentResult.gpTotal - currentResult.gpProtein - currentResult.gpOnSurface - currentResult.gpOnBoundary;
 
-		cout << endl << "total density: " << currentResult.densityTotal << endl;
-		cout << "density on protein surface: " << currentResult.densityProtein << endl;
-		cout << "density on boundary surface: " << currentResult.densityBoundary << endl;
-		cout << "density in protein volume: " << currentResult.densityInProtein << endl;
-		cout << "density between protein <> boundary: " << currentResult.densityBetween << endl;
+//		cout << endl << "total density: " << currentResult.densityTotal << endl;
+//		cout << "density on protein surface: " << currentResult.densityProtein << endl;
+//		cout << "density on boundary surface: " << currentResult.densityBoundary << endl;
+//		cout << "density in protein volume: " << currentResult.densityInProtein << endl;
+//		cout << "density between protein <> boundary: " << currentResult.densityBetween << endl;
 
 		parse("result.log", currentResult);
 		results.push_back(currentResult);
