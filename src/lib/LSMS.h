@@ -44,10 +44,18 @@ typedef typename mMesh::VertexIterator VertexIterator;
 
 class LSMS {
 public:
-	void calcMC(mMesh &mSurface, vector<Atom> &atomList, INI& ini) {
+	void calcMC(mMesh &mSurface, vector<Atom> &atomList, INI& ini, bool residue = false) {
 
-	    unsigned int gridSize = ini.get<unsigned int>("model.grid_resolution");
-	    double probeRadius = ini.get<double>("experiment.probe_radius");
+		string debug = ini.get<string>("model.debug");
+
+		unsigned int gridSize;
+		if (!residue) {
+		    gridSize = ini.get<unsigned int>("model.grid_resolution");
+		} else {
+			gridSize = ini.get<unsigned int>("model.grid_residue_resolution");
+		}
+
+		double probeRadius = ini.get<double>("experiment.probe_radius");
 		bool calc_cavity = false;
 
 		cout << "grid size: " << gridSize << endl;
@@ -68,7 +76,8 @@ public:
 			mol->ypoints[i] = currentCoord.Y();
 			mol->zpoints[i] = currentCoord.Z();
 			mol->rpoints[i] = currentAtom.getRadius(); //+extendedRadius;
-	//		cout << "read atom: " << currentAtom.x << ", " << currentAtom.y << ", " << currentAtom.z << "; " << currentAtom.radius << endl;;
+			if (debug == "yes")
+				cout << "x, y, z, r: " << mol->xpoints[i] << ", " << mol->ypoints[i] << ", " << mol->zpoints[i] << ", " << mol->rpoints[i] << endl;
 		}
 
 
@@ -203,7 +212,6 @@ private:
 
 
 			for (i=0;i<mol->npoints;i++){
-				cout << "x, y, z, r: " << mol->xpoints[i] << ", " << mol->ypoints[i] << ", " << mol->zpoints[i] << ", " << mol->rpoints[i] << endl;
 				if (mol->xpoints[i]-mol->rpoints[i]<minx)	minx=mol->xpoints[i]-mol->rpoints[i];
 				if (mol->xpoints[i]+mol->rpoints[i]>maxx)	maxx=mol->xpoints[i]+mol->rpoints[i];
 				if (mol->ypoints[i]-mol->rpoints[i]<miny)	miny=mol->ypoints[i]-mol->rpoints[i];

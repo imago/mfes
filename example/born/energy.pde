@@ -1,8 +1,8 @@
 mesh = protein.vol
 
-shared = /home/parallels/git/mfes/nglib/pointcharges
-shared = /home/parallels/git/mfes/nglib/energydiff
-shared = /home/parallels/git/mfes/nglib/writePotatAscii
+shared = pointcharges
+shared = energydiff
+shared = writePotatAscii
 
 define constant eps0 = 8.8541878e-22
 define constant q0 = 1.60217646e-19

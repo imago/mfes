@@ -44,6 +44,8 @@ class NumProcEnergyCalc : public NumProc
     int component;
     ///
     int outputprecision;
+    ///
+    bool showsteps;
     
     string pqrfile;
     
@@ -101,7 +103,8 @@ NumProcEnergyCalc :: NumProcEnergyCalc (PDE & apde, const Flags & flags)
     gfu0 = pde.GetGridFunction (flags.GetStringFlag ("gridfunction0", ""), 0);
     gfv = pde.GetGridFunction (flags.GetStringFlag ("gridfunction2", ""), 1); 
     pqrfile = flags.GetStringFlag ("pqrfile","pqr");
-      
+    showsteps = flags.GetStringFlag (flags.GetStringFlag ("showsteps", ""), 0);
+
     readMolecule();
 
     variablename = flags.GetStringFlag ("resultvariable", "");
@@ -190,7 +193,8 @@ void NumProcEnergyCalc::readMolecule()
 		t.radius = atof(line.substr(60,6).c_str());
 
 		molecule.push_back(t);
-	//	cout << i << ": " << t.fieldName << " " << t.x << " " << t.y  << " " << t.z  << " " << t.charge  << " " << t.radius <<  endl;
+		if (showsteps)
+			cout << i << ": " << t.fieldName << " " << t.x << " " << t.y  << " " << t.z  << " " << t.charge  << " " << t.radius <<  endl;
 	}    
 }
 
@@ -225,18 +229,19 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 				pflux, bfi, applyd, lh, component);
 	      
 		result = pflux(0);
-		cout << "(" << pflux(0)*conversion;
+
+		if (showsteps)
+			cout << "(" << pflux(0)*conversion;
 	      
 		CalcPointFlux (ma, *gfu0, point, domains,
 				pflux, bfi2, applyd, lh, component);
 
 		result -= pflux(0); 
-		cout << " - " << pflux(0)*conversion << ")*" << currentAtom.charge;
+		if (showsteps)
+			cout << " - " << pflux(0)*conversion << ")*" << currentAtom.charge << " = " << currentAtom.charge * result*conversion << endl;
 
 	      
 		potential += currentAtom.charge * result;
-
-		cout << " = " << currentAtom.charge * result*conversion << endl;
 
 	}
 

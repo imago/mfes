@@ -62,7 +62,7 @@ public:
 				time.open ("times", ios::app);
 
 				boost::timer t;
-	    		lmSurface.calcMC(mSurface, atomList, ini);
+	    		lmSurface.calcMC(mSurface, atomList, ini, true);
 
 	    		clean(mSurface);
 	    		smooth(mSurface, ini);
@@ -71,7 +71,7 @@ public:
 	    		cout << "mFES: residue model surface calculation took " << currentTime << " seconds." <<endl;
 
 	    		t.restart();
-	    		convert(mSurface, ini, fname);
+	    		convert(mSurface, ini, fname, true);
 		    	currentTime = t.elapsed();
 		    	time << "model_volume " << currentTime << " s" << endl;
 	    		cout << "mFES: residue model VOL meshing took " << currentTime << " seconds." <<endl;
@@ -234,7 +234,7 @@ private:
 		in.close();
 	}
 
-	void convert(mMesh &mSurface, INI &ini, string fname = ""){
+	void convert(mMesh &mSurface, INI &ini, string fname = "", bool residue = false){
 
 //		using namespace nglib;
 
@@ -283,13 +283,20 @@ private:
 
 		// Set the Meshing Parameters to be used
 		string debug = ini.get<string>("model.debug");
-		string meshOptionsMolecule = ini.get<string>("model.options_molecule");
+		string meshMoleculeSurface, meshMoleculeVolume;
+		if (!residue){
+			meshMoleculeSurface = ini.get<string>("meshing.molecule_surface");
+			meshMoleculeVolume  = ini.get<string>("meshing.molecule_volume");
+		} else {
+			meshMoleculeSurface = ini.get<string>("meshing.residue_surface");
+			meshMoleculeVolume  = ini.get<string>("meshing.residue_volume");
+		}
 		Ng_Meshing_Parameters mp;
-		setMeshingOptions(mp, meshOptionsMolecule);
+		setMeshingOptions(mp, meshMoleculeSurface);
 		mp.optsurfmeshenable = 1;
 		mp.optvolmeshenable  = 1;
 
-		printMeshingOptions(mp, "Meshing options for molecule");
+		printMeshingOptions(mp, "Meshing options for molecular surface");
 
 		cout << "Initialise the STL Geometry structure...." << endl;
 		ngSurface = Ng_STL_InitSTLGeometry(stl_geom);
@@ -316,6 +323,12 @@ private:
 			Ng_SaveMesh(ngVolume,"proteinSurface.vol");
 		}
 
+
+		setMeshingOptions(mp, meshMoleculeVolume);
+		mp.optsurfmeshenable = 1;
+		mp.optvolmeshenable  = 1;
+
+		printMeshingOptions(mp, "Meshing options for molecular volume");
 
 		cout << "Start Volume Meshing of molecule...." << endl;
 		ngSurface = Ng_GenerateVolumeMesh (ngVolume, &mp);
@@ -370,11 +383,11 @@ private:
 			cout << refPoints << " local refinement point(s) set." << endl;
 		}
 
-		string meshOptionsBoundary = ini.get<string>("model.options_boundary");
-		setMeshingOptions(mp, meshOptionsBoundary);
+		string meshBoundaryVolume = ini.get<string>("meshing.boundary_volume");
+		setMeshingOptions(mp, meshBoundaryVolume);
 		mp.optsurfmeshenable = 1;
 		mp.optvolmeshenable  = 1;
-		printMeshingOptions(mp, "Meshing options for boundary");
+		printMeshingOptions(mp, "Meshing options for boundary volume");
 
 
 		cout << "Start Volume meshing of whole model...." << endl;

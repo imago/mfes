@@ -1,8 +1,8 @@
 mesh = protein.vol
 
-shared = /home/parallels/git/mfes/nglib/pointcharges
-shared = /home/parallels/git/mfes/nglib/energydiff
-shared = /home/parallels/git/mfes/nglib/writePotatAscii
+shared = pointcharges
+shared = energydiff
+shared = writePotatAscii
 
 define constant eps0 = 8.8541878e-22
 define constant q0 = 1.60217646e-19
@@ -36,4 +36,4 @@ define preconditioner c0 -type=multigrid -bilinearform=a_ref -inverse=mumps
 numproc bvp np1 -gridfunction=u_solv -bilinearform=a_solv -linearform=f -preconditioner=c  -maxsteps=10
 numproc bvp np10 -gridfunction=u_ref -bilinearform=a_ref -linearform=f -preconditioner=c0  -maxsteps=10
 
-numproc energydiff npeval -gridfunction=u_solv -gridfunction0=u_ref -pqrfile=barnase.pqr 
+numproc energydiff npeval -gridfunction=u_solv -gridfunction0=u_ref -pqrfile=barnase.pqr
