@@ -631,21 +631,40 @@ public:
 	}
 
 	void calcPotat(string cycleName){
-		ngsolve::PDE pde;
-
-		string pdeFile = "pka_"+cycleName+".pde";
-		boost::filesystem::wpath file(pdeFile);
-
+		string pdeFile;
 		try {
-			if(boost::filesystem::exists(file)){
-				pde.LoadPDE (pdeFile.c_str());
-				pde.Solve();
+			if (cycleName == "cycle1"){
+				ngsolve::PDE pde;
+
+				pdeFile = "pka_"+cycleName+".pde";
+				boost::filesystem::wpath file(pdeFile);
+
+				if(boost::filesystem::exists(file)){
+					pde.LoadPDE (pdeFile.c_str());
+					pde.Solve();
+				}
+
+			} else {
+				for (unsigned int i = 0; i < titGroupList.size(); i++){
+					ngsolve::PDE pde;
+
+					string prefix = titGroupList.at(i).getIdentifier();
+					pdeFile = "pka_"+cycleName+"_"+prefix+".pde";
+					boost::filesystem::wpath file(pdeFile);
+
+					if(boost::filesystem::exists(file)){
+						pde.LoadPDE (pdeFile.c_str());
+						pde.Solve();
+					}
+				}
 			}
 
 		} catch(ngstd::Exception & e) {
 			std::cout << "Caught exception: " << std::endl
-			      << e.What() << std::endl;
+					<< e.What() << std::endl;
 		}
+
+
 
 	}
 

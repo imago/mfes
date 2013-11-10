@@ -59,13 +59,12 @@ public:
 	}
 
 	void writeCycle0(vector<Residue> titGroupList, INI &ini){
-		bool init = true;
 		string solOrder = ini.get<string>("solver.solution_order");
 		string maxsteps = ini.get<string>("solver.maxsteps");
 
-		boost::filesystem::wpath file(L"pka_cycle0.pde");
-		if(boost::filesystem::exists(file))
-			boost::filesystem::remove(file);
+//		boost::filesystem::wpath file(L"pka_cycle0.pde");
+//		if(boost::filesystem::exists(file))
+//			boost::filesystem::remove(file);
 
 		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
@@ -73,35 +72,32 @@ public:
 
 			if ( !boost::filesystem::exists( "cycle0."+prefix+".potat" ) ){
 				ofstream potfile;
-				potfile.open("pka_cycle0.pde", ios::in | ios::out | ios::app);
-				if (init){
-					potfile << "shared = pointcharges" << endl;
-					potfile << "shared = energydiff" << endl;
-					potfile << "shared = writePotatAscii" << endl;
-					potfile << endl;
-					potfile << "define constant eps0 = 8.8541878e-22" << endl;
-					potfile << "define constant q0 = 1.60217646e-19" << endl;
-					potfile << endl;
-					potfile << "define coefficient epsilon_solv" << endl;
-					potfile << "(80*eps0),(4*eps0)" << endl;
-					potfile << endl;
-					potfile << "define coefficient epsilon_ref" << endl;
-					potfile << "(4*eps0),(4*eps0)" << endl;
-					potfile << endl;
-					init = false;
-				}
-				unsigned int nrStates = currentTitGroup.getNrStates();
-				string create = "";
-				string stateIndex = "";
-
+				potfile.open("pka_cycle0_"+prefix+".pde", ios::in | ios::out | ios::app);
 				potfile << "###################################################" << endl;
 				potfile << "#" << endl;
 				potfile << "#  Initialization: " << prefix << endl;
 				potfile << "#" << endl;
 				potfile << "###################################################" << endl;
 				potfile << endl;
-				potfile << endl;
 				potfile << "mesh = " << prefix << ".vol" << endl;
+				potfile << endl;
+				potfile << "shared = pointcharges" << endl;
+				potfile << "shared = energydiff" << endl;
+				potfile << "shared = writePotatAscii" << endl;
+				potfile << endl;
+				potfile << "define constant eps0 = 8.8541878e-22" << endl;
+				potfile << "define constant q0 = 1.60217646e-19" << endl;
+				potfile << endl;
+				potfile << "define coefficient epsilon_solv" << endl;
+				potfile << "(80*eps0),(4*eps0)" << endl;
+				potfile << endl;
+				potfile << "define coefficient epsilon_ref" << endl;
+				potfile << "(4*eps0),(4*eps0)" << endl;
+				potfile << endl;
+
+				unsigned int nrStates = currentTitGroup.getNrStates();
+				string create = "";
+				string stateIndex = "";
 				potfile << endl;
 				potfile << "define fespace v -order="<< solOrder <<" -type=h1ho -dirichlet=[1]" << endl;
 				potfile << endl;
