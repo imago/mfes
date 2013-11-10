@@ -10,10 +10,10 @@ define constant q0 = 1.60217646e-19
 define constant heapsize = 2000000
 
 define coefficient epsilon_solv
-(80*eps0),(4*eps0)
+(80*eps0),(4*eps0),(80*eps0)
 
 define coefficient epsilon_ref
-(4*eps0),(4*eps0)
+(4*eps0),(4*eps0),(4*eps0)
 
 define fespace v -order=2 -type=h1ho -dirichlet=[1]
 

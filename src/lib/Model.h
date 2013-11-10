@@ -23,7 +23,7 @@ typedef boost::property_tree::ptree INI;
 class Model {
 
 public:
-	void calcModel(vector<Atom> &atomList, INI &ini, string fname = ""){
+	void calcModel(vector<Atom> &atomList, INI &ini, string fname = "", bool cavity = false){
 
 	    LSMS lmSurface;
 	    mMesh mSurface;
@@ -31,8 +31,34 @@ public:
 	    string volume_vol = ini.get<string>("model.volume_vol");
     	string surface_stl = ini.get<string>("model.surface_stl");
 
-	    if ( fname == "" && !boost::filesystem::exists( volume_vol ) ){
-	    // protein model is calculating
+    	if (cavity && !boost::filesystem::exists( "cavity.vol" )){
+    		// cavity is calculated
+    		cout << "Calculating cavities..." << endl;
+			boost::timer t;
+			ofstream time;
+			time.open ("times");
+
+	    	if (lmSurface.calcMC(mSurface, atomList, ini, "cavity")){
+
+	    		clean(mSurface);
+	    		smooth(mSurface, ini);
+
+				if (surface_stl != "" )
+					tri::io::ExporterSTL<mMesh>::Save(mSurface,"cavity.stl",false);
+				double currentTime = t.elapsed();
+				time << "cavity_surface " << currentTime << " s" << endl;
+				cout << "mFES: cavity model surface calculation took " << currentTime << " seconds." <<endl;
+
+				t.restart();
+				convert(mSurface, ini, "cavity.vol", "cavity");
+				currentTime = t.elapsed();
+				time << "cavity_volume " << currentTime << " s" << endl;
+				cout << "mFES: cavity model VOL meshing took " << currentTime << " seconds." <<endl;
+	    	}
+			time.close();
+
+    	} else if ( fname == "" && !boost::filesystem::exists( volume_vol ) ){
+	    // protein model is calculated
 			boost::timer t;
 			ofstream time;
 			time.open ("times");
@@ -55,14 +81,14 @@ public:
 	    	cout << "mFES: protein model VOL meshing took " << currentTime << " seconds." <<endl;
 	    	time.close();
 	    } else if ( fname != "" ){
-	    	// group model with id nr is calculating
+	    	// group model with id nr is calculated
 
 	    	if ( !boost::filesystem::exists( fname ) ){
 				ofstream time;
 				time.open ("times", ios::app);
 
 				boost::timer t;
-	    		lmSurface.calcMC(mSurface, atomList, ini, true);
+	    		lmSurface.calcMC(mSurface, atomList, ini, "residue");
 
 	    		clean(mSurface);
 	    		smooth(mSurface, ini);
@@ -71,7 +97,7 @@ public:
 	    		cout << "mFES: residue model surface calculation took " << currentTime << " seconds." <<endl;
 
 	    		t.restart();
-	    		convert(mSurface, ini, fname, true);
+	    		convert(mSurface, ini, fname, "residue");
 		    	currentTime = t.elapsed();
 		    	time << "model_volume " << currentTime << " s" << endl;
 	    		cout << "mFES: residue model VOL meshing took " << currentTime << " seconds." <<endl;
@@ -234,7 +260,7 @@ private:
 		in.close();
 	}
 
-	void convert(mMesh &mSurface, INI &ini, string fname = "", bool residue = false){
+	int convert(mMesh &mSurface, INI &ini, string fname = "", string mode = "protein"){
 
 //		using namespace nglib;
 
@@ -284,10 +310,10 @@ private:
 		// Set the Meshing Parameters to be used
 		string debug = ini.get<string>("model.debug");
 		string meshMoleculeSurface, meshMoleculeVolume;
-		if (!residue){
+		if (mode == "protein" || mode == "cavity"){
 			meshMoleculeSurface = ini.get<string>("meshing.molecule_surface");
 			meshMoleculeVolume  = ini.get<string>("meshing.molecule_volume");
-		} else {
+		} else if (mode == "residue") {
 			meshMoleculeSurface = ini.get<string>("meshing.residue_surface");
 			meshMoleculeVolume  = ini.get<string>("meshing.residue_volume");
 		}
@@ -323,7 +349,24 @@ private:
 			Ng_SaveMesh(ngVolume,"proteinSurface.vol");
 		}
 
+		if (mode == "protein" && boost::filesystem::exists( "cavity.vol" )){
+			string cavity = "cavity.vol";
+			Ng_Mesh* cSurface;
+			cSurface = nglib::Ng_LoadMesh(cavity.c_str());
 
+			Ng_SetProperties(ngVolume, 1, 1, 1, 0);
+			Ng_SetProperties(cSurface, 1, 1, 1, 0);
+
+
+			cout << "Merging Mesh with cavity....." << endl;
+	     	ngSurface = Ng_MergeMesh( ngVolume, cSurface );
+			if(ngSurface != NG_OK) {
+				cout << "Error in cavity merging....Aborting!!" << endl;
+				exit(1);
+			}
+
+
+		}
 		setMeshingOptions(mp, meshMoleculeVolume);
 		mp.optsurfmeshenable = 1;
 		mp.optvolmeshenable  = 1;
@@ -334,67 +377,76 @@ private:
 		ngSurface = Ng_GenerateVolumeMesh (ngVolume, &mp);
 		if(ngSurface != NG_OK) {
 			cout << "Error in Volume Meshing....Aborting!!" << endl;
-		    exit(1);
+			exit(1);
 		}
+		Ng_SaveMesh(ngVolume,"meshed.vol");
+
 
 		if (debug == "analyze"){
 			Ng_SaveMesh(ngVolume,"proteinVolume.vol");
 		}
 
-		cout << "Loading boundary settings ....." << endl;
-		string boundary = ini.get<string>("model.boundary");
 		Ng_Mesh* bSurface;
-		bSurface = nglib::Ng_LoadMesh(boundary.c_str());
 
-		Ng_SetProperties(ngVolume, 2, 2, 2, 1);
-		Ng_SetProperties(bSurface, 1, 1, 1, 0);
+		if (mode != "cavity"){
+			cout << "Loading boundary settings ....." << endl;
+			string boundary = ini.get<string>("model.boundary");
+			bSurface = nglib::Ng_LoadMesh(boundary.c_str());
 
-		cout << "Merging Mesh with boundary....." << endl;
-     	ngSurface = Ng_MergeMesh( bSurface, ngVolume );
-		if(ngSurface != NG_OK) {
-			cout << "Error in Surface merging....Aborting!!" << endl;
-			exit(1);
-		}
+//			Ng_SetProperties(ngVolume, 2, 2, 2, 1);
+			Ng_SetProperties(bSurface, 1, 1, 1, 0);
 
-		string refineFile = ini.get<string>("model.refine_file");
-		if (refineFile != ""){
-			cout << "Setting local refinement ....." << endl;
-			ifstream in(refineFile.c_str());
-			if (!in) {
-				in.close();
-				cout << "Cannot open refinement file:" << refineFile << endl;
-				exit(0);
+			cout << "Merging Mesh with boundary....." << endl;
+			ngSurface = Ng_MergeMesh( bSurface, ngVolume );
+			if(ngSurface != NG_OK) {
+				cout << "Error in Surface merging....Aborting!!" << endl;
+				exit(1);
 			}
 
-			string currentLine;
-			double p[3]; double h;
-			unsigned int refPoints = 0;
-			while( !in.eof() ) {
-				getline(in, currentLine);
-				if (currentLine != ""){
-					istringstream ss(currentLine);
-					ss >> p[0] >> p[1] >> p[2] >> h;
-					Ng_RestrictMeshSizePoint (bSurface, p, h);
-					refPoints++;
+			string refineFile = ini.get<string>("model.refine_file");
+			if (refineFile != ""){
+				cout << "Setting local refinement ....." << endl;
+				ifstream in(refineFile.c_str());
+				if (!in) {
+					in.close();
+					cout << "Cannot open refinement file:" << refineFile << endl;
+					exit(0);
 				}
-				// global refinement
-				// void Ng_RestrictMeshSizeGlobal (Ng_Mesh * mesh, double h);
+
+				string currentLine;
+				double p[3]; double h;
+				unsigned int refPoints = 0;
+				while( !in.eof() ) {
+					getline(in, currentLine);
+					if (currentLine != ""){
+						istringstream ss(currentLine);
+						ss >> p[0] >> p[1] >> p[2] >> h;
+						Ng_RestrictMeshSizePoint (bSurface, p, h);
+						refPoints++;
+					}
+					// global refinement
+					// void Ng_RestrictMeshSizeGlobal (Ng_Mesh * mesh, double h);
+				}
+				cout << refPoints << " local refinement point(s) set." << endl;
 			}
-			cout << refPoints << " local refinement point(s) set." << endl;
-		}
 
-		string meshBoundaryVolume = ini.get<string>("meshing.boundary_volume");
-		setMeshingOptions(mp, meshBoundaryVolume);
-		mp.optsurfmeshenable = 1;
-		mp.optvolmeshenable  = 1;
-		printMeshingOptions(mp, "Meshing options for boundary volume");
+			string meshBoundaryVolume = ini.get<string>("meshing.boundary_volume");
+			setMeshingOptions(mp, meshBoundaryVolume);
+			mp.optsurfmeshenable = 1;
+			mp.optvolmeshenable  = 1;
+			printMeshingOptions(mp, "Meshing options for boundary volume");
 
 
-		cout << "Start Volume meshing of whole model...." << endl;
-		ngSurface = Ng_GenerateVolumeMesh (bSurface, &mp);
-		if(ngSurface != NG_OK) {
-			cout << "Error in Volume Meshing....Aborting!!" << endl;
-		    exit(1);
+			cout << "Start Volume meshing of whole model...." << endl;
+			ngSurface = Ng_GenerateVolumeMesh (bSurface, &mp);
+			if(ngSurface != NG_OK) {
+				cout << "Error in Volume Meshing....Aborting!!" << endl;
+				exit(1);
+			}
+		} else {
+				bSurface = ngVolume;
+				Ng_SetProperties(ngVolume, 2, 2, 2, 1);
+
 		}
 
 		cout << "Meshing successfully completed....!!" << endl;
@@ -415,6 +467,8 @@ private:
 			cout << "Saving Mesh in VOL Format...." << endl;
 			Ng_SaveMesh(bSurface,volumeVol.c_str());
 		}
+
+		return 1;
 
 	}
 

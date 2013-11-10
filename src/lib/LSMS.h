@@ -44,19 +44,23 @@ typedef typename mMesh::VertexIterator VertexIterator;
 
 class LSMS {
 public:
-	void calcMC(mMesh &mSurface, vector<Atom> &atomList, INI& ini, bool residue = false) {
+	int calcMC(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string mode = "protein") {
 
 		string debug = ini.get<string>("model.debug");
 
+		bool calc_cavity = false;
 		unsigned int gridSize;
-		if (!residue) {
+		if (mode == "protein") {
 		    gridSize = ini.get<unsigned int>("model.grid_resolution");
-		} else {
+		} else if (mode == "residue")  {
 			gridSize = ini.get<unsigned int>("model.grid_residue_resolution");
+		} else {
+			// cavity calculation is turned on
+			gridSize = 512;
+			calc_cavity = true;
 		}
 
 		double probeRadius = ini.get<double>("experiment.probe_radius");
-		bool calc_cavity = false;
 
 		cout << "grid size: " << gridSize << endl;
 		cout << "probe radius: " << probeRadius << endl;
@@ -139,6 +143,10 @@ public:
 		float volume = fastMarching(g,inner)/k;
 		printf("\nTotal cavity/molecule volume = %f A^3\n", volume);
 
+		if (calc_cavity && volume == 0){
+			cout << "no cavity found!" << endl;
+			return 0;
+		}
 		init(result, g);
 
 		cout << "Counting " << result.size() << " triangles." << endl;
@@ -187,6 +195,7 @@ public:
 		}
 		free(g);
 
+		return 1;
 	}
 
 private:

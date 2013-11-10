@@ -28,10 +28,10 @@ public:
 		energyFile << "define constant heapsize = 2000000" << endl;
 		energyFile << endl;
 		energyFile << "define coefficient epsilon_solv" << endl;
-		energyFile << "(80*eps0),(4*eps0)" << endl;
+		energyFile << "(80*eps0),(4*eps0),(80*eps0)" << endl;
 		energyFile << endl;
 		energyFile << "define coefficient epsilon_ref" << endl;
-		energyFile << "(4*eps0),(4*eps0)" << endl;
+		energyFile << "(4*eps0),(4*eps0),(4*eps0)" << endl;
 		energyFile << endl;
 		energyFile << "define fespace v -order="<<solOrder<<" -type=h1ho -dirichlet=[1]" << endl;
 		energyFile << endl;
@@ -89,10 +89,10 @@ public:
 				potfile << "define constant q0 = 1.60217646e-19" << endl;
 				potfile << endl;
 				potfile << "define coefficient epsilon_solv" << endl;
-				potfile << "(80*eps0),(4*eps0)" << endl;
+				potfile << "(80*eps0),(4*eps0),(80*eps0)" << endl;
 				potfile << endl;
 				potfile << "define coefficient epsilon_ref" << endl;
-				potfile << "(4*eps0),(4*eps0)" << endl;
+				potfile << "(4*eps0),(4*eps0),(4*eps0)" << endl;
 				potfile << endl;
 
 				unsigned int nrStates = currentTitGroup.getNrStates();
@@ -198,10 +198,10 @@ public:
 					potfile << "define constant q0 = 1.60217646e-19" << endl;
 					potfile << endl;
 					potfile << "define coefficient epsilon_solv" << endl;
-					potfile << "(80*eps0),(4*eps0)" << endl;
+					potfile << "(80*eps0),(4*eps0),(80*eps0)" << endl;
 					potfile << endl;
 					potfile << "define coefficient epsilon_ref" << endl;
-					potfile << "(4*eps0),(4*eps0)" << endl;
+					potfile << "(4*eps0),(4*eps0),(4*eps0)" << endl;
 					potfile << endl;
 					potfile << "###################################################" << endl;
 					potfile << "#" << endl;

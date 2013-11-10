@@ -224,7 +224,11 @@ public:
 	}
 
 	void calcModel(INI& ini){
+		if (ini.get<string>("experiment.cavity") == "yes")
+			molecule.calcModel(atomList, ini, "cavity.vol", true);
+
 		molecule.calcModel(atomList, ini);
+
 	}
 
 	void calcDeltaG(){
