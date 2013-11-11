@@ -365,7 +365,6 @@ private:
 				exit(1);
 			}
 
-
 		}
 		setMeshingOptions(mp, meshMoleculeVolume);
 		mp.optsurfmeshenable = 1;
@@ -402,6 +401,9 @@ private:
 				cout << "Error in Surface merging....Aborting!!" << endl;
 				exit(1);
 			}
+
+//			Ng_SaveMesh(bSurface,"protein_merged.vol");
+
 
 			string refineFile = ini.get<string>("model.refine_file");
 			if (refineFile != ""){
