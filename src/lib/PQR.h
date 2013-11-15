@@ -655,10 +655,14 @@ public:
 					string prefix = titGroupList.at(i).getIdentifier();
 					pdeFile = "pka_"+cycleName+"_"+prefix+".pde";
 					boost::filesystem::wpath file(pdeFile);
+					string potatFile = cycleName+"."+prefix+".potat";
+					boost::filesystem::wpath potfile(potatFile);
 
-					if(boost::filesystem::exists(file)){
+					if(boost::filesystem::exists(file) && !boost::filesystem::exists(potfile)){
 						pde.LoadPDE (pdeFile.c_str());
 						pde.Solve();
+					} else {
+						cout << potatFile << ".. already calculated." << endl;
 					}
 				}
 			}

@@ -6,7 +6,9 @@
 #include <boost/timer.hpp>
 
 #include "LSMS.h"
+#include "Voxel.h"
 #include "VCG.h"
+
 
 using namespace std;
 using namespace vcg;
@@ -30,8 +32,11 @@ public:
 
 	    string volume_vol = ini.get<string>("model.volume_vol");
     	string surface_stl = ini.get<string>("model.surface_stl");
+    	string generator = ini.get<string>("model.generator");
 
-    	if (cavity && !boost::filesystem::exists( "cavity.vol" )){
+    	int mask = 1;
+
+    	if (generator == "standard" && cavity && !boost::filesystem::exists( "cavity.vol" )){
     		// cavity is calculated
     		cout << "Calculating cavities..." << endl;
 			boost::timer t;
@@ -63,14 +68,48 @@ public:
 			ofstream time;
 			time.open ("times");
 
-	    	lmSurface.calcMC(mSurface, atomList, ini);
+			if (boost::filesystem::exists( surface_stl )) {
+				cout << surface_stl << " found. " << endl;
+				tri::io::ImporterSTL<mMesh>::Open(mSurface, surface_stl.c_str(), mask);
+		    //	clean(mSurface);
+		    //	smooth(mSurface, ini);
 
-	    	clean(mSurface);
-	    	smooth(mSurface, ini);
+			} else {
+				if (generator == "standard"){
+					lmSurface.calcMC(mSurface, atomList, ini);
+					clean(mSurface);
+					smooth(mSurface, ini);
+			    	if (surface_stl != "" )
+					    		tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
+				} else {
+					voxel(mSurface, atomList, ini);
+					clean(mSurface);
+					tri::io::ImporterSTL<mMesh>::Open(mSurface, "out.stl", mask);
+				}
 
-	    	if (surface_stl != "" )
-	    		tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
-	    	double currentTime = t.elapsed();
+			}
+
+//			MeshModel* mesh = md.mm();
+//			MeshModel::MM_FACEFACETOPO | MeshModel::MM_FACEFLAGBORDER);
+//			tri::UpdateTopology<mMesh>::FaceFace(mSurface);
+//			tri::UpdateTopology<mMesh>::VertexFace(mSurface);
+//
+//			tri::SmallComponent<mMesh>::Select(mSurface);
+//			tri::SmallComponent<mMesh>::DeleteFaceVert(mSurface);
+//
+//			tri::UpdateTopology<mMesh>::FaceFace(mSurface);
+//			tri::UpdateTopology<mMesh>::VertexFace(mSurface);
+//
+//
+//			cout << "cc: " << tri::Clean<mMesh>::CountHoles(mSurface) << endl;
+//			RemoveSmallConnectedComponentsSize(mSurface, 1);
+//
+//
+//    		tri::io::ExporterSTL<mMesh>::Save(mSurface,"output.stl",false);
+//    		exit(0);
+
+
+ 	    	double currentTime = t.elapsed();
 	    	time << "protein_surface " << currentTime << " s" << endl;
 	    	cout << "mFES: protein model surface calculation took " << currentTime << " seconds." <<endl;
 
@@ -88,10 +127,18 @@ public:
 				time.open ("times", ios::app);
 
 				boost::timer t;
-	    		lmSurface.calcMC(mSurface, atomList, ini, "residue");
+				if (generator == "standard"){
+					lmSurface.calcMC(mSurface, atomList, ini);
+					clean(mSurface);
+					smooth(mSurface, ini);
+					if (surface_stl != "" )
+						tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
+				} else {
+					voxel(mSurface, atomList, ini);
+					clean(mSurface);
+					tri::io::ImporterSTL<mMesh>::Open(mSurface, "out.stl", mask);
+				}
 
-	    		clean(mSurface);
-	    		smooth(mSurface, ini);
 		    	double currentTime = t.elapsed();
 		    	time << "model_surface " << currentTime << " s" << endl;
 	    		cout << "mFES: residue model surface calculation took " << currentTime << " seconds." <<endl;
@@ -392,7 +439,7 @@ private:
 			string boundary = ini.get<string>("model.boundary");
 			bSurface = nglib::Ng_LoadMesh(boundary.c_str());
 
-//			Ng_SetProperties(ngVolume, 2, 2, 2, 1);
+			Ng_SetProperties(ngVolume, 1, 1, 1, 0);
 			Ng_SetProperties(bSurface, 1, 1, 1, 0);
 
 			cout << "Merging Mesh with boundary....." << endl;

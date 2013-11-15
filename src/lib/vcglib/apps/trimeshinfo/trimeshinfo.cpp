@@ -190,7 +190,7 @@ using namespace std;
 
 #include <vcg/complex/complex.h>
 #include <vcg/complex/algorithms/update/topology.h>
-#include <vcg/complex/algorithms/update/edges.h>
+#include <vcg/complex/algorithms/edges.h>
 #include <vcg/complex/algorithms/update/bounding.h>
 #include <vcg/complex/algorithms/update/flag.h>
 #include <vcg/complex/algorithms/clean.h>
