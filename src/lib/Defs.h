@@ -21,4 +21,6 @@ struct Triangle{
 #define CONVERT 5.74346052632
 				//5.74342695
 
+#define HEAPSIZE 2000000
+
 #endif

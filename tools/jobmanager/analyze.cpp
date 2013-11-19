@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -14,6 +17,14 @@ class Parameter {
 public:
 	string jobname;
 	string plocalh;
+
+	float pvmaxh;
+	float pvminh;
+	float pvgrading;
+	float pvfineness;
+	int pvoptsteps_3d;
+	int pvoptsteps_2d;
+
 	float pmaxh;
 	float pminh;
 	unsigned int lsmsN;
@@ -40,12 +51,17 @@ public:
 	string pqr;
 	string boundary;
 
+	string mesher;
+	string cavity;
+
   string getIdentifier(){
 	  stringstream ss;
-	  ss << jobname << "_plocalh-" << plocalh <<"_pmaxh-" << pmaxh << "_pminh-"<< pminh << "_N-" << lsmsN << "_pgrading-" << pgrading << "_poptsteps3d-" << poptsteps_3d;
-	  ss << "_poptsteps2d-" << poptsteps_2d << "_pfineness-"<< pfineness << "_t-" << taubin << "_hc-" << hc << "_lap-";
-	  ss << lap << "_blocalh-" << blocalh << "_bmaxh-"<< bmaxh << "_bgrading-" << bgrading << "_boptsteps3d-" << boptsteps_3d << "_boptsteps2d-" << boptsteps_2d;
-	  ss << "_bfineness-" << bfineness << "_solver-" << solver << "_maxsteps-" << maxsteps << "_order-" << order;
+	  ss << jobname <<"_pmaxh-" << pmaxh << "_pminh-"<< pminh << "_N-" << lsmsN << "_pgrading-" << pgrading << "_popt3d-" << poptsteps_3d;
+	  ss << "_popt2d-" << poptsteps_2d << "_pf-"<< pfineness << "_t-" << taubin << "_hc-" << hc << "_lap-";
+	  ss << lap << "_bmaxh-"<< bmaxh << "_bgrad-" << bgrading << "_bopt3d-" << boptsteps_3d << "_bopt2d-" << boptsteps_2d;
+	  ss << "_bf-" << bfineness << "_max-" << maxsteps << "_o-" << order;
+	  ss << "_" << mesher << "_cav-" << cavity << "_pvmaxh-" << pvmaxh << "_pvminh-" << pvminh << "_pvgrad-" << pvgrading << "_pvf-" << pvfineness;
+	  ss << "_pvoptsteps3d-" << pvoptsteps_3d << "_pvoptsteps2d-" << pvoptsteps_2d;
 	  return ss.str();
   }
 };
@@ -370,7 +386,7 @@ string getName(string path){
 void writeMeshFiles(Parameter& p){
 	// molecule
 	ofstream c;
-	c.open ("mesh_molecule.opt");
+	c.open ("molecule_surface.opt");
 	c << "options.localh  " << p.plocalh << endl;
 	c << "options.meshsize  " << p.pmaxh << endl;
 	c << "options.minmeshsize  " << p.pminh << endl;
@@ -380,8 +396,18 @@ void writeMeshFiles(Parameter& p){
 	c << "options.optsteps3d  " << p.poptsteps_3d << endl;
 	c.close();
 
+	c.open ("molecule_volume.opt");
+	c << "options.localh  " << p.plocalh << endl;
+	c << "options.meshsize  " << p.pvmaxh << endl;
+	c << "options.minmeshsize  " << p.pvminh << endl;
+	c << "meshoptions.fineness  " << p.pvfineness << endl;
+	c << "options.grading  " << p.pvgrading << endl;
+	c << "options.optsteps2d  " << p.pvoptsteps_2d << endl;
+	c << "options.optsteps3d  " << p.pvoptsteps_3d << endl;
+	c.close();
+
 	// boundary
-	c.open ("mesh_boundary.opt");
+	c.open ("boundary_volume.opt");
 	c << "options.localh  " << p.blocalh << endl;
 	c << "options.meshsize  " << p.bmaxh << endl;
 	c << "options.minmeshsize  0"  << endl;
@@ -406,8 +432,10 @@ void writeConfigMFES(Parameter& p){
 	c << "eps_in = 4" << endl;
 	c << "eps_out = 80" << endl;
 	c << "probe_radius = 1.4" << endl;
+	c << "cavity = " << p.cavity << endl;
 	c << endl;
 	c << "[model]" << endl;
+	c << "generator = " << p.mesher << endl;
 	c << "grid_resolution = " << p.lsmsN << endl;
 	if (p.taubin > 0)
 		c << "smoothing = t " << p.taubin << endl;
@@ -418,13 +446,16 @@ void writeConfigMFES(Parameter& p){
 	else
 		c << "smoothing =  " << endl;
 	c << "boundary = boundary.vol" << endl;
-	c << "options_molecule = mesh_molecule.opt" << endl;
-	c << "options_boundary = mesh_boundary.opt" << endl;
 	c << "refine_file = " << endl;
 	c << "surface_stl =" << endl;
 	c << "volume_vol  = protein.vol" << endl;
 	c << "debug = analyze" << endl;
 	c << endl;
+	c << "[meshing]" << endl;
+	c << "molecule_surface = molecule_surface.opt" << endl;
+	c << "molecule_volume = molecule_volume.opt" << endl;
+	c << "boundary_volume = boundary_volume.opt" << endl;
+
 	c << "[solver]" << endl;
 	c << "solver = " << p.solver << endl;
 	c << "solution_order = " << p.order << endl;
@@ -579,6 +610,9 @@ int main(int argc, char* argv[]) {
 		ss >> p.blocalh >> p.bmaxh >> p.bgrading >> p.boptsteps_3d;
 		ss >> p.boptsteps_2d >> p.bfineness >> p.solver;
 		ss >> p.maxsteps >> p.order >> p.boundary ;
+		ss >> p.mesher >> p.cavity;
+		ss >> p.pvmaxh >> p.pvminh >> p.pvgrading >> p.pvfineness >> p.pvoptsteps_3d >> p.pvoptsteps_2d;
+
 		pList.push_back(p);
 
 		string uid = p.getIdentifier();
@@ -586,15 +620,22 @@ int main(int argc, char* argv[]) {
 		string cmd;
 		cmd = "mkdir -p "+workDir+"/"+uid;
 		system(cmd.c_str());
-		cmd = workDir+"/"+uid;
-		chdir(cmd.c_str());
-		cmd = "cp "+p.pqr+" "+p.boundary+" .";
-		system(cmd.c_str());
+		cmd = workDir+uid+"/";
+		if(chdir(cmd.c_str()) == -1) {
+		      printf("Konnte nicht in das Verzeichnis wechseln\n");
+		      cout << "dir: " << cmd << endl;
+		      return 1;
+		   }
+		   else {
+			   cmd = "cp "+p.pqr+" "+p.boundary+" .";
+			   system(cmd.c_str());
 
 		writeConfigMFES(p);
 		writeMeshFiles(p);
 
+
 		cmd = "mfes --ini config.ini | tee result.log";
+		cout << cmd << endl;
 		system(cmd.c_str());
 
 		Result currentResult;
@@ -662,13 +703,16 @@ int main(int argc, char* argv[]) {
 
 		currentResult.print();
 
-		cmd = "../../";
-		chdir(cmd.c_str());
-	}
+//		cmd = "../../";
+//		chdir(cmd.c_str());
 
-	in.close();
-	cout << pList.size() << " job(s) processed." << endl;
-	cout << results.size() << " result(s) collected." << endl;
+			return 0;
+	    }
+
+		in.close();
+		cout << pList.size() << " job(s) processed." << endl;
+		cout << results.size() << " result(s) collected." << endl;
+	}
 
 	for(unsigned int i = 0; i < results.size(); i++){
 		Result currentResult = results.at(i);

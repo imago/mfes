@@ -392,6 +392,8 @@ private:
 		    exit(1);
 		}
 
+
+
 		if (debug == "analyze"){
 			Ng_SaveMesh(ngVolume,"proteinSurface.vol");
 		}
@@ -425,7 +427,12 @@ private:
 			cout << "Error in Volume Meshing....Aborting!!" << endl;
 			exit(1);
 		}
-		Ng_SaveMesh(ngVolume,"meshed.vol");
+//		Ng_SaveMesh(ngVolume,"meshed.vol");
+
+		if (ini.get<string>("meshing.second_order_surface") == "yes")
+			Ng_STL_Generate_SecondOrder (stl_geom, ngVolume);
+
+		Ng_SaveMesh(ngVolume,"protein_volume_secondorder.vol");
 
 
 		if (debug == "analyze"){
@@ -449,9 +456,9 @@ private:
 				exit(1);
 			}
 
-//			Ng_SaveMesh(bSurface,"protein_merged.vol");
+			Ng_SaveMesh(bSurface,"protein_merged.vol");
 
-
+//			exit(0);
 			string refineFile = ini.get<string>("model.refine_file");
 			if (refineFile != ""){
 				cout << "Setting local refinement ....." << endl;

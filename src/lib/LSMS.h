@@ -47,6 +47,7 @@ public:
 	int calcMC(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string mode = "protein") {
 
 		string debug = ini.get<string>("model.debug");
+		PR = atof(ini.get<string>("experiment.probe_radius").c_str());
 
 		bool calc_cavity = false;
 		unsigned int gridSize;
