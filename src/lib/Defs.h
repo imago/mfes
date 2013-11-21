@@ -23,4 +23,7 @@ struct Triangle{
 
 #define HEAPSIZE 2000000
 
+const double MEADUNITS = 1.3806505E-23 * 4.336663E17; /* e^2/(A * K * mol) */
+const double T = 300; /* K */
+
 #endif

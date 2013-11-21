@@ -37,6 +37,8 @@ void calcDeltaG(vector<PQR> &pqrList, INI &ini){
 }
 
 void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
+	string jobName = ini.get<string>("general.jobname");
+
 	for (unsigned int i = 0; i < pqrList.size(); i++){
 		PQR currentPQR = pqrList.at(i);
 		currentPQR.addInfo(ini);
@@ -52,15 +54,18 @@ void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 
 		currentPQR.calcPkint("cycle0");
 		currentPQR.calcPkint("cycle1");
-
-//		cout << "cycle 0 results: " << endl;
-//		currentPQR.writeOutPkint("cycle0");
-//		cout << endl;
-//		cout << "cycle 1 results: " << endl;
-//		currentPQR.writeOutPkint("cycle1");
-//		cout << endl;
+/*
+		cout << "cycle 0 results: " << endl;
+		currentPQR.writeOutPkint("cycle0");
+		cout << endl;
+		cout << "cycle 1 results: " << endl;
+		currentPQR.writeOutPkint("cycle1");
+		cout << endl;
+*/
 		cout << "cycle 1 - cycle 0 results: " << endl;
-		currentPQR.writeOutPkint("diff");
+		currentPQR.writeOutPkint("diff", jobName+".pkint");
+		currentPQR.calcW("diff");
+		currentPQR.writeOutW(jobName+".g");
 		cout << endl;
 	}
 }
