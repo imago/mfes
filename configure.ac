@@ -11,10 +11,10 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE()
 
 
-AC_ARG_WITH([netgensource],
-	[AC_HELP_STRING([--with-netgensource=dir][netgen source dir])],
+AC_ARG_WITH([netgen-src],
+	[AC_HELP_STRING([--with-netgen-src=dir][Point to netgen source dir])],
     [AC_SUBST([NETGEN_SOURCE], [$withval])],
-	[AC_SUBST([NETGEN_SOURCE], "/opt/netgen")],
+	AC_MSG_ERROR([You must call configure with the --with-netgen-src option. This tells configure where to find the netgen 5.1 source files e.g. --with-netgen-src=/opt/netgen/sources/netgen-5.1/])
 	)
         
 
