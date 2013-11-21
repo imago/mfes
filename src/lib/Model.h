@@ -82,9 +82,10 @@ public:
 			    	if (surface_stl != "" )
 					    		tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
 				} else {
-					voxel(mSurface, atomList, ini);
+					Voxel vSurface;
+					vSurface.calcSurface(mSurface, atomList, ini, "protein.stl");
 					clean(mSurface);
-					tri::io::ImporterSTL<mMesh>::Open(mSurface, "out.stl", mask);
+					tri::io::ImporterSTL<mMesh>::Open(mSurface, string("protein.stl").c_str(), mask);
 				}
 
 			}
@@ -134,9 +135,10 @@ public:
 					if (surface_stl != "" )
 						tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
 				} else {
-					voxel(mSurface, atomList, ini);
+					Voxel vSurface;
+					vSurface.calcSurface(mSurface, atomList, ini, fname+".stl");
 					clean(mSurface);
-					tri::io::ImporterSTL<mMesh>::Open(mSurface, "out.stl", mask);
+					tri::io::ImporterSTL<mMesh>::Open(mSurface, string(fname+".stl").c_str(), mask);
 				}
 
 		    	double currentTime = t.elapsed();

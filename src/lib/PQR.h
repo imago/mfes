@@ -977,7 +977,7 @@ public:
 
 			  }
 
-			  out << currentTitGroup.getResidueName() << endl;
+			  out << currentTitGroup.getIdentifier() << endl;
 
 		  }
 

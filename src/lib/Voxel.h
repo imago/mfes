@@ -13,16 +13,106 @@
 
 using namespace netgen;
 
-double rball = 1.4;
 
-ofstream stlout;
+class Voxel {
 
-Array<Point<3> > pnts;
-Array<double> rad;
-Point3dTree * searchtree;
+public:
+
+	Voxel(){
+		rball = 1.4;
+	};
+	~Voxel(){};
+
+int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileName)
+{
+    int gridSize = atoi(ini.get<string>("model.grid_resolution").c_str());
+	rball = atof(ini.get<string>("experiment.probe_radius").c_str());
+
+  int nx = gridSize;   // number of intervals
+  int ny = gridSize;
+  int nz = gridSize;
+
+  Array<Point<3> > gridpoints(long(nx+1)*(ny+1)*(nz+1));
+  Array<float> values(long(nx+1)*(ny+1)*(nz+1));
+  Array<Vec<3> > dvalues(long(nx+1)*(ny+1)*(nz+1));
+
+  clock_t t1 = clock();
+  double rmax = 0;
+
+  for (unsigned int i = 0; i < atomList.size(); i++)
+    {
+	  Point3<float> coord = atomList.at(i).getCoord();
+	  double r = atomList.at(i).getRadius();
+	  pnts.Append (Point<3>(coord.X(),coord.Y(),coord.Z()));
+	  rad.Append (r);
+	  if (r > rmax) rmax = r;
+    }
+
+  cout << "rmax = " << rmax << endl;
+
+  clock_t t2 = clock();
+
+  netgen::Box<3> box;
+  box.Set (pnts[0]);
+  for (int i = 1; i < pnts.Size(); i++) box.Add (pnts[i]);
+  box.Increase (5);
+  Point<3> pmin = box.PMin();
+  Point<3> pmax = box.PMax();
 
 
+  searchtree = new Point3dTree (pmin, pmax);
+  for (int i = 0; i < pnts.Size(); i++)
+    searchtree -> Insert (pnts[i], i);
 
+
+  for (int ix = 0; ix <= nx; ix++)
+    for (int iy = 0; iy <= ny; iy++)
+      for (int iz = 0; iz <= nz; iz++)
+        {
+          int ind = ix + (nx+1) * (iy + (ny+1)*iz);
+          gridpoints[ind] = Point<3> (pmin(0) + (pmax(0)-pmin(0))*ix/nx,
+                                      pmin(1) + (pmax(1)-pmin(1))*iy/ny,
+                                      pmin(2) + (pmax(2)-pmin(2))*iz/nz);
+        }
+
+
+  SetValues (pmin, pmax, gridpoints, values, dvalues);
+
+  clock_t t3 = clock();
+
+  double h = Dist(pmin, pmax)/nx;
+  for (int i = 0; i < values.Size(); i++)
+    if (fabs (values[i]) < 0.02 * dvalues[i].Length() * h)
+      {
+        gridpoints[i] -= (values[i]/dvalues[i].Length2()) * dvalues[i];
+        values[i] = 0;
+      }
+
+  stlout.open (fileName.c_str());
+  stlout << "solid" << endl;
+  stlout.precision(12);
+  MakeSTL (pmin, pmax, nx, ny, nz, gridpoints, values, dvalues);
+  stlout << "endsolid" << endl;
+
+  clock_t t4 = clock();
+
+  cout << "load: " << double(t2-t1) / CLOCKS_PER_SEC << " secs" << endl;
+  cout << "find f: " << double(t3-t2) / CLOCKS_PER_SEC << " secs" << endl;
+  cout << "write stl (" << fileName <<"): " << double(t4-t3) / CLOCKS_PER_SEC << " secs" << endl;
+
+  stlout.close();
+  return 0;
+}
+
+private:
+
+	double rball;
+
+	ofstream stlout;
+
+	Array<Point<3> > pnts;
+	Array<double> rad;
+	Point3dTree * searchtree;
 
 void SetValues (Point<3> pmin, Point<3> pmax,
                 // int nx, int ny, int nz,
@@ -409,85 +499,7 @@ void MakeSTL (Point<3> pmin, Point<3> pmax,
 }
 
 
-int voxel(mMesh &mSurface, vector<Atom> &atomList, INI& ini)
-{
-    int gridSize = atoi(ini.get<string>("model.grid_resolution").c_str());
-	rball = atof(ini.get<string>("experiment.probe_radius").c_str());
-
-  int nx = gridSize;   // number of intervals
-  int ny = gridSize;
-  int nz = gridSize;
-
-  Array<Point<3> > gridpoints(long(nx+1)*(ny+1)*(nz+1));
-  Array<float> values(long(nx+1)*(ny+1)*(nz+1));
-  Array<Vec<3> > dvalues(long(nx+1)*(ny+1)*(nz+1));
-
-  clock_t t1 = clock();
-  double rmax = 0;
-
-  for (unsigned int i = 0; i < atomList.size(); i++)
-    {
-	  Point3<float> coord = atomList.at(i).getCoord();
-	  double r = atomList.at(i).getRadius();
-	  pnts.Append (Point<3>(coord.X(),coord.Y(),coord.Z()));
-	  rad.Append (r);
-	  if (r > rmax) rmax = r;
-    }
-
-  cout << "rmax = " << rmax << endl;
-
-  clock_t t2 = clock();
-
-  netgen::Box<3> box;
-  box.Set (pnts[0]);
-  for (int i = 1; i < pnts.Size(); i++) box.Add (pnts[i]);
-  box.Increase (5);
-  Point<3> pmin = box.PMin();
-  Point<3> pmax = box.PMax();
-
-
-  searchtree = new Point3dTree (pmin, pmax);
-  for (int i = 0; i < pnts.Size(); i++)
-    searchtree -> Insert (pnts[i], i);
-
-
-  for (int ix = 0; ix <= nx; ix++)
-    for (int iy = 0; iy <= ny; iy++)
-      for (int iz = 0; iz <= nz; iz++)
-        {
-          int ind = ix + (nx+1) * (iy + (ny+1)*iz);
-          gridpoints[ind] = Point<3> (pmin(0) + (pmax(0)-pmin(0))*ix/nx,
-                                      pmin(1) + (pmax(1)-pmin(1))*iy/ny,
-                                      pmin(2) + (pmax(2)-pmin(2))*iz/nz);
-        }
-
-
-  SetValues (pmin, pmax, gridpoints, values, dvalues);
-
-  clock_t t3 = clock();
-
-  double h = Dist(pmin, pmax)/nx;
-  for (int i = 0; i < values.Size(); i++)
-    if (fabs (values[i]) < 0.02 * dvalues[i].Length() * h)
-      {
-        gridpoints[i] -= (values[i]/dvalues[i].Length2()) * dvalues[i];
-        values[i] = 0;
-      }
-
-  stlout.open ("out.stl");
-  stlout << "solid" << endl;
-  stlout.precision(12);
-  MakeSTL (pmin, pmax, nx, ny, nz, gridpoints, values, dvalues);
-  stlout << "endsolid" << endl;
-
-  clock_t t4 = clock();
-
-  cout << "load: " << double(t2-t1) / CLOCKS_PER_SEC << " secs" << endl;
-  cout << "find f: " << double(t3-t2) / CLOCKS_PER_SEC << " secs" << endl;
-  cout << "write stl: " << double(t4-t3) / CLOCKS_PER_SEC << " secs" << endl;
-
-  return 0;
-}
+};
 
 
 
