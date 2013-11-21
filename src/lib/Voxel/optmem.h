@@ -27,8 +27,7 @@ namespace netgen
 
   BlockAllocator :: ~BlockAllocator ()
   {
-    for (int i = 0; i < bablocks.Size(); i++)
-      delete [] bablocks[i];
+   
   }
 
   void * BlockAllocator :: Alloc ()

@@ -13,10 +13,7 @@
 
 using namespace netgen;
 
-
-double rball = 1.4;   // abrollkugel
-
-
+double rball = 1.4;
 
 ofstream stlout;
 
