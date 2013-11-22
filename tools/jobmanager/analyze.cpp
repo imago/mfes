@@ -15,53 +15,56 @@ using namespace std;
 
 class Parameter {
 public:
-	string jobname;
-	string plocalh;
+  string jobname;
+  string plocalh;
+  
+  float pvmaxh;
+  float pvminh;
+  float pvgrading;
+  float pvfineness;
+  int pvoptsteps_3d;
+  int pvoptsteps_2d;
+  
+  float pmaxh;
+  float pminh;
+  unsigned int lsmsN;
+  float pgrading;
+  int poptsteps_3d;
+  int poptsteps_2d;
+  float pfineness;
 
-	float pvmaxh;
-	float pvminh;
-	float pvgrading;
-	float pvfineness;
-	int pvoptsteps_3d;
-	int pvoptsteps_2d;
+  int taubin;
+  int hc;
+  int lap;
+  
+  float blocalh;
+  float bmaxh;
+  float bgrading;
+  int boptsteps_3d;
+  int boptsteps_2d;
+  float bfineness;
+  
+  string solver;
+  int maxsteps;
+  int order;
+  int gorder;
+  
+  string pqr;
+  string boundary;
+  
+  string mesher;
+  string cavity;
 
-	float pmaxh;
-	float pminh;
-	unsigned int lsmsN;
-	float pgrading;
-	int poptsteps_3d;
-	int poptsteps_2d;
-	float pfineness;
-
-	int taubin;
-	int hc;
-	int lap;
-
-	float blocalh;
-	float bmaxh;
-	float bgrading;
-	int boptsteps_3d;
-	int boptsteps_2d;
-	float bfineness;
-
-	string solver;
-	int maxsteps;
-	int order;
-
-	string pqr;
-	string boundary;
-
-	string mesher;
-	string cavity;
+  string second_order_surface;
 
   string getIdentifier(){
 	  stringstream ss;
 	  ss << jobname <<"_pmaxh-" << pmaxh << "_pminh-"<< pminh << "_N-" << lsmsN << "_pgrading-" << pgrading << "_popt3d-" << poptsteps_3d;
 	  ss << "_popt2d-" << poptsteps_2d << "_pf-"<< pfineness << "_t-" << taubin << "_hc-" << hc << "_lap-";
 	  ss << lap << "_bmaxh-"<< bmaxh << "_bgrad-" << bgrading << "_bopt3d-" << boptsteps_3d << "_bopt2d-" << boptsteps_2d;
-	  ss << "_bf-" << bfineness << "_max-" << maxsteps << "_o-" << order;
+	  ss << "_bf-" << bfineness << "_max-" << maxsteps << "_o-" << order << "_go-" << gorder;
 	  ss << "_" << mesher << "_cav-" << cavity << "_pvmaxh-" << pvmaxh << "_pvminh-" << pvminh << "_pvgrad-" << pvgrading << "_pvf-" << pvfineness;
-	  ss << "_pvoptsteps3d-" << pvoptsteps_3d << "_pvoptsteps2d-" << pvoptsteps_2d;
+	  ss << "_pvoptsteps3d-" << pvoptsteps_3d << "_pvoptsteps2d-" << pvoptsteps_2d << "_s-" << second_order_surface;
 	  return ss.str();
   }
 };
@@ -112,19 +115,28 @@ public:
 
 	string getCSVLine(Parameter &p){
 		stringstream result;
-		result << p.jobname << "\t" << p.lsmsN << "\t" << p.plocalh << "\t" <<  p.pmaxh << "\t" << p.pminh << "\t" << p.pgrading
-				<<"\t" <<  p.pfineness << "\t" << p.poptsteps_2d << "\t" << p.poptsteps_3d
-				<<"\t" <<  p.taubin << "\t" << p.hc << "\t" << p.lap
-				<<"\t" <<  p.blocalh << "\t" << p.bmaxh << "\t" << p.bgrading << "\t" << p.bfineness
-				<<"\t" <<  p.boptsteps_2d << "\t" << p.boptsteps_3d
-				<<"\t" <<  p.solver << "\t" << p.maxsteps << "\t" << p.order
-				<<"\t" <<  deltaG << "\t" << gpTotal << "\t" << gpOnSurface << "\t" << gpOnBoundary << "\t" << gpProtein << "\t" << gpBetween
-				<<"\t" <<  areaProtein << "\t" << areaBoundary
-				<<"\t" <<  volumeTotal << "\t" << volumeProtein << "\t" << volumeBetween
-				<<"\t" <<  densityTotal << "\t" << densityProtein << "\t" << densityBoundary << "\t" << densityInProtein << "\t" << densityBetween
-				<<"\t" <<  ndof << "\t" << timeTotal << "\t" << timeInverse << "\t" << timeSolve << "\t" << timeProteinStl << "\t" << timeProteinNg
-				<<"\t" <<  timeResidueStl << "\t" << timeResidueNg;
+		if (timeResidueStl != timeResidueStl)
+		  timeResidueStl = -1;
+		if (timeResidueNg != timeResidueNg)
+		  timeResidueNg = -1;
 
+		result << p.lsmsN << "\t" <<  p.pmaxh << "\t" 
+		       << p.poptsteps_2d << "\t" << p.poptsteps_3d     
+		       << "\t"
+		       << p.pvmaxh << "\t" 
+		       << p.pvoptsteps_2d << "\t" << p.pvoptsteps_3d
+		       << "\t \t \t \t " 
+		       << p.bmaxh << "\t" << p.bgrading  	
+		       <<"\t" <<  p.boptsteps_2d << "\t" << p.boptsteps_3d
+		       <<"\t"
+		       <<"\t" <<  p.taubin << "\t" << p.hc << "\t" << p.lap
+
+		       <<"\t" <<  p.solver << "\t" << p.maxsteps << "\t" << p.gorder << "\t" << p.order 
+		       <<"\t" <<  deltaG << "\t \t \t \t" 
+		       << ndof << "\t" << timeTotal << "\t" << timeInverse << "\t" << timeSolve << "\t" << timeProteinStl << "\t" << timeProteinNg
+		       <<"\t" <<  timeResidueStl << "\t" << timeResidueNg << "\t \t " << gpTotal << "\t" << gpOnSurface << "\t" << gpOnBoundary << "\t" << gpProtein << "\t" << gpBetween
+		       <<"\t" <<  areaProtein << " \t " << areaBoundary <<" \t " <<  volumeTotal << " \t " << volumeProtein << " \t " << volumeBetween
+		       <<" \t \t " <<  densityTotal << " \t " << densityProtein << " \t " << densityBoundary << " \t " << densityInProtein << " \t " << densityBetween;
 		// "\t" <<
 
 		return result.str();
@@ -142,7 +154,7 @@ public:
 		cout << "areaBoundary: "<< areaBoundary << endl;
 		cout << endl;
 		cout << "volumeTotal: "<< volumeTotal << endl;
-		cout << "volumeProtein: "<< volumeTotal << endl;
+		cout << "volumeProtein: "<< volumeProtein << endl;
 		cout << "volumeBetween: "<< volumeBetween << endl;
 		cout << endl;
 		cout << "densityTotal: "<< densityTotal << endl;
@@ -455,6 +467,7 @@ void writeConfigMFES(Parameter& p){
 	c << "molecule_surface = molecule_surface.opt" << endl;
 	c << "molecule_volume = molecule_volume.opt" << endl;
 	c << "boundary_volume = boundary_volume.opt" << endl;
+	c << "second_order_surface = " << p.second_order_surface << endl;
 
 	c << "[solver]" << endl;
 	c << "solver = " << p.solver << endl;
@@ -484,7 +497,6 @@ void parse(string fileName, Result &result){
 		while(ss >> temp){
 			if (temp == "ndof"){
 				ss >> temp >> result.ndof;
-				cout << result.ndof;
 			}
 			if (temp == "The"){
 				ss >> temp >> temp >> temp >> result.deltaG;
@@ -598,92 +610,76 @@ int main(int argc, char* argv[]) {
 		p.jobname = jobName;
 		stringstream ss(pqrline);
 		ss >> p.plocalh;
-		if (p.plocalh.substr(0,1) == "" || p.plocalh.substr(0.1) == "#")
-			continue;
+		if (p.plocalh.substr(0,1) == "" ||  p.plocalh.substr(0.1) == "#")
+		  continue;
+		 
 
-       		ss >> p.pmaxh >> p.pminh >> p.lsmsN;
+	
+
+		ss >> p.pmaxh >> p.pminh >> p.lsmsN;
 		ss >> p.pgrading >> p.poptsteps_3d >> p.poptsteps_2d;
 		ss >> p.pfineness;
-
+		  
 		ss >> p.taubin >> p.hc >> p.lap;
-
+		
 		ss >> p.blocalh >> p.bmaxh >> p.bgrading >> p.boptsteps_3d;
 		ss >> p.boptsteps_2d >> p.bfineness >> p.solver;
-		ss >> p.maxsteps >> p.order >> p.boundary ;
+		ss >> p.maxsteps >> p.order >> p.gorder >> p.boundary ;
 		ss >> p.mesher >> p.cavity;
 		ss >> p.pvmaxh >> p.pvminh >> p.pvgrading >> p.pvfineness >> p.pvoptsteps_3d >> p.pvoptsteps_2d;
-
+		ss >> p.second_order_surface;
+		  
 		pList.push_back(p);
 
 		string uid = p.getIdentifier();
-
+		
 		string cmd;
 		cmd = "mkdir -p "+workDir+"/"+uid;
 		system(cmd.c_str());
 		cmd = workDir+uid+"/";
 		if(chdir(cmd.c_str()) == -1) {
-		      printf("Konnte nicht in das Verzeichnis wechseln\n");
-		      cout << "dir: " << cmd << endl;
-		      return 1;
-		   }
-		   else {
-			   cmd = "cp "+p.pqr+" "+p.boundary+" .";
-			   system(cmd.c_str());
-
+		  printf("Konnte nicht in das Verzeichnis wechseln\n");
+		  cout << "dir: " << cmd << endl;
+		  return 1;
+		}
+		else {
+		  cmd = "cp "+p.pqr+" "+p.boundary+" .";
+		  system(cmd.c_str());
+		}
+		
 		writeConfigMFES(p);
 		writeMeshFiles(p);
-
-
+		
+		
 		cmd = "mfes --ini config.ini | tee result.log";
-		cout << cmd << endl;
 		system(cmd.c_str());
-
+		
 		Result currentResult;
-
+		
 		VOL proteinSurface;
 		proteinSurface.readNGVol("proteinSurface.vol");
-//		cout << proteinSurface.elementList.size() << " elements read in." << endl;
-//		cout << proteinSurface.pointList.size() << " points read in." << endl;
-
-
-//		cout << endl << "proteinSurface.vol: " << endl;
+		
 		currentResult.gpOnSurface = proteinSurface.getNrPoints();
-//		cout << "points on surface: " << currentResult.gpOnSurface << endl;
 		currentResult.areaProtein = proteinSurface.getTotalArea();
-//		cout << "current area: " << currentResult.areaProtein << endl;
 
 
-//		cout << endl << "proteinVolume.vol: " << endl;
 		VOL proteinVolume;
 		proteinVolume.readNGVol("proteinVolume.vol");
 		float total = proteinVolume.getNrPoints();
-//		cout << "total points: " << total << endl;
 		currentResult.gpProtein = total - currentResult.gpOnSurface;
-//		cout << "points inner protein: " << currentResult.gpProtein << endl;
-
 		currentResult.volumeProtein = proteinVolume.getTotalVolume();
-//		cout << "current volume: " << currentResult.volumeProtein << endl;
-//		cout << "current area: " << proteinVolume.getTotalArea() << endl;
 
-//		cout << endl << "boundary.vol: " << endl;
 		VOL boundarySurface;
 		boundarySurface.readNGVol("boundary.vol");
 		currentResult.gpOnBoundary = boundarySurface.getNrPoints();
-//		cout << "points on surface: " << currentResult.gpOnBoundary << endl;
 		currentResult.areaBoundary = boundarySurface.getTotalArea();
-//		cout << "current area: " << currentResult.areaBoundary << endl;
 		currentResult.volumeTotal = boundarySurface.getTotalVolume();
-//		cout << "current total volume: " << currentResult.volumeTotal << endl;
-
-//		cout << endl << "protein.vol: " << endl;
+		
 		VOL protein;
 		protein.readNGVol("protein.vol");
 		currentResult.gpTotal = protein.getNrPoints();
-//		cout << "total points: " << currentResult.gpTotal << endl;
-
 		currentResult.volumeBetween = currentResult.volumeTotal - currentResult.volumeProtein;
-//		cout << "volume between protein <> boundary: " << currentResult.volumeBetween << endl;
-
+		
 		currentResult.densityTotal = currentResult.gpTotal/currentResult.volumeTotal;
 		currentResult.densityProtein = currentResult.gpOnSurface/currentResult.areaProtein;
 		currentResult.densityBoundary = currentResult.gpOnBoundary/currentResult.areaBoundary;
@@ -692,27 +688,19 @@ int main(int argc, char* argv[]) {
 
 		currentResult.gpBetween = currentResult.gpTotal - currentResult.gpProtein - currentResult.gpOnSurface - currentResult.gpOnBoundary;
 
-//		cout << endl << "total density: " << currentResult.densityTotal << endl;
-//		cout << "density on protein surface: " << currentResult.densityProtein << endl;
-//		cout << "density on boundary surface: " << currentResult.densityBoundary << endl;
-//		cout << "density in protein volume: " << currentResult.densityInProtein << endl;
-//		cout << "density between protein <> boundary: " << currentResult.densityBetween << endl;
-
 		parse("result.log", currentResult);
 		results.push_back(currentResult);
-
+		
 		currentResult.print();
-
-//		cmd = "../../";
-//		chdir(cmd.c_str());
-
-			return 0;
-	    }
-
-		in.close();
-		cout << pList.size() << " job(s) processed." << endl;
-		cout << results.size() << " result(s) collected." << endl;
+		  
+	
 	}
+
+	in.close();
+	cout << pList.size() << " job(s) processed." << endl;
+	cout << results.size() << " result(s) collected." << endl;
+
+
 
 	for(unsigned int i = 0; i < results.size(); i++){
 		Result currentResult = results.at(i);
