@@ -454,7 +454,7 @@ void writeConfigMFES(Parameter& p){
 	else if (p.hc > 0)
 		c << "smoothing = hc " << p.hc << endl;
 	else if (p.lap > 0)
-		c << "smoothing = l " << p.lap << endl;
+		c << "smoothing = lap " << p.lap << endl;
 	else
 		c << "smoothing =  " << endl;
 	c << "boundary = boundary.vol" << endl;
