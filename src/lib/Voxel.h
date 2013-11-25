@@ -37,7 +37,7 @@ int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileNa
   Array<Vec<3> > dvalues(long(nx+1)*(ny+1)*(nz+1));
 
   clock_t t1 = clock();
-  double rmax = 0;
+  rmax = 0;
 
   for (unsigned int i = 0; i < atomList.size(); i++)
     {
@@ -49,13 +49,14 @@ int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileNa
     }
 
   cout << "rmax = " << rmax << endl;
+  int increase = ceil(rmax)+1;
 
   clock_t t2 = clock();
 
   netgen::Box<3> box;
   box.Set (pnts[0]);
   for (int i = 1; i < pnts.Size(); i++) box.Add (pnts[i]);
-  box.Increase (5);
+  box.Increase (increase);
   Point<3> pmin = box.PMin();
   Point<3> pmax = box.PMax();
 
@@ -101,13 +102,14 @@ int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileNa
   cout << "write stl (" << fileName <<"): " << double(t4-t3) / CLOCKS_PER_SEC << " secs" << endl;
 
   stlout.close();
+  exit(0);
   return 0;
 }
 
 private:
 
 	double rball;
-
+	double rmax;
 	ofstream stlout;
 
 	Array<Point<3> > pnts;
@@ -153,9 +155,13 @@ void SetValues (Point<3> pmin, Point<3> pmax,
           pmin(2) + (pmax(2)-pmin(2))*iz/nz);
         */
         int ind = i;
+        int extend = 6;
+        if (rmax > 5)
+        	extend = 2*rmax;
+
         Point<3> p = gridpoints[ind];
 
-        searchtree -> GetIntersecting (p - Vec<3>(6,6,6), p+Vec<3>(6,6,6), indices1);
+        searchtree -> GetIntersecting (p - Vec<3>(extend,extend,extend), p+Vec<3>(extend,extend,extend), indices1);
         double minf = 1e10;
         Vec<3> df;
 
@@ -358,8 +364,8 @@ void WriteTrig (Point<3> p1, Point<3> p2, Point<3> p3, Vec<3> n)
   Vec<3> nt = Cross(p2-p1,p3-p1);
   if (nt.Length() < 1e-5 * (p2-p1).Length() * (p3-p1).Length())
     {
-      // if (nt.Length() < 1e-12 * (p2-p1).Length() * (p3-p1).Length()) return;
-      cout << "flat trig: " << nt.Length() / ((p2-p1).Length() * (p3-p1).Length()) << endl;
+      if (nt.Length() < 1e-12 * (p2-p1).Length() * (p3-p1).Length()) return;
+     // cout << "flat trig: " << nt.Length() / ((p2-p1).Length() * (p3-p1).Length()) << endl;
     }
   if (nt * n < 0) Swap (p2, p3);
 
