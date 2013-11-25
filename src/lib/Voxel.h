@@ -102,7 +102,6 @@ int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileNa
   cout << "write stl (" << fileName <<"): " << double(t4-t3) / CLOCKS_PER_SEC << " secs" << endl;
 
   stlout.close();
-  exit(0);
   return 0;
 }
 
