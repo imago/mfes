@@ -545,27 +545,28 @@ private:
 		while (ss >> mode >> steps){
 			if (mode == "t"){
 				for (unsigned int i = 0; i < steps; i++){
-					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
+					tri::UpdateNormal<mMesh>::PerFace(mSurface);
 					tri::Smooth<mMesh>::VertexCoordTaubin(mSurface,1,TAUBIN_LAMBDA,TAUBIN_MU);
 				}
 			} else if (mode == "lap"){
 				for (unsigned int i = 0; i < steps; i++){
-					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
+					tri::UpdateNormal<mMesh>::PerFace(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacian(mSurface,1);
 				}
 			} else if (mode == "hc"){
 				for (unsigned int i = 0; i < steps; i++){
-					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
+					tri::UpdateNormal<mMesh>::PerFace(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacianHC(mSurface,1);
 				}
 			} else if (mode == "aw"){
 				for (unsigned int i = 0; i < steps; i++){
-					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
+					tri::UpdateNormal<mMesh>::PerFace(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacianAngleWeighted(mSurface,1, CF_LAMBDA);
 				}
 			}	else if (mode == "lapsd"){
 				for (unsigned int i = 0; i < steps; i++){
-					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
+					tri::UpdateNormal<mMesh>::PerFace(mSurface);
+//					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
 					tri::Smooth<mMesh>::VertexCoordScaleDependentLaplacian_Fujiwara(mSurface,1, 0.0025);
 				}
 
