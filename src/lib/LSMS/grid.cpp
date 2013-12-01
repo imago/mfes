@@ -199,6 +199,8 @@ void shrink(lGrid g, double PR)
 		}
 	}
 	
+	float abs = 0.35*s;
+
 	while (co!=0){
 //printf("%d\n",co);
 		nb_next_head = (PPoint*)malloc(co*6*sizeof(PPoint));	//next level (at most 6 times larger)
@@ -222,7 +224,7 @@ void shrink(lGrid g, double PR)
 				dz = g->matrix[xp][nb_head[i].y][nb_head[i].z].point.z - g->matrix[nb_orig[i].x][nb_orig[i].y][nb_orig[i].z].point.z;
 				temp_dist=dx*dx+dy*dy+dz*dz;
 			
-				if(temp_dist<=fr){
+				if(temp_dist<=fr && (fr-temp_dist >  abs)){
 					nb_next_head[p].x=xp;
 					nb_next_head[p].y=nb_head[i].y;
 					nb_next_head[p].z=nb_head[i].z;
@@ -249,7 +251,7 @@ void shrink(lGrid g, double PR)
 				dz = g->matrix[xn][nb_head[i].y][nb_head[i].z].point.z - g->matrix[nb_orig[i].x][nb_orig[i].y][nb_orig[i].z].point.z;
 				temp_dist=dx*dx+dy*dy+dz*dz;
 				
-				if(temp_dist<=fr){
+				if(temp_dist<=fr && (fr-temp_dist >  abs)){
 					nb_next_head[p].x=xn;
 					nb_next_head[p].y=nb_head[i].y;
 					nb_next_head[p].z=nb_head[i].z;
@@ -276,7 +278,7 @@ void shrink(lGrid g, double PR)
 				dz = g->matrix[nb_head[i].x][yp][nb_head[i].z].point.z - g->matrix[nb_orig[i].x][nb_orig[i].y][nb_orig[i].z].point.z;
 				temp_dist=dx*dx+dy*dy+dz*dz;
 				
-				if(temp_dist<=fr){
+				if(temp_dist<=fr && (fr-temp_dist >  abs)){
 					nb_next_head[p].x=nb_head[i].x;
 					nb_next_head[p].y=yp;
 					nb_next_head[p].z=nb_head[i].z;
@@ -302,7 +304,7 @@ void shrink(lGrid g, double PR)
 				dz = g->matrix[nb_head[i].x][yn][nb_head[i].z].point.z - g->matrix[nb_orig[i].x][nb_orig[i].y][nb_orig[i].z].point.z;
 				temp_dist=dx*dx+dy*dy+dz*dz;
 				
-				if(temp_dist<=fr){
+				if(temp_dist<=fr && (fr-temp_dist >  abs)){
 					nb_next_head[p].x=nb_head[i].x;
 					nb_next_head[p].y=yn;
 					nb_next_head[p].z=nb_head[i].z;
@@ -328,7 +330,7 @@ void shrink(lGrid g, double PR)
 				dz = g->matrix[nb_head[i].x][nb_head[i].y][zp].point.z - g->matrix[nb_orig[i].x][nb_orig[i].y][nb_orig[i].z].point.z;
 				temp_dist=dx*dx+dy*dy+dz*dz;
 				
-				if(temp_dist<=fr){
+				if(temp_dist<=fr && (fr-temp_dist >  abs)){
 					nb_next_head[p].x=nb_head[i].x;
 					nb_next_head[p].y=nb_head[i].y;
 					nb_next_head[p].z=zp;
@@ -354,7 +356,7 @@ void shrink(lGrid g, double PR)
 				dz = g->matrix[nb_head[i].x][nb_head[i].y][zn].point.z - g->matrix[nb_orig[i].x][nb_orig[i].y][nb_orig[i].z].point.z;
 				temp_dist=dx*dx+dy*dy+dz*dz;
 				
-				if(temp_dist<=fr){
+				if(temp_dist<=fr && (fr-temp_dist >  abs)){
 					nb_next_head[p].x=nb_head[i].x;
 					nb_next_head[p].y=nb_head[i].y;
 					nb_next_head[p].z=zn;

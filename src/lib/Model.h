@@ -563,7 +563,14 @@ private:
 					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacianAngleWeighted(mSurface,1, CF_LAMBDA);
 				}
+			}	else if (mode == "lapsd"){
+				for (unsigned int i = 0; i < steps; i++){
+					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
+					tri::Smooth<mMesh>::VertexCoordScaleDependentLaplacian_Fujiwara(mSurface,1, 0.0025);
+				}
+
 			}
+
 		}
 		vector<mMesh::FaceType *> SelfIntersectList;
 		tri::Clean<mMesh>::SelfIntersections(mSurface, SelfIntersectList);
