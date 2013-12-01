@@ -404,6 +404,7 @@ float fGetOffset(float fValue1, float fValue2, float fValueDesired)
 int vMarchCube(vector<Triangle>& result, lGrid grid, int x, int y, int z)
 {
 	int iCorner, iVertex, iVertexTest, iEdge, iTriangle, iFlagIndex, iEdgeFlags;
+	int sum = 0;
 	int ix,iy,iz;
 	int count = 0;
 	float fOffset;
@@ -434,6 +435,7 @@ int vMarchCube(vector<Triangle>& result, lGrid grid, int x, int y, int z)
 	afCubeValue[6] = (grid->matrix[x1][y1][z1].phi?1:-1);
 	afCubeValue[7] = (grid->matrix[x][y1][z1].phi?1:-1);
 
+	sum = afCubeValue[0] + afCubeValue[1] + afCubeValue[2] + afCubeValue[3] + afCubeValue[4] + afCubeValue[5] + afCubeValue[6] + afCubeValue[7];
 	/*afCubeValue[0] = grid->matrix[x][y][z].phi;
 	afCubeValue[1] = grid->matrix[x1][y][z].phi;
 	afCubeValue[2] = grid->matrix[x1][y1][z].phi;
@@ -455,7 +457,7 @@ int vMarchCube(vector<Triangle>& result, lGrid grid, int x, int y, int z)
 	iEdgeFlags = aiCubeEdgeFlags[iFlagIndex];
 
 	//If the cube is entirely inside or outside of the surface, then there will be no intersections
-	if(iEdgeFlags == 0)
+	if(iEdgeFlags == 0 || sum == 7)
 	{
 		return 0;
     }
