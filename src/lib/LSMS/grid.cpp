@@ -380,6 +380,81 @@ void shrink(lGrid g, double PR)
 	}
 	free(nb_head);
 	free(nb_orig);
+
+	int found = 0;
+	for (i=1;i<l-1;i++)
+		for (j=1;j<l-1;j++)
+		for (k=1;k<l-1;k++){
+			if (g->matrix[i][j][k].phi==0 &&
+			   (g->matrix[i][j][k-1].phi==1 &&
+			    g->matrix[i][j][k+1].phi==1 &&
+			    g->matrix[i][j-1][k].phi==1 &&
+			    g->matrix[i][j+1][k].phi==1 &&
+			    g->matrix[i+1][j][k].phi==1 &&
+			    g->matrix[i-1][j][k].phi==0)){
+					g->matrix[i][j][k].phi=1;
+					found++;
+			}
+
+			if (g->matrix[i][j][k].phi==0 &&
+			   (g->matrix[i][j][k-1].phi==1 &&
+				g->matrix[i][j][k+1].phi==1 &&
+				g->matrix[i][j-1][k].phi==1 &&
+				g->matrix[i][j+1][k].phi==1 &&
+				g->matrix[i+1][j][k].phi==0 &&
+				g->matrix[i-1][j][k].phi==1)){
+					g->matrix[i][j][k].phi=1;
+					found++;
+			}
+
+			if (g->matrix[i][j][k].phi==0 &&
+			   (g->matrix[i][j][k-1].phi==1 &&
+				g->matrix[i][j][k+1].phi==1 &&
+				g->matrix[i][j-1][k].phi==1 &&
+				g->matrix[i][j+1][k].phi==0 &&
+				g->matrix[i+1][j][k].phi==1 &&
+				g->matrix[i-1][j][k].phi==1)){
+					g->matrix[i][j][k].phi=1;
+					found++;
+			}
+
+			if (g->matrix[i][j][k].phi==0 &&
+			   (g->matrix[i][j][k-1].phi==1 &&
+				g->matrix[i][j][k+1].phi==1 &&
+				g->matrix[i][j-1][k].phi==0 &&
+				g->matrix[i][j+1][k].phi==1 &&
+				g->matrix[i+1][j][k].phi==1 &&
+				g->matrix[i-1][j][k].phi==1)){
+					g->matrix[i][j][k].phi=1;
+					found++;
+			}
+
+			if (g->matrix[i][j][k].phi==0 &&
+			   (g->matrix[i][j][k-1].phi==1 &&
+				g->matrix[i][j][k+1].phi==0 &&
+				g->matrix[i][j-1][k].phi==1 &&
+				g->matrix[i][j+1][k].phi==1 &&
+				g->matrix[i+1][j][k].phi==1 &&
+				g->matrix[i-1][j][k].phi==1)){
+					g->matrix[i][j][k].phi=1;
+					found++;
+			}
+
+			if (g->matrix[i][j][k].phi==0 &&
+			   (g->matrix[i][j][k-1].phi==0 &&
+				g->matrix[i][j][k+1].phi==1 &&
+				g->matrix[i][j-1][k].phi==1 &&
+				g->matrix[i][j+1][k].phi==1 &&
+				g->matrix[i+1][j][k].phi==1 &&
+				g->matrix[i-1][j][k].phi==1)){
+					g->matrix[i][j][k].phi=1;
+					found++;
+			}
+
+	}
+
+	printf("%i corrections made.", found);
+
 }
 	
 int fastMarching(lGrid g, char inner)
