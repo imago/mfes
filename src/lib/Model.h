@@ -573,12 +573,12 @@ private:
 			}
 
 		}
-		vector<mMesh::FaceType *> SelfIntersectList;
-		tri::Clean<mMesh>::SelfIntersections(mSurface, SelfIntersectList);
-	    int SelfIntersections = SelfIntersectList.size();
-		cout << SelfIntersections << " intersections found." << endl;
-		if (SelfIntersections > 0)
-			cout << "This surface will probably not mesh! Keep care." << endl;
+		//		vector<mMesh::FaceType *> SelfIntersectList;
+		// tri::Clean<mMesh>::SelfIntersections(mSurface, SelfIntersectList);
+		//	    int SelfIntersections = SelfIntersectList.size();
+		//	cout << SelfIntersections << " intersections found." << endl;
+		//		if (SelfIntersections > 0)
+		//	cout << "This surface will probably not mesh! Keep care." << endl;
 
 	}
 
