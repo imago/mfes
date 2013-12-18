@@ -33,6 +33,10 @@ public:
 	    string volume_vol = ini.get<string>("model.volume_vol");
     	string surface_stl = ini.get<string>("model.surface_stl");
     	string generator = ini.get<string>("model.generator");
+    	string generatorResidue = ini.get<string>("model.generator_residue");
+	int generatorResolution = atoi(ini.get<string>("model.grid_resolution").c_str());
+	int generatorModelResolution = atoi(ini.get<string>("model.grid_residue_resolution").c_str());
+
 
     	int mask = 1;
 
@@ -83,7 +87,7 @@ public:
 					    		tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
 				} else {
 					Voxel vSurface;
-					vSurface.calcSurface(mSurface, atomList, ini, "protein.stl");
+					vSurface.calcSurface(mSurface, atomList, ini, "protein.stl", generatorResolution);
 					clean(mSurface);
 					tri::io::ImporterSTL<mMesh>::Open(mSurface, string("protein.stl").c_str(), mask);
 				}
@@ -128,7 +132,7 @@ public:
 				time.open ("times", ios::app);
 
 				boost::timer t;
-				if (generator == "standard"){
+				if (generatorResidue == "standard"){
 					lmSurface.calcMC(mSurface, atomList, ini);
 					clean(mSurface);
 					smooth(mSurface, ini);
@@ -136,7 +140,7 @@ public:
 						tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
 				} else {
 					Voxel vSurface;
-					vSurface.calcSurface(mSurface, atomList, ini, fname+".stl");
+					vSurface.calcSurface(mSurface, atomList, ini, fname+".stl", generatorModelResolution);
 					clean(mSurface);
 					tri::io::ImporterSTL<mMesh>::Open(mSurface, string(fname+".stl").c_str(), mask);
 				}

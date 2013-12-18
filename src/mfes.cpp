@@ -54,14 +54,14 @@ void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 
 		currentPQR.calcPkint("cycle0");
 		currentPQR.calcPkint("cycle1");
-/*
+
 		cout << "cycle 0 results: " << endl;
-		currentPQR.writeOutPkint("cycle0");
+		currentPQR.writeOutPkint("cycle0", "cycle0.pkint");
 		cout << endl;
 		cout << "cycle 1 results: " << endl;
-		currentPQR.writeOutPkint("cycle1");
+		currentPQR.writeOutPkint("cycle1", "cycle1.pkint");
 		cout << endl;
-*/
+
 		cout << "cycle 1 - cycle 0 results: " << endl;
 		currentPQR.writeOutPkint("diff", jobName+".pkint");
 		currentPQR.calcW("diff");

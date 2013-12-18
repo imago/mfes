@@ -23,9 +23,9 @@ public:
 	};
 	~Voxel(){};
 
-int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileName)
+	int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileName, int gridSize = 64)
 {
-    int gridSize = atoi(ini.get<string>("model.grid_resolution").c_str());
+  //    int gridSize = atoi(ini.get<string>("model.grid_resolution").c_str());
 	rball = atof(ini.get<string>("experiment.probe_radius").c_str());
 
   int nx = gridSize;   // number of intervals

@@ -457,7 +457,7 @@ void writeConfigMFES(Parameter& p){
 		c << "smoothing = lap " << p.lap << endl;
 	else
 		c << "smoothing =  " << endl;
-	c << "boundary = boundary.vol" << endl;
+	c << "boundary = boundary_very_coarse.vol" << endl;
 	c << "refine_file = " << endl;
 	c << "surface_stl =" << endl;
 	c << "volume_vol  = protein.vol" << endl;
@@ -670,7 +670,7 @@ int main(int argc, char* argv[]) {
 		currentResult.volumeProtein = proteinVolume.getTotalVolume();
 
 		VOL boundarySurface;
-		boundarySurface.readNGVol("boundary.vol");
+		boundarySurface.readNGVol("boundary_very_coarse.vol");
 		currentResult.gpOnBoundary = boundarySurface.getNrPoints();
 		currentResult.areaBoundary = boundarySurface.getTotalArea();
 		currentResult.volumeTotal = boundarySurface.getTotalVolume();
