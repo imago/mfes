@@ -16,7 +16,11 @@ public:
 	Residue():
 	    resName(""),
 	    resNumber(-1)
-	{}
+	{
+		born[0][0] = born[0][1] = born[0][2] = born[1][0] = born[1][1] = born[1][2] = 0.0f;
+		back[0][0] = back[0][1] = back[0][2] = back[1][0] = back[1][1] = back[1][2] = 0.0f;
+
+	}
 
 	unsigned int getNrStates(){
 	  map<string, int> nrStates  = { {"ARG", 2}, {"CTE", 2}, {"DPP", 3}, {"EPP", 3}, {"HSP", 3}, {"LYS", 2}, {"NTE", 2}, {"TYR", 2}, {"CYS", 2}};

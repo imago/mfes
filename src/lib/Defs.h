@@ -21,7 +21,8 @@ struct Triangle{
 #define CONVERT 5.74346052632
 				//5.74342695
 
-#define HEAPSIZE 2000000
+#define NOT_IN_ST 111
+#define HEAPSIZE 4000000
 
 const double MEADUNITS = 1.3806505E-23 * 4.336663E17; /* e^2/(A * K * mol) */
 const double T = 300; /* K */

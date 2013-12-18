@@ -93,6 +93,8 @@ public:
 				potfile << "define constant eps0 = 8.8541878e-22" << endl;
 				potfile << "define constant q0 = 1.60217646e-19" << endl;
 				potfile << endl;
+				potfile << "define constant heapsize = " << HEAPSIZE << endl;
+				potfile << endl;
 				potfile << "define coefficient epsilon_solv" << endl;
 				potfile << "(" << eps_out << "*eps0),(" << eps_in << "*eps0),("<< eps_out << "*eps0)" << endl;
 				potfile << endl;
@@ -203,6 +205,8 @@ public:
 					potfile << endl;
 					potfile << "define constant eps0 = 8.8541878e-22" << endl;
 					potfile << "define constant q0 = 1.60217646e-19" << endl;
+					potfile << endl;
+					potfile << "define constant heapsize = " << HEAPSIZE << endl;
 					potfile << endl;
 					potfile << "define coefficient epsilon_solv" << endl;
 					potfile << "(" << eps_out << "*eps0),(" << eps_in << "*eps0),(" << eps_out << "*eps0)" << endl;
