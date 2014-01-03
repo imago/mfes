@@ -84,12 +84,15 @@ public:
 					clean(mSurface);
 					smooth(mSurface, ini);
 			    	if (surface_stl != "" )
-					    		tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
+				        tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
 				} else {
 					Voxel vSurface;
-					vSurface.calcSurface(mSurface, atomList, ini, "protein.stl", generatorResolution);
-					clean(mSurface);
-					tri::io::ImporterSTL<mMesh>::Open(mSurface, string("protein.stl").c_str(), mask);
+					if (!boost::filesystem::exists( "protein.stl" )){
+					  vSurface.calcSurface(mSurface, atomList, ini, "protein.stl", generatorResolution);
+					  clean(mSurface);
+					} else {
+					  tri::io::ImporterSTL<mMesh>::Open(mSurface, string("protein.stl").c_str(), mask);
+					}
 				}
 
 			}
