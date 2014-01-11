@@ -740,6 +740,17 @@ public:
 		}
 		}
 
+		vector<Atom> refAllAtomList;
+		for (unsigned int i = 0; i < residueList.size(); i++){
+		  Residue currentResidue = residueList.at(i);
+		  if (currentResidue.isTitGroup()){
+		    switchState(currentResidue, 0);
+		  }
+		  vector<Atom> residueAtoms = currentResidue.getAtomList();
+		  refAllAtomList.insert(refAllAtomList.end(), residueAtoms.begin(), residueAtoms.end());
+		}
+
+
 		float bornEner = 0;
 		float backEner = 0;
 
@@ -773,7 +784,7 @@ public:
 				float back1 = 0;
 
 				//Residue titGroup = titGroup !
-				vector<Atom> pAtomList = deleteAtoms(atomList, refAtomList); // from whole protein without patched atoms in currentTitGroup
+				vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList); // from whole protein without patched atoms in currentTitGroup
 				vector<Atom> mAtomList = deleteAtoms(currentOrigTitGroup.getAtomList(), refAtomList); // not patched
 
 				for (unsigned int j = 0; j < pAtomList.size(); j++){

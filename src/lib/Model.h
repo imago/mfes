@@ -90,9 +90,8 @@ public:
 					if (!boost::filesystem::exists( "protein.stl" )){
 					  vSurface.calcSurface(mSurface, atomList, ini, "protein.stl", generatorResolution);
 					  clean(mSurface);
-					} else {
-					  tri::io::ImporterSTL<mMesh>::Open(mSurface, string("protein.stl").c_str(), mask);
-					}
+					} 
+					tri::io::ImporterSTL<mMesh>::Open(mSurface, string("protein.stl").c_str(), mask);			     
 				}
 
 			}

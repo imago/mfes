@@ -448,7 +448,9 @@ void writeConfigMFES(Parameter& p){
 	c << endl;
 	c << "[model]" << endl;
 	c << "generator = " << p.mesher << endl;
+	c << "generator_residue = " << p.mesher << endl;
 	c << "grid_resolution = " << p.lsmsN << endl;
+	c << "grid_residue_resolution = " << p.lsmsN << endl;
 	if (p.taubin > 0)
 		c << "smoothing = t " << p.taubin << endl;
 	else if (p.hc > 0)
