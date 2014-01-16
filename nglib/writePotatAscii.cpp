@@ -204,17 +204,18 @@ public:
     {
     	double result = 0;
     	double conversion = 1.602176565e-19 * 6.02214129e23 / 1000.0;
-    	ofstream ofile (filename.c_str());
+    	//ofstream ofile (filename.c_str());
+	stringstream str(stringstream::out|stringstream::binary);
 
-    	int old_cout_precision = cout.precision();
-    	int old_ofile_precision = ofile.precision();
+	//    	int old_cout_precision = cout.precision();
+    	// int old_ofile_precision = ofile.precision();
 
-    	if(outputprecision > 0)
-    	{
+	/*    	if(outputprecision > 0)
+      	{
     		cout.precision(outputprecision);
     		ofile.precision(outputprecision);
     	}
-
+	*/
     	if (lff)
     	{
     		if (!gfu)
@@ -237,25 +238,16 @@ public:
 	  
     		if (MyMPI_GetNTasks() == 1 || MyMPI_GetId() != 0){
     			const BilinearFormIntegrator & bfi = (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
-    			ofstream potfile;
+
+	
+
     			cout << IM(1) << "looking for " << potatfile.c_str() << endl;
 
-    			struct stat st;
-    			if(stat(potatfile.c_str(),&st) != 0){
-    				cout << IM(1)  << "file not found. creating and writing states" << endl;
-    				potfile.open( potatfile.c_str());
-    			} else if (createNewFile == "create") {
-    				cout << IM(1)  << "file found but creating new one and writing states" << endl;
-    				potfile.open( potatfile.c_str());
-    			} else {
-    				potfile.open( potatfile.c_str(), ios::app );
-    			}
-
     			if (states != -1)
-    				potfile << states << endl;
+    				str << states << endl;
 
-    			cout << IM(1)  << "Writing noOfAtoms for next state: " << noOfAtoms << endl;
-    			potfile << noOfAtoms << endl;
+			//    			cout << IM(1)  << "Writing noOfAtoms for next state: " << noOfAtoms << endl;
+    			str << noOfAtoms << endl;
 
 			if (initsearchtree){
 			  cout << IM(1)  << "init searchtree" << endl;
@@ -284,24 +276,40 @@ public:
 	      
     					result = pflux(0);
     					// Writing [V] into potat!
-    					potfile.precision(-1);
-    					potfile << point(0) << endl;
-    					potfile << point(1) << endl;
-    					potfile << point(2) << endl;
-    					potfile.precision(6);
-    					potfile << conversion * pflux(0) << endl;
+    					str << point(0) << endl;
+    					str << point(1) << endl;
+    					str << point(2) << endl;
+    					//potfile.precision(6);
+    					str << conversion * pflux(0) << endl;
 //    					potfile << (1.60217646e-19 * 6.0221415e23 * 1 * pflux(0))/1000*1/(0.008314510*300) << endl;
     					position++;
     				}
     			}
-    			potfile.close();
     		}
     	}
 
+	ofstream potfile;
+
+	struct stat st;
+	if(stat(potatfile.c_str(),&st) != 0){
+	  cout << IM(1)  << "file not found. creating and writing states" << endl;
+	  potfile.open( potatfile.c_str());
+	} else if (createNewFile == "create") {
+	  cout << IM(1)  << "file found but creating new one and writing states" << endl;
+	  potfile.open( potatfile.c_str());
+	} else {
+	  potfile.open( potatfile.c_str(), ios::app );
+	}
+	//	potfile.precision(-1);
+	potfile << str.str();
+	potfile.close();
+
     	pde.GetVariable(variablename,true) = result;
-    	cout.precision(old_cout_precision);
-    	ofile.precision(old_ofile_precision);
-    	ofile.close();
+    	// cout.precision(old_cout_precision);
+	//    	ofile.precision(old_ofile_precision);
+	
+
+	//    	ofile.close();
 
     }
 
