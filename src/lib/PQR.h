@@ -397,6 +397,17 @@ public:
 
 	}
 
+	void writePQR(vector<Atom> &aList, string fileName){
+	  ofstream pqr;
+	  pqr.open (fileName);
+	  for (unsigned int i = 0; i < aList.size(); i++){
+	    Atom currentAtom = aList.at(i);
+	    pqr << currentAtom.pqrLine() << endl;
+	  }
+	  pqr.close();
+	 
+	}
+
 	void writePQR(Residue &titGroup, int stateNr){
 		for (unsigned int i = 0; i < stList.size(); i++){
 			ST currentST = stList.at(i);
@@ -432,6 +443,21 @@ public:
 
 	}
 
+	void neutralState(Residue &titGroup, int stateNr){
+		for (unsigned int i = 0; i < stList.size(); i++){
+			ST currentST = stList.at(i);
+			if (currentST.getTitGroupName() == titGroup.getResidueName() &&
+					currentST.getStateNr() == stateNr){
+					vector<Atom> currentAtomList = titGroup.getAtomList();
+					patchNeutral(currentAtomList, currentST);
+					titGroup.setAtomList(currentAtomList);
+				break;
+			}
+		}
+
+	}
+
+
 	void patch(vector<Atom> &atomList, ST &st){
 		vector<Charge> rules = st.getRules();
 		for (unsigned int i = 0; i < atomList.size(); i++){
@@ -441,7 +467,12 @@ public:
 				Charge currentRule = rules.at(j);
 				if (currentRule.getAtomName() == currentAtom.getAtomName() &&
 						st.getTitGroupName() == currentAtom.getResidueName()){
-					currentAtom.setCharge(currentRule.getCharge());
+		  float currentCharge = currentRule.getCharge();
+				  if ( currentCharge == 0){
+				    currentCharge = 0.01;
+				  }
+		
+					currentAtom.setCharge(currentCharge);
 					found = true;
 					break;
 				}
@@ -452,6 +483,34 @@ public:
 			atomList.at(i) = currentAtom;
 		}
 	}
+
+	void patchNeutral(vector<Atom> &atomList, ST &st){
+		vector<Charge> rules = st.getRules();
+		for (unsigned int i = 0; i < atomList.size(); i++){
+			Atom currentAtom = atomList.at(i);
+			bool found = false;
+			for (unsigned int j = 0; j < rules.size(); j++){
+				Charge currentRule = rules.at(j);
+				if (currentRule.getAtomName() == currentAtom.getAtomName() &&
+						st.getTitGroupName() == currentAtom.getResidueName()){
+				  float currentCharge = currentRule.getCharge();
+				  if ( currentCharge == 0){
+				    currentCharge = 0.01;
+				  }
+				    
+					currentAtom.setCharge(currentCharge);
+					found = true;
+					break;
+				}
+			}
+			if (!found){
+			  //				currentAtom.setCharge(0);
+			}
+			//			currentAtom.print();
+			atomList.at(i) = currentAtom;
+		}
+	}
+
 
 	void writeOutW(string fileName){
 		cout << "Writing out W matrix .. " << endl;
@@ -743,12 +802,64 @@ public:
 		vector<Atom> refAllAtomList;
 		for (unsigned int i = 0; i < residueList.size(); i++){
 		  Residue currentResidue = residueList.at(i);
-		  if (currentResidue.isTitGroup()){
-		    switchState(currentResidue, 0);
+
+		  if (i == 0 && calcNTE){
+		    Residue nteResidue = residueList.at(0);
+		    vector<Atom> list = nteResidue.getAtomList();
+		    for (unsigned int k = 0; k < list.size(); k++){ 
+		      Atom currentAtom = list.at(k);
+		      currentAtom.setResidueName("NTE");
+		      list.at(k) = currentAtom;
+		    }
+		    nteResidue.setResidueName("NTE");
+		    nteResidue.setAtomList(list);
+		    neutralState(nteResidue, 1);
+		    list = nteResidue.getAtomList();
+		    for (unsigned int k = 0; k < list.size(); k++){ 
+		      Atom currentAtom = list.at(k);
+		      currentAtom.setResidueName(currentResidue.getResidueName());
+		      list.at(k) = currentAtom;	      
+		    }
+		    currentResidue.setAtomList(list);
+		  } else if ( i == residueList.size()-1  && calcCTE ){
+		    Residue cteResidue = residueList.at(residueList.size()-1);
+		    vector<Atom> list = cteResidue.getAtomList();
+		    for (unsigned int k = 0; k < list.size(); k++){ 
+		      Atom currentAtom = list.at(k);
+		      currentAtom.setResidueName("CTE");
+		      list.at(k) = currentAtom;
+		    }
+		    cteResidue.setResidueName("CTE");
+		    cteResidue.setAtomList(list);
+		    neutralState(cteResidue, 1);
+		    list = cteResidue.getAtomList();
+		    for (unsigned int k = 0; k < list.size(); k++){ 
+		      Atom currentAtom = list.at(k);
+		      currentAtom.setResidueName(currentResidue.getResidueName());
+		      list.at(k) = currentAtom;	      
+		    }
+		    currentResidue.setAtomList(list);
+		    
+		  }
+
+		  bool found = false;
+		  for (unsigned int j = 0; j < titGroupList.size(); j++){
+		    Residue currentTGroup = titGroupList.at(j);
+		    if (currentTGroup.getResidueName() == currentResidue.getResidueName() && currentTGroup.getResidueNumber() == currentResidue.getResidueNumber()){
+		      found = true;
+		      cout << "reference: setting " << currentTGroup.getIdentifier() << " to neutral state" << endl;
+
+		      break;
+		    } 
+		  }
+		  if (found){
+		    neutralState(currentResidue, 1);
 		  }
 		  vector<Atom> residueAtoms = currentResidue.getAtomList();
 		  refAllAtomList.insert(refAllAtomList.end(), residueAtoms.begin(), residueAtoms.end());
 		}
+
+		writePQR(refAllAtomList, "refAllAtomList.pqr");
 
 
 		float bornEner = 0;
@@ -758,6 +869,8 @@ public:
 			Residue currentOrigTitGroup = titGroupList.at(i);
 			Residue currentTitGroup = titGroupList.at(i);
 			unsigned int nrStates = currentTitGroup.getNrStates();
+  
+
 			for (unsigned int stateNr = 1; stateNr < nrStates; stateNr++){
 				tCycle cycle = currentTitGroup.getTCycle();
 
@@ -782,22 +895,44 @@ public:
 
 				float back0 = 0;
 				float back1 = 0;
+				
+//				cout << "Calculating BACK" << endl;
+//				cout << "================" << endl;
 
 				//Residue titGroup = titGroup !
-				vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList); // from whole protein without patched atoms in currentTitGroup
+				//				vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList); // from whole protein without patched atoms in currentTitGroup
+			vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList);
+			stringstream ss;
+			ss << "pAtomList_" << currentTitGroup.getIdentifier() << ".pqr"; 
+			writePQR(pAtomList, ss.str());
+
+
 				vector<Atom> mAtomList = deleteAtoms(currentOrigTitGroup.getAtomList(), refAtomList); // not patched
+			stringstream ss2;
+		        ss2 << "mAtomList_" << currentTitGroup.getIdentifier() << ".pqr"; 
+			writePQR(mAtomList, ss2.str());
+
 
 				for (unsigned int j = 0; j < pAtomList.size(); j++){
 					Atom currentAtom = pAtomList.at(j);
 					back1 += currentAtom.getCharge() * (cycle.p[0][currentAtom.getCoord()] - cycle.p[stateNr][currentAtom.getCoord()]);
+					//					Point3<float> c = currentAtom.getCoord();
+					//					cout << "Looking at pcharge (" << c.X() << ", " << c.Y() << ", " << c.Z() << endl;
+					//					cout << "back1 = " << currentAtom.getCharge() << " * ( " << cycle.p[0][currentAtom.getCoord()] << " - " << cycle.p[stateNr][currentAtom.getCoord()] << " ) = " << back1 << endl;
+
 				}
 
 				for (unsigned int j = 0; j < mAtomList.size(); j++){
 					Atom currentAtom = mAtomList.at(j);
 					back0 += currentAtom.getCharge() * (cycle.m[0][currentAtom.getCoord()] - cycle.m[stateNr][currentAtom.getCoord()]);
-				}
+					//					Point3<float> c = currentAtom.getCoord();
 
+					//					cout << "Looking at mcharge (" << c.X() << ", " << c.Y() << ", " << c.Z() << endl;
+					//					cout << "back2 = " << currentAtom.getCharge() << " * ( " << cycle.m[0][currentAtom.getCoord()] << " - " << cycle.m[stateNr][currentAtom.getCoord()] << " ) = " << back0 << endl;
+
+				}
 				backEner = (back1-back0);
+//				cout << "returning (" << back1 << "-" << back0 << ") =" << backEner << endl; 
 
 				unsigned int cycleNr = 0;
 				if (cycleName == "cycle1")
@@ -815,11 +950,14 @@ public:
 		// compareAtomList is << currentAtomList
 		for (unsigned int i = 0; i < compareAtomList.size(); i++){
 			Atom currentCompareAtom = compareAtomList.at(i);
+			//			currentCompareAtom.print();
 			if (currentCompareAtom.getCharge() != 0){
+			  unsigned int pos = 0;
 				for (unsigned int j = 0; j < result.size(); j++){
 					Atom currentAtom = result.at(j);
 					if (currentAtom.getAtomNumber() == currentCompareAtom.getAtomNumber()){
-						result.erase(result.begin()+j);
+						result.erase(result.begin()+j-pos);
+						pos++;
 					}
 				}
 			}

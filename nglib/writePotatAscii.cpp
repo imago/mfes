@@ -55,6 +55,8 @@ protected:
     int noOfAtoms;
     ///
     string createNewFile;
+    ///
+    bool initsearchtree;
     
 
     class Atom
@@ -99,7 +101,7 @@ public:
     	gfv = pde.GetGridFunction (flags.GetStringFlag ("gridfunction2", ""), 1);
     	pqrfile = flags.GetStringFlag ("pqrfile","pqr");
     	potatfile = flags.GetStringFlag ("potatfile","potat");
-
+	initsearchtree = flags.GetDefineFlag("initsearchtree");
     	states = flags.GetNumFlag ("statenr", 1);
 
     	createNewFile = flags.GetStringFlag ("file","");
@@ -255,11 +257,13 @@ public:
     			cout << IM(1)  << "Writing noOfAtoms for next state: " << noOfAtoms << endl;
     			potfile << noOfAtoms << endl;
 
-    			cout << IM(1)  << "init searchtree" << endl;
-    			Vec<3> any_point(0,0,0);
-    			IntegrationPoint ip;
-    			ma.FindElementOfPoint(any_point,ip,true);
-
+			if (initsearchtree){
+			  cout << IM(1)  << "init searchtree" << endl;
+			  Vec<3> any_point(0,0,0);
+			  IntegrationPoint ip;
+			  ma.FindElementOfPoint(any_point,ip,true);
+			}
+			
     			list<Atom>::iterator it;
     			int position = 1;
     			molecule.sort();

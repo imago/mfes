@@ -67,6 +67,8 @@ public:
 		string eps_in = ini.get<string>("experiment.eps_in");
 		string eps_out = ini.get<string>("experiment.eps_out");
 
+		string extend_preconditioner = " -cylce=6 -smoother=block -coarsetype=direct -coarsesmoothingsteps=0 -notest";
+
 //		boost::filesystem::wpath file(L"pka_cycle0.pde");
 //		if(boost::filesystem::exists(file))
 //			boost::filesystem::remove(file);
@@ -77,7 +79,13 @@ public:
 
 			if ( !boost::filesystem::exists( "cycle0."+prefix+".potat" ) ){
 				ofstream potfile;
-				potfile.open("pka_cycle0_"+prefix+".pde", ios::in | ios::out | ios::app);
+
+				if (i > 0){
+				  potfile.open("pka_cycle0_"+prefix+".pde", ios::in | ios::out | ios::app);
+				}
+				else {
+				  potfile.open("pka_cycle0_"+prefix+".pde");
+				}
 				potfile << "###################################################" << endl;
 				potfile << "#" << endl;
 				potfile << "#  Initialization: " << prefix << endl;
@@ -117,8 +125,8 @@ public:
 				potfile << "define bilinearform a_ref_"<<prefix<<" -fespace=v -symmetric" << endl;
 				potfile << "laplace epsilon_ref" << endl;
 				potfile << endl;
-				potfile << "define preconditioner c_solv_"<<prefix<<" -type=multigrid -bilinearform=a_solv_"<<prefix<<" -inverse=mumps" << endl;
-				potfile << "define preconditioner c_ref_"<<prefix<<" -type=multigrid -bilinearform=a_ref_"<<prefix<<" -inverse=mumps" << endl;
+				potfile << "define preconditioner c_solv_"<<prefix<<" -type=multigrid -bilinearform=a_solv_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl;
+				potfile << "define preconditioner c_ref_"<<prefix<<" -type=multigrid -bilinearform=a_ref_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl;
 				potfile << endl;
 				potfile << "###################################################" << endl;
 				potfile << "#" << endl;
@@ -184,9 +192,7 @@ public:
 		string eps_in = ini.get<string>("experiment.eps_in");
 		string eps_out = ini.get<string>("experiment.eps_out");
 
-		boost::filesystem::wpath file(L"pka_cycle1.pde");
-		if(boost::filesystem::exists(file))
-			boost::filesystem::remove(file);
+		string extend_preconditioner = " -cylce=6 -smoother=block -coarsetype=direct -coarsesmoothingsteps=0 -notest";
 
 		bool init = true;
 
@@ -196,7 +202,14 @@ public:
 
 			if ( !boost::filesystem::exists( "cycle1."+prefix+".potat" ) ){
 				ofstream potfile;
-				potfile.open("pka_cycle1.pde", ios::in | ios::out | ios::app);
+				
+				if (i > 0){
+				  potfile.open("pka_cycle1.pde", ios::in | ios::out | ios::app);
+				}
+				else {
+				  potfile.open("pka_cycle1.pde");
+				}
+				
 				if (init){
 
 					potfile << "shared = pointcharges" << endl;
@@ -234,8 +247,8 @@ public:
 					potfile << "define bilinearform a_ref_"<<mol<<" -fespace=v -symmetric" << endl;
 					potfile << "laplace epsilon_ref" << endl;
 					potfile << endl;
-					potfile << "define preconditioner c_solv_"<<mol<<" -type=multigrid -bilinearform=a_solv_"<<mol<<" -inverse=mumps" << endl;
-					potfile << "define preconditioner c_ref_"<<mol<<" -type=multigrid -bilinearform=a_ref_"<<mol<<" -inverse=mumps" << endl;
+					potfile << "define preconditioner c_solv_"<<mol<<" -type=multigrid -bilinearform=a_solv_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl;
+					potfile << "define preconditioner c_ref_"<<mol<<" -type=multigrid -bilinearform=a_ref_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl;
 					potfile << endl;
 					init = false;
 				}

@@ -19,7 +19,9 @@ struct Triangle{
 // meshlab: mu = -0.53, lambad = 0.5
 
 #define CONVERT 5.74346052632
-				//5.74342695
+		//5.74342695
+
+#define VOL_MESH_TRIES 5
 
 #define NOT_IN_ST 111
 #define HEAPSIZE 4000000

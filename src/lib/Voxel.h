@@ -84,10 +84,10 @@ public:
   double h = Dist(pmin, pmax)/nx;
   for (int i = 0; i < values.Size(); i++)
     if (fabs (values[i]) < 0.02 * dvalues[i].Length() * h)
-      {
+     {
         gridpoints[i] -= (values[i]/dvalues[i].Length2()) * dvalues[i];
         values[i] = 0;
-      }
+     }
 
   stlout.open (fileName.c_str());
   stlout << "solid" << endl;
@@ -364,8 +364,9 @@ void WriteTrig (Point<3> p1, Point<3> p2, Point<3> p3, Vec<3> n)
   if (nt.Length() < 1e-5 * (p2-p1).Length() * (p3-p1).Length())
     {
       if (nt.Length() < 1e-12 * (p2-p1).Length() * (p3-p1).Length()) return;
-     // cout << "flat trig: " << nt.Length() / ((p2-p1).Length() * (p3-p1).Length()) << endl;
+      // cout << "flat trig: " << nt.Length() / ((p2-p1).Length() * (p3-p1).Length()) << endl;
     }
+
   if (nt * n < 0) Swap (p2, p3);
 
   stlout << "facet normal " << n(0) << " " << n(1) << " " << n(2) << "\n";

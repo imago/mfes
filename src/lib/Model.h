@@ -27,75 +27,76 @@ class Model {
 public:
 	void calcModel(vector<Atom> &atomList, INI &ini, string fname = "", bool cavity = false){
 
-	    LSMS lmSurface;
-	    mMesh mSurface;
+	  LSMS lmSurface;
+	  mMesh mSurface;
+	  
+	  string volume_vol = ini.get<string>("model.volume_vol");
+	  string surface_stl = ini.get<string>("model.surface_stl");
+	  string generator = ini.get<string>("model.generator");
+	  string generatorResidue = ini.get<string>("model.generator_residue");
+	  int generatorResolution = atoi(ini.get<string>("model.grid_resolution").c_str());
+	  int generatorModelResolution = atoi(ini.get<string>("model.grid_residue_resolution").c_str());
 
-	    string volume_vol = ini.get<string>("model.volume_vol");
-    	string surface_stl = ini.get<string>("model.surface_stl");
-    	string generator = ini.get<string>("model.generator");
-    	string generatorResidue = ini.get<string>("model.generator_residue");
-	int generatorResolution = atoi(ini.get<string>("model.grid_resolution").c_str());
-	int generatorModelResolution = atoi(ini.get<string>("model.grid_residue_resolution").c_str());
 
+	  int mask = 1;
 
-    	int mask = 1;
+	  if (generator == "standard" && cavity && !boost::filesystem::exists( "cavity.vol" )){
+	    // cavity is calculated
+	    cout << "Calculating cavities..." << endl;
+	    boost::timer t;
+	    ofstream time;
+	    time.open ("times");
+	    
+	    if (lmSurface.calcMC(mSurface, atomList, ini, "cavity")){
+	      
+	      clean(mSurface);
+	      smooth(mSurface, ini);
+	      
+	      if (surface_stl != "" )
+		tri::io::ExporterSTL<mMesh>::Save(mSurface,"cavity.stl",false);
 
-    	if (generator == "standard" && cavity && !boost::filesystem::exists( "cavity.vol" )){
-    		// cavity is calculated
-    		cout << "Calculating cavities..." << endl;
-			boost::timer t;
-			ofstream time;
-			time.open ("times");
-
-	    	if (lmSurface.calcMC(mSurface, atomList, ini, "cavity")){
-
-	    		clean(mSurface);
-	    		smooth(mSurface, ini);
-
-				if (surface_stl != "" )
-					tri::io::ExporterSTL<mMesh>::Save(mSurface,"cavity.stl",false);
-				double currentTime = t.elapsed();
-				time << "cavity_surface " << currentTime << " s" << endl;
-				cout << "mFES: cavity model surface calculation took " << currentTime << " seconds." <<endl;
-
-				t.restart();
-				convert(mSurface, ini, "cavity.vol", "cavity");
-				currentTime = t.elapsed();
-				time << "cavity_volume " << currentTime << " s" << endl;
-				cout << "mFES: cavity model VOL meshing took " << currentTime << " seconds." <<endl;
-	    	}
-			time.close();
-
-    	} else if ( fname == "" && !boost::filesystem::exists( volume_vol ) ){
+	      double currentTime = t.elapsed();
+	      time << "cavity_surface " << currentTime << " s" << endl;
+	      cout << "mFES: cavity model surface calculation took " << currentTime << " seconds." <<endl;
+	      
+	      t.restart();
+	      convert(mSurface, ini, "cavity.vol", "cavity");
+	      currentTime = t.elapsed();
+	      time << "cavity_volume " << currentTime << " s" << endl;
+	      cout << "mFES: cavity model VOL meshing took " << currentTime << " seconds." <<endl;
+	    }
+	    time.close();
+	    
+	  } else if ( fname == "" && !boost::filesystem::exists( volume_vol ) ){
 	    // protein model is calculated
-			boost::timer t;
-			ofstream time;
-			time.open ("times");
-
-			if (boost::filesystem::exists( surface_stl )) {
-				cout << surface_stl << " found. " << endl;
-				tri::io::ImporterSTL<mMesh>::Open(mSurface, surface_stl.c_str(), mask);
-		    //	clean(mSurface);
-		    //	smooth(mSurface, ini);
-
-			} else {
-				if (generator == "standard"){
-					lmSurface.calcMC(mSurface, atomList, ini);
-					clean(mSurface);
-					smooth(mSurface, ini);
-			    	if (surface_stl != "" )
-				        tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
-				} else {
-					Voxel vSurface;
-					if (!boost::filesystem::exists( "protein.stl" )){
-					  vSurface.calcSurface(mSurface, atomList, ini, "protein.stl", generatorResolution);
-					  clean(mSurface);
-					} 
-					tri::io::ImporterSTL<mMesh>::Open(mSurface, string("protein.stl").c_str(), mask);			     
-				}
-
-			}
-
+	    boost::timer t;
+	    ofstream time;
+	    time.open ("times");
+	    
+	    if (boost::filesystem::exists( surface_stl )) {
+	      cout << surface_stl << " found. " << endl;
+	      tri::io::ImporterSTL<mMesh>::Open(mSurface, surface_stl.c_str(), mask);
+	      // clean(mSurface);
+	      // smooth(mSurface, ini);
+	      
+	    } else {
+	      if (generator == "standard"){
+		lmSurface.calcMC(mSurface, atomList, ini);
+		clean(mSurface);
+		smooth(mSurface, ini);
+		if (surface_stl != "" )
+		  tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
+	      } else {
+		Voxel vSurface;
+		if (!boost::filesystem::exists( "protein.stl" )){
+		  vSurface.calcSurface(mSurface, atomList, ini, "protein.stl", generatorResolution);
+		  clean(mSurface);
+		} 
+		tri::io::ImporterSTL<mMesh>::Open(mSurface, string("protein.stl").c_str(), mask);			     
+	      }
+	      
+	    }
+	    
 //			MeshModel* mesh = md.mm();
 //			MeshModel::MM_FACEFACETOPO | MeshModel::MM_FACEFLAGBORDER);
 //			tri::UpdateTopology<mMesh>::FaceFace(mSurface);
@@ -116,49 +117,62 @@ public:
 //    		exit(0);
 
 
- 	    	double currentTime = t.elapsed();
-	    	time << "protein_surface " << currentTime << " s" << endl;
-	    	cout << "mFES: protein model surface calculation took " << currentTime << " seconds." <<endl;
-
-	    	t.restart();
-	    	convert(mSurface, ini);
-	    	currentTime = t.elapsed();
-	    	time << "protein_volume " << currentTime << " s" << endl;
-	    	cout << "mFES: protein model VOL meshing took " << currentTime << " seconds." <<endl;
-	    	time.close();
-	    } else if ( fname != "" ){
-	    	// group model with id nr is calculated
-
-	    	if ( !boost::filesystem::exists( fname ) ){
-				ofstream time;
-				time.open ("times", ios::app);
-
-				boost::timer t;
-				if (generatorResidue == "standard"){
-					lmSurface.calcMC(mSurface, atomList, ini);
-					clean(mSurface);
-					smooth(mSurface, ini);
-					if (surface_stl != "" )
-						tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
-				} else {
-					Voxel vSurface;
-					vSurface.calcSurface(mSurface, atomList, ini, fname+".stl", generatorModelResolution);
-					clean(mSurface);
-					tri::io::ImporterSTL<mMesh>::Open(mSurface, string(fname+".stl").c_str(), mask);
-				}
-
-		    	double currentTime = t.elapsed();
-		    	time << "model_surface " << currentTime << " s" << endl;
-	    		cout << "mFES: residue model surface calculation took " << currentTime << " seconds." <<endl;
-
-	    		t.restart();
-	    		convert(mSurface, ini, fname, "residue");
-		    	currentTime = t.elapsed();
-		    	time << "model_volume " << currentTime << " s" << endl;
-	    		cout << "mFES: residue model VOL meshing took " << currentTime << " seconds." <<endl;
-	    		time.close();
-	    	}
+	    double currentTime = t.elapsed();
+	    time << "protein_surface " << currentTime << " s" << endl;
+	    cout << "mFES: protein model surface calculation took " << currentTime << " seconds." <<endl;
+	    
+	    t.restart();
+	    convert(mSurface, ini);
+	    currentTime = t.elapsed();
+	    time << "protein_volume " << currentTime << " s" << endl;
+	    cout << "mFES: protein model VOL meshing took " << currentTime << " seconds." <<endl;
+	    time.close();
+	  }
+	  else if (fname != ""){
+	    // group model with id nr is calculated
+	    if ( !boost::filesystem::exists( fname ) ){
+	      string stlFile = fname+".stl";
+	      ofstream time;
+	      time.open ("times", ios::app);
+	      boost::timer t;
+	      if ( !boost::filesystem::exists( stlFile )){
+		
+		if (generatorResidue == "standard"){
+		  lmSurface.calcMC(mSurface, atomList, ini);
+		  clean(mSurface);
+		  smooth(mSurface, ini);
+		  tri::io::ExporterSTL<mMesh>::Save(mSurface,stlFile.c_str(),false);
+		} else {
+		  Voxel vSurface;
+		  vSurface.calcSurface(mSurface, atomList, ini, stlFile, generatorModelResolution);
+		  clean(mSurface);
+		  tri::io::ImporterSTL<mMesh>::Open(mSurface, stlFile.c_str(), mask);
+		}
+		
+		double currentTime = t.elapsed();
+		time << "model_surface " << currentTime << " s" << endl;
+		cout << "mFES: residue model surface calculation took " << currentTime << " seconds." <<endl;
+		
+		t.restart();
+		convert(mSurface, ini, fname, "residue");
+		currentTime = t.elapsed();
+		time << "model_volume " << currentTime << " s" << endl;
+		cout << "mFES: residue model VOL meshing took " << currentTime << " seconds." <<endl;
+		time.close();
+	      }
+	      else {
+		cout << "model surface found: " << stlFile << endl;
+		tri::io::ImporterSTL<mMesh>::Open(mSurface, stlFile.c_str(), mask);
+		t.restart();
+		convert(mSurface, ini, fname, "residue");
+		double currentTime = t.elapsed();
+		time << "model_volume " << currentTime << " s" << endl;
+		cout << "mFES: residue model VOL meshing took " << currentTime << " seconds." <<endl;
+		time.close();
+	      }
+	      
 	    }
+	  }
 
 	}
 
@@ -212,8 +226,8 @@ private:
 
 			if (variable == "options.meshsize"){
 				//!< Maximum global mesh size allowed
-				mp.maxh = atof(value.c_str());
-				continue;
+			        mp.maxh = atof(value.c_str());
+			        continue;
 			}
 
 			if (variable == "options.minmeshsize"){
@@ -550,33 +564,44 @@ private:
 
 		while (ss >> mode >> steps){
 			if (mode == "t"){
+			        cout << "taubin smoothing steps: " << steps << endl;
 				for (unsigned int i = 0; i < steps; i++){
+				        cout << "*";
 					tri::UpdateNormal<mMesh>::PerFace(mSurface);
 					tri::Smooth<mMesh>::VertexCoordTaubin(mSurface,1,TAUBIN_LAMBDA,TAUBIN_MU);
 				}
 			} else if (mode == "lap"){
+                       	        cout << "laplace smoothing steps: " << steps << endl;
 				for (unsigned int i = 0; i < steps; i++){
-					tri::UpdateNormal<mMesh>::PerFace(mSurface);
+				        cout << "*";
+				        tri::UpdateNormal<mMesh>::PerFace(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacian(mSurface,1);
 				}
 			} else if (mode == "hc"){
+  			        cout << "hc laplace smoothing steps: " << steps << endl;
 				for (unsigned int i = 0; i < steps; i++){
+                                        cout << "*";
 					tri::UpdateNormal<mMesh>::PerFace(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacianHC(mSurface,1);
 				}
 			} else if (mode == "aw"){
+			        cout << "angle weighted laplace smoothing steps: " << steps << endl;
 				for (unsigned int i = 0; i < steps; i++){
+                                        cout << "*";
 					tri::UpdateNormal<mMesh>::PerFace(mSurface);
 					tri::Smooth<mMesh>::VertexCoordLaplacianAngleWeighted(mSurface,1, CF_LAMBDA);
 				}
 			}	else if (mode == "lapsd"){
+			        cout << "scale dependent laplace smoothing steps: " << steps << endl;
 				for (unsigned int i = 0; i < steps; i++){
+				        cout << "*";
 					tri::UpdateNormal<mMesh>::PerFace(mSurface);
 //					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
 					tri::Smooth<mMesh>::VertexCoordScaleDependentLaplacian_Fujiwara(mSurface,1, 0.0025);
 				}
 
 			}
+			cout << endl;
 
 		}
 		//		vector<mMesh::FaceType *> SelfIntersectList;

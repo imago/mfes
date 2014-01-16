@@ -119,7 +119,7 @@ public:
     // Decide if interpolate or add whole charge to a point
 
     // Set all values to zero
-     if (MyMPI_GetNTasks() == 1 || MyMPI_GetId() != 0)
+    if (MyMPI_GetNTasks() == 1 || MyMPI_GetId() != 0)
       reset();
 
     if (!interpolate){

@@ -4,7 +4,7 @@
  Author      : Ilkay Sakalli
  Version     :
  Copyright   : GNU Library or Lesser General Public License version 2.0 (LGPLv2)
- Description : Hello World in C++,
+ Description : mFES - molecular Finite Element Solver
  ============================================================================
  */
 
@@ -98,6 +98,7 @@ int main(int argc, char* argv[]) {
                  << vm["ini"].as<string>() << ".\n";
         } else {
             cout << "Please set configuration file!\n";
+	    exit(1);
         }
 
         boost::property_tree::ptree ini;
@@ -105,6 +106,13 @@ int main(int argc, char* argv[]) {
         cout << "Starting job " << ini.get<std::string>("general.jobname") << endl;
         string location = ini.get<std::string>("general.molecule");
         string mode = ini.get<std::string>("general.mode");
+
+	string boundary = ini.get<std::string>("model.boundary");
+	if ( !boost::filesystem::exists( boundary ) )
+	  {
+	    std::cout << "Boundary surface given in config not found!" << std::endl;
+	    exit(1);
+	  }
 
 
         vector<PQR> pqrList;
