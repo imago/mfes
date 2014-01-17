@@ -7,7 +7,6 @@
 
 using namespace ngsolve;
 
-
  
 ///
 class NumProcWritePotat : public NumProc
@@ -57,13 +56,14 @@ protected:
     string createNewFile;
     ///
     bool initsearchtree;
-    
+    ///
+    bool predef;
 
     class Atom
      {
      public:
        string fieldName;
-       int atomNo;
+       int atomNo; // has to begin with 1!
        string atomName;
        string residueName;
        string chainName;
@@ -103,6 +103,7 @@ public:
     	potatfile = flags.GetStringFlag ("potatfile","potat");
 	initsearchtree = flags.GetDefineFlag("initsearchtree");
     	states = flags.GetNumFlag ("statenr", 1);
+	predef = flags.GetDefineFlag("predef");
 
     	createNewFile = flags.GetStringFlag ("file","");
 
@@ -175,7 +176,7 @@ public:
     		i++;
 
     		// atom name
-    		t.atomNo = atoi(line.substr(12,4).c_str());
+    		t.atomNo = atoi(line.substr(5,6).c_str());
 
     		// residue name
     		t.residueName = line.substr(17,3).c_str();
@@ -195,123 +196,101 @@ public:
     		t.radius = atof(line.substr(60,6).c_str());
 
     		molecule.push_back(t);
-//    		cout << i << ": " << t.fieldName << " " << t.x << " " << t.y  << " " << t.z  << " " << t.charge  << " " << t.radius <<  endl;
+		//	        cout << t.atomNo << ": " << t.fieldName << " " << t.x << " " << t.y  << " " << t.z  << " " << t.charge  << " " << t.radius <<  endl;
     	}
     	return i;
     }
 
-    void Do(LocalHeap & lh)
-    {
-    	double result = 0;
-    	double conversion = 1.602176565e-19 * 6.02214129e23 / 1000.0;
-    	//ofstream ofile (filename.c_str());
-	stringstream str(stringstream::out|stringstream::binary);
+  void Do(LocalHeap & lh)
+  {
 
-	//    	int old_cout_precision = cout.precision();
-    	// int old_ofile_precision = ofile.precision();
-
-	/*    	if(outputprecision > 0)
-      	{
-    		cout.precision(outputprecision);
-    		ofile.precision(outputprecision);
-    	}
-	*/
-    	if (lff)
-    	{
-    		if (!gfu)
-    			throw Exception ("evaluate linear-form needs an argument -gridfunction=u");
-
-    		cout << "<" << lff->GetName() << ", " << gfu->GetName() << "> = " << flush;
-
-	
-    		if (!lff->GetFESpace().IsComplex())
-    		{
-    			result = S_InnerProduct<double>(lff->GetVector(), gfu->GetVector());
-    			cout << result << endl;
-    		}
-    		else
-    			cout << S_InnerProduct<Complex>(lff->GetVector(), gfu->GetVector()) << endl;
-	
-    	}
-    	else if (point.Size() >= 2)
-    	{
-	  
-    		if (MyMPI_GetNTasks() == 1 || MyMPI_GetId() != 0){
-    			const BilinearFormIntegrator & bfi = (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
-
-	
-
-    			cout << IM(1) << "looking for " << potatfile.c_str() << endl;
-
-    			if (states != -1)
-    				str << states << endl;
-
-			//    			cout << IM(1)  << "Writing noOfAtoms for next state: " << noOfAtoms << endl;
-    			str << noOfAtoms << endl;
-
-			if (initsearchtree){
-			  cout << IM(1)  << "init searchtree" << endl;
-			  Vec<3> any_point(0,0,0);
-			  IntegrationPoint ip;
-			  ma.FindElementOfPoint(any_point,ip,true);
-			}
-			
-    			list<Atom>::iterator it;
-    			int position = 1;
-    			molecule.sort();
+    double conversion = 1.602176565e-19 * 6.02214129e23 / 1000.0;
+    
+    stringstream str(stringstream::out|stringstream::binary);
+    
+    if (MyMPI_GetNTasks() == 1 || MyMPI_GetId() != 0) {
+      const BilinearFormIntegrator & bfi = (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
      
-    			for (it=molecule.begin(); it!=molecule.end(); ++it){
-    				Atom line;
-    				line = *it;
-    				point(0) = line.x;
-    				point(1) = line.y;
-    				point(2) = line.z;
-		
-    				FlatVector<double> pflux(bfi.DimFlux(), lh);
-
-    				if (!gfu->GetFESpace().IsComplex())
-    				{
-
-    					CalcPointFlux (ma, *gfu, point, domains, pflux, bfi, applyd, lh, component);
+      unsigned int elnr, idx;
 	      
-    					result = pflux(0);
-    					// Writing [V] into potat!
-    					str << point(0) << endl;
-    					str << point(1) << endl;
-    					str << point(2) << endl;
-    					//potfile.precision(6);
-    					str << conversion * pflux(0) << endl;
-//    					potfile << (1.60217646e-19 * 6.0221415e23 * 1 * pflux(0))/1000*1/(0.008314510*300) << endl;
-    					position++;
-    				}
-    			}
-    		}
-    	}
+      list<Atom>::iterator it;
+      int position = 1;
+      molecule.sort();
 
-	ofstream potfile;
+      bool firstone(true);
 
-	struct stat st;
-	if(stat(potatfile.c_str(),&st) != 0){
-	  cout << IM(1)  << "file not found. creating and writing states" << endl;
-	  potfile.open( potatfile.c_str());
-	} else if (createNewFile == "create") {
-	  cout << IM(1)  << "file found but creating new one and writing states" << endl;
-	  potfile.open( potatfile.c_str());
-	} else {
-	  potfile.open( potatfile.c_str(), ios::app );
+      for (it=molecule.begin(); it!=molecule.end(); ++it)
+	{
+	  Atom line;
+	  line = *it;
+	  point(0) = line.x;
+	  point(1) = line.y;
+	  point(2) = line.z;
+
+	  double* p = new double[3];
+	  if(firstone)
+	    {
+	      // normally done in adding pointcharges
+	      // just generated if no searchtree generated before
+	      IntegrationPoint PtOnRef(0,0,0,1);
+       	      elnr = ma.FindElementOfPoint(point,PtOnRef,true);
+	      firstone = false;
+	    }
+
+	  FlatVector<double> pflux(bfi.DimFlux(), lh);
+
+	  // predef = false;
+
+	  if (!predef){
+	    CalcPointFlux (ma, *gfu, point, domains, pflux, bfi, false, lh, component);
+	  }
+	  else {
+	    idx = line.atomNo-1;
+	    elnr     = ma.getElIndex(idx);
+	    ma.setIpPoint(idx, p);
+
+	    IntegrationPoint ip (p[0], p[1], p[2], 1);
+	    
+	    CalcElFlux (ma, *gfu, point, domains, pflux, bfi, false, lh, elnr, ip, component);
+	    
+	  }
+ 
+	  str << point(0) << endl;
+	  str << point(1) << endl;
+	  str << point(2) << endl;
+	  str << conversion * pflux(0) << endl;
+
+	  position++;
+	  
 	}
-	//	potfile.precision(-1);
-	potfile << str.str();
-	potfile.close();
-
-    	pde.GetVariable(variablename,true) = result;
-    	// cout.precision(old_cout_precision);
-	//    	ofile.precision(old_ofile_precision);
 	
-
-	//    	ofile.close();
-
     }
+  
+    
+    // Writing out results
+    cout << IM(1) << "looking for " << potatfile.c_str() << endl;
+
+    ofstream potfile;
+   
+    struct stat st;
+    if(stat(potatfile.c_str(),&st) != 0){
+      cout << IM(1)  << "file not found. creating and writing states" << endl;
+      potfile.open( potatfile.c_str());
+    } else if (createNewFile == "create") {
+      cout << IM(1)  << "file found but creating new one and writing states" << endl;
+      potfile.open( potatfile.c_str());
+    } else {
+      potfile.open( potatfile.c_str(), ios::app );
+    }
+    if (states != -1)
+      potfile << states << endl;
+      
+    cout << IM(1)  << "Writing noOfAtoms for next state: " << noOfAtoms << endl;
+    potfile << noOfAtoms << endl;
+    potfile << str.str();
+    potfile.close();
+
+  }
 
     static NumProc * Create (PDE & pde, const Flags & flags)
     {
@@ -329,7 +308,6 @@ public:
     		  << "Linear-form     = " << lff->GetName() << endl;
     }
 
-    ///
     static void PrintDoc (ostream & ost)
     {
       ost <<

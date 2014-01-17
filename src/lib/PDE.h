@@ -97,6 +97,7 @@ public:
 				potfile << "shared = pointcharges" << endl;
 				potfile << "shared = energydiff" << endl;
 				potfile << "shared = writePotatAscii" << endl;
+				potfile << "shared = precalculation" << endl;
 				potfile << endl;
 				potfile << "define constant eps0 = 8.8541878e-22" << endl;
 				potfile << "define constant q0 = 1.60217646e-19" << endl;
@@ -126,7 +127,8 @@ public:
 				potfile << "laplace epsilon_ref" << endl;
 				potfile << endl;
 				potfile << "define preconditioner c_solv_"<<prefix<<" -type=multigrid -bilinearform=a_solv_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl;
-				potfile << "define preconditioner c_ref_"<<prefix<<" -type=multigrid -bilinearform=a_ref_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl;
+				potfile << "define preconditioner c_ref_"<<prefix<<" -type=multigrid -bilinearform=a_ref_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl << endl;
+
 				potfile << endl;
 				potfile << "###################################################" << endl;
 				potfile << "#" << endl;
@@ -215,6 +217,7 @@ public:
 					potfile << "shared = pointcharges" << endl;
 					potfile << "shared = energydiff" << endl;
 					potfile << "shared = writePotatAscii" << endl;
+					potfile << "shared = precalculation" << endl;
 					potfile << endl;
 					potfile << "define constant eps0 = 8.8541878e-22" << endl;
 					potfile << "define constant q0 = 1.60217646e-19" << endl;
@@ -248,7 +251,8 @@ public:
 					potfile << "laplace epsilon_ref" << endl;
 					potfile << endl;
 					potfile << "define preconditioner c_solv_"<<mol<<" -type=multigrid -bilinearform=a_solv_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl;
-					potfile << "define preconditioner c_ref_"<<mol<<" -type=multigrid -bilinearform=a_ref_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl;
+					potfile << "define preconditioner c_ref_"<<mol<<" -type=multigrid -bilinearform=a_ref_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl << endl;
+					potfile << "numproc precalculation pre -pqrfile=" << molecule << endl;
 					potfile << endl;
 					init = false;
 				}
@@ -278,7 +282,7 @@ public:
 					potfile << "define linearform f_state_solv_" << j << "_"<<prefix<<" -fespace=v" << endl;
 					potfile << "numproc pointcharges ps1_solv_"<<prefix<<" -linearform=f_state_solv_" << j << "_"<< prefix << " -pqrfile=" << prefix <<".state" << j <<".pqr   -interpolate " << endl;
 					potfile << "numproc bvp np_solv_"<< j <<"_"<<prefix<<" -gridfunction=u_solv_" << mol <<" -bilinearform=a_solv_" << mol <<" -linearform=f_state_solv_"<< j <<"_"<<prefix<<" -preconditioner=c_solv_"<< mol <<" -maxsteps=" << maxsteps << endl;
-					potfile << "numproc writepotat npeval_solv_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<mol<<" -pqrfile=" << molecule <<"  -potatfile=cycle1."<<prefix<<".potat -statenr="<< stateIndex << " " << create << endl;
+					potfile << "numproc writepotat npeval_solv_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<mol<<" -pqrfile=" << molecule <<"  -potatfile=cycle1."<<prefix<<".potat -statenr="<< stateIndex << " " << create << " -predef" << endl;
 					potfile  << endl;
 
 				}
@@ -302,7 +306,7 @@ public:
 					potfile << "define linearform f_state_ref_" << j <<"_"<<prefix<<" -fespace=v" << endl;
 					potfile << "numproc pointcharges ps_ref_" << j <<"_"<<prefix<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -pqrfile=" << prefix <<".state" << j << ".pqr -interpolate" << endl;
 					potfile << "numproc bvp np_ref_" << j << "_"<<prefix<<" -gridfunction=u_ref_"<<mol<<" -bilinearform=a_ref_"<<mol<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -preconditioner=c_ref_"<<mol<<"  -maxsteps=" << maxsteps << endl;
-					potfile << "numproc writepotat npeval_ref_"<<j<<"_"<<prefix<<" -gridfunction=u_ref_"<<mol<<" -pqrfile=" << molecule << " -potatfile=cycle1." << prefix << ".potat -statenr=" << stateIndex << endl;
+					potfile << "numproc writepotat npeval_ref_"<<j<<"_"<<prefix<<" -gridfunction=u_ref_"<<mol<<" -pqrfile=" << molecule << " -potatfile=cycle1." << prefix << ".potat -statenr=" << stateIndex << " -predef" <<  endl;
 
 				}
 				potfile << endl;
