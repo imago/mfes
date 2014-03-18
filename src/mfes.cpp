@@ -25,6 +25,15 @@
 using namespace std;
 namespace po = boost::program_options;
 
+
+void calcModelVolume(vector<PQR> &pqrList, INI &ini){
+	for (unsigned int i = 0; i < pqrList.size(); i++){
+		PQR currentPQR = pqrList.at(i);
+		currentPQR.calcModel(ini);
+	}
+}
+
+
 void calcDeltaG(vector<PQR> &pqrList, INI &ini){
 	for (unsigned int i = 0; i < pqrList.size(); i++){
 		PQR currentPQR = pqrList.at(i);
@@ -140,14 +149,17 @@ int main(int argc, char* argv[]) {
         }
 
         cout << pqrList.size() << " molecule(s) found." << endl;
-        if ( mode == "energy") {
+	if ( mode == "model" ) {
+	  cout << "Calculation of model volume selected." << endl;
+	  calcModelVolume( pqrList, ini );
+	} else if ( mode == "energy") {
         	cout << "Calculation of energy difference selected." << endl;
             calcDeltaG( pqrList, ini );
         } else if (mode == "pka") { // pKa calculation
         	cout << "Calculation pKa values selected." << endl;
             calcpKa( pqrList, ini);
         } else {
-        	cout << "Please set 'mode' to 'energy' or 'pka' in your configuration!" << endl;
+        	cout << "Please set 'mode' to 'model', 'energy' or 'pka' in your configuration!" << endl;
         }
 
     }

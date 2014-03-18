@@ -81,11 +81,18 @@ public:
 	      
 	    } else {
 	      if (generator == "standard"){
-		lmSurface.calcMC(mSurface, atomList, ini);
-		clean(mSurface);
-		smooth(mSurface, ini);
-		if (surface_stl != "" )
-		  tri::io::ExporterSTL<mMesh>::Save(mSurface,surface_stl.c_str(),false);
+		LSMS tSurface;
+		mMesh tmSurface;
+	        tSurface.calcMC(tmSurface, atomList, ini);
+		clean(tmSurface);
+		smooth(tmSurface, ini);
+		if (surface_stl == "" )
+		  surface_stl = "protein.stl";
+
+		tri::io::ExporterSTL<mMesh>::Save(tmSurface,surface_stl.c_str(),false);
+
+		tri::io::ImporterSTL<mMesh>::Open(mSurface, surface_stl.c_str(), mask);
+
 	      } else {
 		Voxel vSurface;
 		if (!boost::filesystem::exists( "protein.stl" )){
@@ -188,6 +195,8 @@ private:
 		cout << "options.meshsize = " << mp.maxh << endl;
 		cout << "options.minmeshsize = " << mp.minh << endl;
 		cout << "meshoptions.fineness = " << mp.fineness << endl;
+		cout << "meshoptions.blockfill = " << mp.blockfill << endl;
+		cout << "meshoptions.filldist = " << mp.filldist << endl;
 		cout << "options.grading = " << mp.grading << endl;
 		cout << "options.curvaturesafety = " << mp.elementspercurve << endl;
 		cout << "options.segmentsperedge = " << mp.elementsperedge << endl;
@@ -218,9 +227,18 @@ private:
 			istringstream ss(pqrline);
 			ss >> variable >> value;
 
+			if (variable == "meshoptions.blockfill"){
+			  mp.blockfill = atoi(value.c_str());
+			}
+
+			if (variable == "meshoptions.filldist"){
+			  mp.filldist = atof(value.c_str());
+			}
+
+
 			if (variable == "options.localh"){
 				//!< Switch to enable / disable usage of local mesh size modifiers
-				mp.uselocalh = atoi(value.c_str());
+			        mp.uselocalh = atoi(value.c_str());
 				continue;
 			}
 
@@ -386,6 +404,9 @@ private:
 			meshMoleculeSurface = ini.get<string>("meshing.residue_surface");
 			meshMoleculeVolume  = ini.get<string>("meshing.residue_volume");
 		}
+		cout << "using: " << meshMoleculeSurface << endl;
+		cout << "using: " << meshMoleculeVolume << endl;
+		
 		Ng_Meshing_Parameters mp;
 		setMeshingOptions(mp, meshMoleculeSurface);
 		mp.optsurfmeshenable = 1;
@@ -414,10 +435,13 @@ private:
 		    exit(1);
 		}
 
-
+		if (ini.get<string>("meshing.second_order_surface") == "yes"){
+		  cout << "Generating second order geometry mesh" << endl;
+		  Ng_STL_Generate_SecondOrder(stl_geom, ngVolume);
+		}
 
 		if (debug == "analyze"){
-			Ng_SaveMesh(ngVolume,"proteinSurface.vol");
+			Ng_SaveMesh(ngVolume,"surface_so.vol");
 		}
 
 		if (mode == "protein" && boost::filesystem::exists( "cavity.vol" )){
@@ -437,6 +461,11 @@ private:
 			}
 
 		}
+		
+		// float globalH = 1e6;
+		// cout << "setting global H to " << globalH << endl;
+		// Ng_RestrictMeshSizeGlobal(ngVolume, globalH);
+
 		setMeshingOptions(mp, meshMoleculeVolume);
 		mp.optsurfmeshenable = 1;
 		mp.optvolmeshenable  = 1;
@@ -451,8 +480,9 @@ private:
 		}
 //		Ng_SaveMesh(ngVolume,"meshed.vol");
 
-		if (ini.get<string>("meshing.second_order_surface") == "yes")
-			Ng_STL_Generate_SecondOrder (stl_geom, ngVolume);
+
+//		if (ini.get<string>("meshing.second_order_surface") == "yes")
+//			Ng_STL_Generate_SecondOrder (stl_geom, ngVolume);
 
 
 
@@ -467,8 +497,17 @@ private:
 			string boundary = ini.get<string>("model.boundary");
 			bSurface = nglib::Ng_LoadMesh(boundary.c_str());
 
+			if (ini.get<string>("meshing.second_order_surface") == "yes"){
+			  cout << "Generating second order for volume mesh" << endl;
+			  Ng_Generate_SecondOrder(bSurface);
+			}
+
+
 			Ng_SetProperties(ngVolume, 1, 1, 1, 0);
 			Ng_SetProperties(bSurface, 1, 1, 1, 0);
+
+			Ng_SaveMesh(ngVolume,"before_ngVol.vol");
+			Ng_SaveMesh(bSurface,"before_bSurface.vol");
 
 			cout << "Merging Mesh with boundary....." << endl;
 			ngSurface = Ng_MergeMesh( bSurface, ngVolume );
@@ -476,6 +515,10 @@ private:
 				cout << "Error in Surface merging....Aborting!!" << endl;
 				exit(1);
 			}
+			cout << "saving merge mesh" << endl;
+			Ng_SaveMesh(bSurface,"merged_mesh_after.vol");
+
+			cout << "Merging complete" << endl;
 
 
 			string refineFile = ini.get<string>("model.refine_file");
@@ -523,6 +566,14 @@ private:
 				Ng_SetProperties(ngVolume, 2, 2, 2, 1);
 
 		}
+
+		Ng_SaveMesh(bSurface,"before_last_so.vol");
+
+		if (ini.get<string>("meshing.second_order_surface") == "yes"){
+		    cout << "Last second order meshing" << endl;
+		    Ng_Generate_SecondOrder(bSurface);
+		  }
+		Ng_SaveMesh(bSurface,"after_last_so.vol");
 
 		cout << "Meshing successfully completed....!!" << endl;
 
