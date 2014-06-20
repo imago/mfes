@@ -1,0 +1,5 @@
+--- /scratch/scratch/sakalli/temp/ngsolve-5.1/ngscxx	2013-08-14 16:55:34.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/ngsolve-5.1/ngscxx	2013-11-11 21:04:20.448507561 +0100
+@@ -1 +1 @@
+-g++ -I. -fmax-errors=10 -Wall -Wno-unknown-pragmas -g -O2 -funroll-loops -ftemplate-depth-999 -m64 -finline-limit=10000 -DMAX_SYS_DIM=3 -msse3 -fopenmp -DUSE_TIMEOFDAY -DLAPACK -I/opt/netgen-5.1/include -L/opt/netgen-5.1/lib -fpic  -I"/usr/include/tcl8.5"  -DUSE_PARDISO -DUSE_MKL $*  -L/opt/intel/composer_xe_2013/mkl/lib/intel64  -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lmkl_def -lpthread -lm
++mpicxx -I. -Wall -O2 -g -ftemplate-depth-999 -funroll-loops -finline-limit=10000 -DUSE_TIMEOFDAY -fopenmp  -DUSE_TIMEOFDAY -DLAPACK -I/scratch/scratch/sakalli/ngsolve/include -DPARALLEL -L/scratch/scratch/sakalli/ngsolve/lib -fpic  -I"/usr/include/tcl8.5" -DUSE_MUMPS  $*  -llapack -lblas

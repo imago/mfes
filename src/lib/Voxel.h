@@ -49,7 +49,7 @@ public:
     }
 
   cout << "rmax = " << rmax << endl;
-  int increase = ceil(rmax)+1;
+    int increase = 5; //ceil(rmax)+1;
 
   clock_t t2 = clock();
 
@@ -76,9 +76,51 @@ public:
                                       pmin(2) + (pmax(2)-pmin(2))*iz/nz);
         }
 
+  double diag = sqrt ( sqr ((pmax(0)-pmin(0)) / nx) +
+                        sqr ((pmax(1)-pmin(1)) / ny) +
+                        sqr ((pmax(2)-pmin(2)) / nz));
+    
+  SetValues (pmin, pmax, diag, gridpoints, values, dvalues);
 
-  SetValues (pmin, pmax, gridpoints, values, dvalues);
+    // smoothing ...
 
+    int smoothingsteps = 1;
+
+    for (int j = 0; j < smoothingsteps; j++)
+
+        for (int ix = 1; ix < nx; ix++)
+
+            for (int iy = 1; iy < ny; iy++)
+
+                for (int iz = 1; iz < nz; iz++)
+
+                {
+
+                    int ind = ix + (nx+1) * (iy + (ny+1)*iz);
+
+                    int i2[] = { ind+1, ind-1, ind+nx+1, ind-(nx+1), ind+(nx+1)*(ny+1), ind-(nx+1)*(ny+1) };
+
+                    double sum = 0.0;
+
+                    int cnt = 0;
+
+                    for (int j = 0; j < 6; j++)
+
+                        if (values[i2[j]] < 1e9)
+
+                        {
+
+                            sum += values[i2[j]];
+
+                            cnt++;
+
+                        }
+
+                    if (cnt)
+                        values[ind] = sum/cnt;
+                }
+    
+    
   clock_t t3 = clock();
 
   double h = Dist(pmin, pmax)/nx;
@@ -115,7 +157,7 @@ private:
 	Array<double> rad;
 	Point3dTree * searchtree;
 
-void SetValues (Point<3> pmin, Point<3> pmax,
+void SetValues (Point<3> pmin, Point<3> pmax, double diag,
                 // int nx, int ny, int nz,
                 Array<Point<3> > & gridpoints,
                 Array<float> & values,
@@ -155,8 +197,8 @@ void SetValues (Point<3> pmin, Point<3> pmax,
         */
         int ind = i;
         int extend = 6;
-        if (rmax > 5)
-        	extend = 2*rmax;
+//        if (rmax > 5)
+//        	extend = 2*rmax;
 
         Point<3> p = gridpoints[ind];
 
@@ -181,6 +223,24 @@ void SetValues (Point<3> pmin, Point<3> pmax,
                 df = 1.0/Dist(p,pnts[j]) * (p-pnts[j]);
               }
           }
+          
+          
+
+          if (minf < -diag)
+
+          {
+
+              values[ind] = minf;
+
+              dvalues[ind] = df;
+
+              continue;
+
+          }
+
+          
+
+
 
         for (int jj = 0; jj < indices.Size(); jj++)
           for (int kk = 0; kk < jj; kk++)
@@ -201,7 +261,7 @@ void SetValues (Point<3> pmin, Point<3> pmax,
               ex /= dist;
 
               double px = ex * (p - c1);
-              if (px <= -rball || px > dist+rball) continue;
+              if (px <= -rball || px > dist+rball+r2) continue;
 
               double py = sqrt ( Dist2(p,c1) - px*px );
 
@@ -226,6 +286,18 @@ void SetValues (Point<3> pmin, Point<3> pmax,
                 }
             }
 
+          if ((minf < -diag) || (minf > diag + rball))
+
+          {
+
+              values[ind] = minf;
+
+              dvalues[ind] = df;
+
+              continue;
+
+          }
+          
         for (int jj = 0; jj < indices.Size(); jj++)
           for (int kk = 0; kk < jj; kk++)
             for (int ll = 0; ll < kk; ll++)
@@ -338,7 +410,287 @@ void SetValues (Point<3> pmin, Point<3> pmax,
                   }
               }
 
+          if ((minf < -diag) || (minf > diag + rball))
 
+          {
+
+              values[ind] = minf;
+
+              dvalues[ind] = df;
+
+              continue;
+
+          }
+          
+          
+
+          // if (false)
+
+          for (int jj = 0; jj < indices.Size(); jj++)
+
+              for (int kk = 0; kk < jj; kk++)
+
+                  for (int ll = 0; ll < kk; ll++)
+
+                      for (int mm = 0; mm < ll; mm++)
+
+                      {
+
+                          int j = indices[jj];
+
+                          int k = indices[kk];
+
+                          int l = indices[ll];
+
+                          int m = indices[mm];
+
+                          
+
+                          double r1 = rad[j];
+
+                          double r2 = rad[k];
+
+                          double r3 = rad[l];
+
+                          double r4 = rad[m];
+
+                          
+
+                          Point<3> c1 = pnts[j];
+
+                          Point<3> c2 = pnts[k];
+
+                          Point<3> c3 = pnts[l];
+
+                          Point<3> c4 = pnts[m];
+
+                          
+
+                          if (Dist2(c1, p) > sqr(r1+2*rball)) continue;
+
+                          if (Dist2(c2, p) > sqr(r2+2*rball)) continue;
+
+                          if (Dist2(c3, p) > sqr(r3+2*rball)) continue;
+
+                          if (Dist2(c4, p) > sqr(r4+2*rball)) continue;
+
+                          
+
+                          
+
+                          Vec<3> v1 = c2-c1;
+
+                          Vec<3> v2 = c3-c1;
+
+                          Vec<3> v3 = c4-c1;
+
+                          
+
+                          Mat<3> mat;
+
+                          Vec<3> rhs, sol;
+
+                          for (int j = 0; j < 3; j++)
+
+                          {
+
+                              mat(j,0) = v1(j);
+
+                              mat(j,1) = v2(j);
+
+                              mat(j,2) = v3(j);
+
+                              rhs(j) = p(j)-c1(j);
+
+                          }
+
+                          mat.Solve (rhs, sol);
+
+                          
+
+                          if (sol(0) < 0 || sol(1) < 0 || sol(2) < 0 || sol(0)+sol(1)+sol(2) > 1)
+
+                              continue;
+
+                          
+
+                          if (fabs (Det(mat)) < 1e-10)
+
+                          {
+
+                              /*
+
+                               cout << "indices = " << indices << endl;
+
+                               cout << "points = " << pnts << endl;
+
+                               cout << "ci = " << c1 << ", " << c2 << ", " << c3 << ", " << c4 << endl;
+
+                               cout << "vi = " << v1 << ", " << v2 << ", " << v3 << endl;
+
+                               */
+
+                              continue;
+
+                          }
+
+                          
+
+                          /*
+
+                           cout << "ci = " << c1 << ", " << c2 << ", " << c3 << ", " << c4 << endl;
+
+                           cout << "p = " << p << ", sol = " << sol << endl;
+
+                           cout << "det = " << Det(mat) << endl;
+
+                           */
+
+                          
+
+                          Point<3> pts[4] = { c1, c2, c3, c4 };
+
+                          double rs[4] = { r1, r2, r3, r4 };
+
+                          
+
+                          double vmax = -1e99;
+
+                          Vec<3> vdir;
+
+                          
+
+                          for (int i = 0; i < 4; i++)
+
+                          {
+
+                              Point<3> fc1 = pts[i];
+
+                              Point<3> fc2 = pts[(i+1)%4];
+
+                              Point<3> fc3 = pts[(i+2)%4];
+
+                              
+
+                              double fr1 = rs[i];
+
+                              double fr2 = rs[(i+1)%4];
+
+                              double fr3 = rs[(i+2)%4];
+
+                              
+
+                              
+
+                              Vec<3> t1 = fc2-fc1;
+
+                              Vec<3> t2 = fc3-fc1;
+
+                              Vec<3> n = Cross(t1, t2);
+
+                              n.Normalize();
+
+                              
+
+                              if (n * (pts[(i+3)%4]-fc1) > 0) n *= -1;
+
+                              
+
+                              Mat<2> mat;
+
+                              Vec<2> rhs, sol;
+
+                              mat(0,0) = t1*t1;
+
+                              mat(0,1) = mat(1,0) = t1*t2;
+
+                              mat(1,1) = t2*t2;
+
+                              
+
+                              rhs(0) = 0.5 * (sqr(fr1+rball) - sqr(fr2+rball) + Dist2(fc1,fc2));
+
+                              rhs(1) = 0.5 * (sqr(fr1+rball) - sqr(fr3+rball) + Dist2(fc1,fc3));
+
+                              
+
+                              mat.Solve (rhs, sol);
+
+                              
+
+                              Point<3> cp = fc1 + sol(0) * t1 + sol(1) * t2;
+
+                              if ( sqr(fr1+rball) <= Dist2(fc1,cp) )
+
+                              {
+
+                                  vmax = 1e99;
+
+                                  continue;
+
+                              }
+
+                              
+
+                              double lamn = sqrt ( sqr(fr1+rball) - Dist2(fc1,cp) );
+
+                              // c = cp +/- lamn n
+
+                              
+
+                              Point<3> sp1 = cp + lamn * n;
+
+                              
+
+                              // cout << "dist i = " << Dist (sp1, fc1) << ", " << Dist(sp1, fc2) << ", " << Dist(sp1, fc3) << endl;
+
+                              // cout << "ri+rball = " << fr1+rball << ", " << r2+rball << ", " << r3+rball << endl << endl;
+
+                              
+
+                              Vec<3> dir = sp1-p;
+
+                              double len = dir.Length();
+
+                              double fj = rball - len;
+
+                              
+
+                              if (fj > vmax)
+
+                              {
+
+                                  vmax = fj;
+
+                                  dir.Normalize();
+
+                                  vdir = dir;
+
+                              }
+
+                          }
+
+                          
+
+                          
+
+                          if (vmax < minf)
+
+                          {
+
+                              minf = vmax;
+
+                              df = vdir;
+
+                          }
+
+                      }
+
+          
+
+          
+
+          
 
 
 
@@ -363,8 +715,8 @@ void WriteTrig (Point<3> p1, Point<3> p2, Point<3> p3, Vec<3> n)
   Vec<3> nt = Cross(p2-p1,p3-p1);
   if (nt.Length() < 1e-5 * (p2-p1).Length() * (p3-p1).Length())
     {
-      if (nt.Length() < 1e-12 * (p2-p1).Length() * (p3-p1).Length()) return;
-      // cout << "flat trig: " << nt.Length() / ((p2-p1).Length() * (p3-p1).Length()) << endl;
+      // if (nt.Length() < 1e-12 * (p2-p1).Length() * (p3-p1).Length()) return;
+      cout << "flat trig: " << nt.Length() / ((p2-p1).Length() * (p3-p1).Length()) << endl;
     }
 
   if (nt * n < 0) Swap (p2, p3);
@@ -392,12 +744,33 @@ void MakeTetSTL (Point<3> pnts[], double valtet[4], Vec<3> dvaltet[4])
 
   if (npos == 0 || npos == 4) return;
 
+    /*
 
+     int nzero = 0;
+
+     for (int j = 0; j < 4; j++)
+
+     if (fabs (valtet[j]) < 1e-10) nzero++;
+
+     if (nzero >= 2)
+
+     {
+
+     cout << nzero << " vertex-values 0 on tet:" << endl;
+
+     for (int j = 0; j < 4; j++)
+
+     cout << pnts[j] << ": " << valtet[j] << endl;
+
+     }
+
+     */
+    
   const int edges[6][2] =
     { { 0, 1 }, { 0, 2 }, { 0, 3 },
       { 2, 3 }, { 1, 3 }, { 1, 2 } };
 
-//  double lame[6] = { -1 };
+  double lame[6] = { -1 };
   Point<3> cutp[4];
   int cutpi = 0;
   for (int j = 0; j < 6; j++)
@@ -406,7 +779,7 @@ void MakeTetSTL (Point<3> pnts[], double valtet[4], Vec<3> dvaltet[4])
       int pi2 = edges[j][1];
       if ((valtet[pi1] > 0) != (valtet[pi2] > 0))
         {
-//          Vec<3> ve = pnts[pi2]-pnts[pi1];
+          Vec<3> ve = pnts[pi2]-pnts[pi1];
           double lam = CutEdge (valtet[pi1], valtet[pi2]);
           cutp[cutpi] = pnts[pi1] + lam * (pnts[pi2]-pnts[pi1]);
           cutpi++;

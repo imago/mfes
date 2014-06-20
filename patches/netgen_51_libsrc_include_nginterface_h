@@ -1,0 +1,32 @@
+--- /scratch/scratch/sakalli/temp/netgen-5.1/libsrc/include/nginterface.h	2013-06-25 13:28:58.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/netgen-5.1/libsrc/include/nginterface.h	2014-01-17 19:28:11.602347563 +0100
+@@ -49,7 +49,6 @@
+ typedef int NG_EDGE[2];      // initial point, end point
+ typedef int NG_FACE[4];      // points, last one is 0 for trig
+ 
+-
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -92,6 +91,21 @@
+ 
+   DLL_HEADER void Ng_SetElementIndex(const int ei, const int index);
+ 
++  /// Added by Ilkay Sakalli
++  // Add element nr to element list
++  DLL_HEADER void Ng_addElIndex(const int el);
++  // Get size of element list
++  DLL_HEADER int Ng_elIndexSize();
++  // Get element nr by index
++  DLL_HEADER int Ng_getElIndex(const int idx);
++  // Add integration point for element nr at index
++  DLL_HEADER void Ng_addIpPoint(NG_POINT p);
++  // Get size of integration pointn list
++  DLL_HEADER int Ng_ipPointSize();
++  // Set p to coordinates of integration point at index idx
++  DLL_HEADER void Ng_setIpPoint(const int idx, double* p);
++
++
+   // Get Material of element ei
+   DLL_HEADER char * Ng_GetElementMaterial (int ei);
+ 

@@ -2,21 +2,6 @@ use with patch:
 
 patch <file to patch> <patchfile from patchfolder>
 
-These patches are for stable release netgen-5.1
------------------------------------------------
+These patches are for stable release netgen-5.1 and ngsolve-5.1
 
-patch_meshclass.cpp
-patch_meshclass.hpp
-patch_nglib.cpp
-patch_nglib.h
-patch_stlgeom.cpp
-
-not necessary unless you want to use gui remoteley (not perfect):
-remote_gl_patch_mvdraw.cpp
-remote_gl_patch_parallelfunc.cpp
-
-
-This patch is for stable ngsolve-5.1
---------------------------------
-patch_profiler.hpp
     

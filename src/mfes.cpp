@@ -35,11 +35,15 @@ void calcModelVolume(vector<PQR> &pqrList, INI &ini){
 
 
 void calcDeltaG(vector<PQR> &pqrList, INI &ini){
-	for (unsigned int i = 0; i < pqrList.size(); i++){
-		PQR currentPQR = pqrList.at(i);
-		currentPQR.calcModel(ini);
-		currentPQR.writePDE(ini, "energy");
-		currentPQR.calcDeltaG();
+	if ( !boost::filesystem::exists("result.out" ) ) {
+	  for (unsigned int i = 0; i < pqrList.size(); i++){
+	    PQR currentPQR = pqrList.at(i);
+	    currentPQR.calcModel(ini);
+	    currentPQR.writePDE(ini, "energy");
+	    currentPQR.calcDeltaG();
+	  }
+	} else {
+	  cout << "Calculations already done." << endl;
 	}
 
 
@@ -48,35 +52,39 @@ void calcDeltaG(vector<PQR> &pqrList, INI &ini){
 void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 	string jobName = ini.get<string>("general.jobname");
 
-	for (unsigned int i = 0; i < pqrList.size(); i++){
-		PQR currentPQR = pqrList.at(i);
-		currentPQR.addInfo(ini);
-		if (!currentPQR.STparsed)
-			currentPQR.parseSTFiles();
-		currentPQR.calcResidues(ini);
-		currentPQR.calcModel(ini);
-		 if (currentPQR.explicitModels)
-			currentPQR.calcExplicitModels(ini);
-		currentPQR.writePDE(ini);
-		currentPQR.calcPotat("cycle0");
-		currentPQR.calcPotat("cycle1");
-
-		currentPQR.calcPkint("cycle0");
-		currentPQR.calcPkint("cycle1");
-
-		cout << "cycle 0 results: " << endl;
-		currentPQR.writeOutPkint("cycle0", "cycle0.pkint");
-		cout << endl;
-		cout << "cycle 1 results: " << endl;
-		currentPQR.writeOutPkint("cycle1", "cycle1.pkint");
-		cout << endl;
-
-		cout << "cycle 1 - cycle 0 results: " << endl;
-		currentPQR.writeOutPkint("diff", jobName+".pkint");
-		currentPQR.calcW("diff");
-		currentPQR.writeOutW(jobName+".g");
-		cout << endl;
-	}
+	//	if ( !boost::filesystem::exists( "protein.vol" ) ) {
+	  for (unsigned int i = 0; i < pqrList.size(); i++){
+	    PQR currentPQR = pqrList.at(i);
+	    currentPQR.addInfo(ini);
+	    if (!currentPQR.STparsed)
+	      currentPQR.parseSTFiles();
+	    currentPQR.calcResidues(ini);
+	    currentPQR.calcModel(ini);
+	    if (currentPQR.explicitModels)
+	      currentPQR.calcExplicitModels(ini);
+	    currentPQR.writePDE(ini);
+	    currentPQR.calcPotat("cycle0");	      
+	    currentPQR.calcPotat("cycle1");
+	    
+	    currentPQR.calcPkint("cycle0", jobName+".reference.pqr");
+	    currentPQR.calcPkint("cycle1", jobName+".reference.pqr");
+	    
+	    cout << "cycle 0 results: " << endl;
+	    currentPQR.writeOutPkint("cycle0", "cycle0.pkint");
+	    cout << endl;
+	    cout << "cycle 1 results: " << endl;
+	    currentPQR.writeOutPkint("cycle1", "cycle1.pkint");
+	    cout << endl;
+	    
+	    cout << "cycle 1 - cycle 0 results: " << endl;
+	    currentPQR.writeOutPkint("diff", jobName+".pkint");
+	    currentPQR.calcW("diff");
+	    currentPQR.writeOutW(jobName+".g");
+	    cout << endl;
+	  }
+	  /*	} else {
+	  cout << "Calculations already done." << endl;
+	  }*/
 }
 
 

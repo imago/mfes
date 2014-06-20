@@ -12,6 +12,9 @@ struct Triangle{
 	Point3<float> t3;
 };
 
+/// 1 kJ/mol in e^2/(A*mol)
+#define E2A 7.197585e-4;
+
 #define CF_LAMBDA 0.5
 #define TAUBIN_LAMBDA 0.5
 #define TAUBIN_MU -0.53

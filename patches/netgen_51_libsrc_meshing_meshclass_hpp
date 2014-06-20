@@ -1,0 +1,69 @@
+--- /scratch/scratch/sakalli/temp/netgen-5.1/libsrc/meshing/meshclass.hpp	2013-06-25 13:28:59.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/netgen-5.1/libsrc/meshing/meshclass.hpp	2014-01-17 19:25:27.899340530 +0100
+@@ -27,6 +27,18 @@
+     typedef Array<Element> T_VOLELEMENTS;
+     typedef Array<Element2d> T_SURFELEMENTS;
+ 
++    /**
++       the face-index of the surface element maps into
++       this table.
++    */
++    Array<FaceDescriptor> facedecoding;
++
++    /// element -> face, element -> edge etc ...
++    class MeshTopology * topology;
++
++    /// nodes identified by close points 
++    class AnisotropicClusters * clusters;
++
+   private:
+     /// point coordinates
+     T_POINTS points;
+@@ -40,7 +52,6 @@
+     /// points will be fixed forever
+     Array<PointIndex> lockedpoints;
+ 
+-
+     /// surface indices at boundary nodes
+     TABLE<int,PointIndex::BASE> surfacesonnode;
+     /// boundary edges  (1..normal bedge, 2..segment)
+@@ -68,11 +79,6 @@
+     ///
+     Array<double> maxhdomain;
+   
+-    /**
+-       the face-index of the surface element maps into
+-       this table.
+-    */
+-    Array<FaceDescriptor> facedecoding;
+ 
+   
+     /**
+@@ -99,13 +105,9 @@
+     /// time stamp for tree
+     mutable int elementsearchtreets;
+ 
+-    /// element -> face, element -> edge etc ...
+-    class MeshTopology * topology;
+     /// methods for high order elements
+     class CurvedElements * curvedelems;
+ 
+-    /// nodes identified by close points 
+-    class AnisotropicClusters * clusters;
+ 
+     /// space dimension (2 or 3)
+     int dimension;
+@@ -161,7 +163,12 @@
+     Array<HPRefElement> * hpelements;
+     Mesh * coarsemesh;
+   
+-  
++    /// Added by Ilkay Sakalli
++    // precalculated element nr list for point charges
++    Array<int>    elList; 
++    // precalculated integration point list
++    Array<double> ipList;
++
+     /// number of refinement levels
+     int mglevels;
+     /// refinement hierarchy

@@ -1,0 +1,110 @@
+--- /scratch/scratch/sakalli/temp/ngsolve-5.1/comp/postproc.cpp	2013-06-25 13:22:31.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/ngsolve-5.1/comp/postproc.cpp	2014-01-17 17:45:34.632082992 +0100
+@@ -196,6 +196,90 @@
+ 
+ 
+ 
++  // Added by Ilkay Sakalli
++  template NGS_DLL_HEADER int CalcElFlux<double> (const MeshAccess & ma, 
++				      const GridFunction & u,
++				      const FlatVector<double> & point,
++				      const Array<int> & domains,
++				      FlatVector<double> & flux,
++				      const BilinearFormIntegrator & bli,
++				      bool applyd,
++				      LocalHeap & lh,
++ 				      int elnr,
++ 				      IntegrationPoint ip,
++				      int component);
++
++
++
++  template <class SCAL> 
++  int CalcElFlux (const MeshAccess & ma, 
++		     const GridFunction & bu,
++		     const FlatVector<double> & point,
++		     const Array<int> & domains,
++		     FlatVector<SCAL> & flux,
++		     const BilinearFormIntegrator & bli,
++		     bool applyd,
++		     LocalHeap & lh,
++		     int elnr,
++		     IntegrationPoint ip,
++		     int component // = 0
++		     ) 
++  {
++    static Timer t("CalcElFlux");
++    static Timer t2("CalcElFlux - findpoint");
++    RegionTimer reg(t);
++
++    HeapReset hr(lh);
++
++    ArrayMem<int,100> dnums;
++
++    bool boundary = bli.BoundaryForm();
++
++    if(boundary)
++      {
++	if(domains.Size() > 0)
++	  elnr = ma.FindSurfaceElementOfPoint(point,ip,false,&domains);
++	else
++	  elnr = ma.FindSurfaceElementOfPoint(point,ip,false);
++      }
++    else
++      {
++	RegionTimer reg2(t2);
++    
++	//if(domains.Size() > 0)
++	//  elnr = ma.FindElementOfPoint(point,ip,false,&domains);
++	//else
++	//  elnr = ma.FindElementOfPoint(point,ip,false);
++      }
++    if (elnr < 0) return 0;
++
++    const S_GridFunction<SCAL> & u = 
++      dynamic_cast<const S_GridFunction<SCAL>&> (bu);
++
++    const FESpace & fes = u.GetFESpace();
++    const FiniteElement & fel = fes.GetFE (elnr, boundary, lh);
++    const ElementTransformation & eltrans = ma.GetTrafo (elnr, boundary, lh);
++    fes.GetDofNrs (elnr, boundary, dnums);
++	
++    FlatVector<SCAL> elu(dnums.Size() * fes.GetDimension(), lh);
++	
++    if(bu.GetCacheBlockSize() == 1)
++      {
++	u.GetElementVector (dnums, elu);
++      }
++    else
++      {
++	FlatVector<SCAL> elu2(dnums.Size() * fes.GetDimension() * bu.GetCacheBlockSize(), lh);
++	u.GetElementVector (dnums,elu2);
++	for(int i=0; i<elu.Size(); i++)
++	  elu[i] = elu2[i*bu.GetCacheBlockSize()+component];
++      }
++    
++    fes.TransformVec (elnr, boundary, elu, TRANSFORM_SOL);
++    bli.CalcFlux (fel, eltrans(ip, lh), elu, flux, applyd, lh);
++    return 1;
++  }
++  
+ 
+   template <class SCAL> 
+   int CalcPointFlux (const MeshAccess & ma, 
+@@ -232,7 +316,7 @@
+       {
+ 	RegionTimer reg2(t2);
+     
+-      	if(domains.Size() > 0)
++     	if(domains.Size() > 0)
+ 	  elnr = ma.FindElementOfPoint(point,ip,false,&domains);
+ 	else
+ 	  elnr = ma.FindElementOfPoint(point,ip,false);
+@@ -263,6 +347,7 @@
+     
+     fes.TransformVec (elnr, boundary, elu, TRANSFORM_SOL);
+     bli.CalcFlux (fel, eltrans(ip, lh), elu, flux, applyd, lh);
++
+     return 1;
+   }
+   

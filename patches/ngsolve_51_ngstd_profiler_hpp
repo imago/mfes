@@ -1,0 +1,11 @@
+--- /scratch/scratch/sakalli/temp/ngsolve-5.1/ngstd/profiler.hpp	2013-06-25 13:22:31.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/ngsolve-5.1/ngstd/profiler.hpp	2014-01-23 10:32:51.234012796 +0100
+@@ -66,7 +66,7 @@
+   class NgProfiler
+   {
+     /// maximal number of timers
+-    enum { SIZE = 1000 };
++    enum { SIZE = 100000 };
+ 
+     //  static long int tottimes[SIZE];
+     // static long int starttimes[SIZE];

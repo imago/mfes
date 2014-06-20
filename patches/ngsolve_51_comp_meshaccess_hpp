@@ -1,0 +1,61 @@
+--- /scratch/scratch/sakalli/temp/ngsolve-5.1/comp/meshaccess.hpp	2013-08-14 14:00:47.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/ngsolve-5.1/comp/meshaccess.hpp	2014-01-17 19:30:41.585354008 +0100
+@@ -10,6 +10,7 @@
+ 
+ #include <nginterface.h>
+ #include <nginterface_v2.hpp>
++#include <vector>
+ 
+ namespace ngfem
+ {
+@@ -115,12 +116,28 @@
+     /// max boundary index
+     int nboundaries;
+ 
++
+   public:
+     /// connects to Netgen - mesh
+     MeshAccess ();
+     /// not much to do 
+     virtual ~MeshAccess ();
+ 
++    /// Added by Ilkay Sakalli
++    // Add new element nr to element list
++    void addElIndex(const int el) const;
++    // Get size of element nr list
++    int getElIndexSize() const;
++    // Get element nr at id idx
++    int getElIndex(const int idx) const;
++    // Add integration point with coordinates in double[3] ip
++    void addIpPoint(double* ip) const;
++    // Get size of integration point list
++    int getIpPointSize() const;
++    // Set p to coordinates of integration point at index idx
++    void setIpPoint(const int idx, double *p) const;
++
++
+     /// the spatial dimension of the mesh
+     int GetDimension() const { return dim; }  
+ 
+@@ -500,6 +517,13 @@
+ 				   bool build_searchtree,
+ 				   int index) const;
+ 
++
++    /*    void setElListSize( int size) const {  };
++    void addElementIndex(int elnr) const {  };
++    int getElementIndex(int index){ return elList[index]; };
++    int getElListSize(){ return elList.Size(); };
++    */
++
+     /// is element straiht or curved ?
+     bool IsElementCurved (int elnr) const
+     { return bool (Ng_IsElementCurved (elnr+1)); }
+@@ -533,6 +557,7 @@
+ 
+   private:
+     Array<bool> higher_integration_order;
++
+   public:
+     void SetHigherIntegrationOrder(int elnr);
+     void UnSetHigherIntegrationOrder(int elnr);

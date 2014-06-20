@@ -377,6 +377,12 @@ public:
 	   }
 
 	   cout << residueList.size() << " residue(s) with " << titGroupList.size() << " titratable group(s) found." << endl;
+	   /*	   cout << "titration groups ordering" << endl;
+	   for (unsigned int i = 0; i < titGroupList.size(); i++){
+	     Residue currentTitGroup = titGroupList.at(i);
+	     cout << currentTitGroup.getResidueName() << endl;
+	     }*/
+
 
 	}
 
@@ -387,7 +393,7 @@ public:
 				string fname = currentTitGroup.getIdentifier()+".vol";
 				vector<Atom> currentAtomList = currentTitGroup.getAtomList();
 				molecule.calcModel(currentAtomList, ini, fname);
-			}
+			} 
 			// Write out PQR files
 			for (unsigned int j = 1; j <= currentTitGroup.getNrStates(); j++){
 				writePQR(currentTitGroup, j);
@@ -554,139 +560,174 @@ public:
 
 	}
 
-	double calcWmv(int state, Residue &mstat, Residue &mref, string cycle)
+	double calcWmv(int state, Residue &ref, Residue &mref, Residue &mstat, string cycle)
 	{
-
-		double wmv = 0;
+	 
+	  //		double wmv = 0;
 		double wmv_c0 = 0;
 		double wmv_c1 = 0;
 
-		tCycle pp_s0 = mref.getTCycle();
-		tCycle pp_s1 = mstat.getTCycle();
 		Atom charge_s0, charge_s1;
 
-		switchState(mstat, state);
-
-		vector<Atom> mrefAtomList = mref.getAtomList();
 		vector<Atom> mstatAtomList = mstat.getAtomList();
+		vector<Atom> mrefAtomList = mref.getAtomList();
+
+		if (mref.haveCycle())
+		  cout << "cycle for mref is set" << endl;
+
+		if (mstat.haveCycle())
+		  cout << "cycle for mstat is set" << endl;
+
+		cout << "mref group: " << mref.getResidueName() << endl;
+		mref.print();
+		cout << "mstat group: " << mstat.getResidueName() << endl;
+		mstat.print();
+		cout << "getting potentials from" << ref.getResidueName() << endl;
+		ref.print();
+		tCycle pp_s1 = ref.getTCycle();
+		//		tCycle pp_s0 = ref.getTCycle();
 
 		// mstat size equals to mref size
 		unsigned int i = 0;
-		while ((mrefAtomList.size() > i) & (mstatAtomList.size() > i)){
-			Atom charge_s0 = mrefAtomList.at(i);
-			Atom charge_s1 = mstatAtomList.at(i);
-			i++;
-
-			if (charge_s0.getCharge() == 0 && charge_s1.getCharge() == 0)
-				continue;
-
-			if (cycle == "cycle0" || cycle == "diff")
-				wmv_c0 += (charge_s1.getCharge() * (
-					// which cycle?
-						pp_s1.m[state][charge_s1.getCoord()] - pp_s0.m[0][charge_s1.getCoord()]
-					)
-					- charge_s0.getCharge() * (
-							pp_s1.m[state][charge_s0.getCoord()] - pp_s0.m[0][charge_s0.getCoord()]
-					)
-				);
-			if (cycle == "cycle1" || cycle == "diff")
-				wmv_c1 += (charge_s1.getCharge() * (
-					// which cycle?
-						pp_s1.p[state][charge_s1.getCoord()] - pp_s0.p[0][charge_s1.getCoord()]
-					)
-					- charge_s0.getCharge() * (
-							pp_s1.p[state][charge_s0.getCoord()] - pp_s0.p[0][charge_s0.getCoord()]
-					)
-				);
 
 
-			wmv += wmv_c0 + wmv_c1;
+		cycle = "cycle1";
+		//		while ((mrefAtomList.size() > i) & (mstatAtomList.size() > i)){
+		while (mrefAtomList.size() > i){	   
+		  Atom charge_s1 = mstatAtomList.at(i);
+		  Atom charge_s0 = mrefAtomList.at(i);
+		  i++;
+
+		  cout << "charge_s0 is " << charge_s0.getCharge() << endl;
+		  cout << "charge_s1 is " << charge_s1.getCharge() << endl;
+
+		  if (charge_s0.getCharge() == 0 && charge_s1.getCharge() == 0 )
+		    continue;
+
+		  if (cycle == "cycle0" || cycle == "diff"){
+		    wmv_c0 += (charge_s1.getCharge() * (
+							pp_s1.m[state][charge_s1.getCoord()] 
+							- pp_s1.m[1][charge_s1.getCoord()]
+							) 
+			       - charge_s0.getCharge() * (
+							  pp_s1.m[state][charge_s0.getCoord()] 
+							  - pp_s1.m[1][charge_s0.getCoord()] 
+							  )
+			       );
+		  }
+					  
+		  if (cycle == "cycle1" || cycle == "diff"){
+		    cout << "Lookint at charge_s1 (" << charge_s1.getCoord().X() << ", " << charge_s1.getCoord().Y() << ", " << charge_s1.getCoord().Z() << ")" << endl;
+		    cout << "Lookint at charge_s0 (" << charge_s0.getCoord().X() << ", " << charge_s0.getCoord().Y() << ", " << charge_s0.getCoord().Z() << ")" << endl;
+		    float temp = (charge_s1.getCharge() - charge_s0.getCharge()) * (
+										    pp_s1.p[state][charge_s1.getCoord()] - pp_s1.p[0][charge_s1.getCoord()]
+										    );
+		    wmv_c1 += (charge_s1.getCharge() - charge_s0.getCharge()) * (
+										 pp_s1.p[state][charge_s1.getCoord()] - pp_s1.p[0][charge_s1.getCoord()]
+										 ); 
+		
+		    cout << "(" << charge_s1.getCharge() << " - " << charge_s0.getCharge() << ") * (" << pp_s1.p[state][charge_s1.getCoord()] << " - " << pp_s1.p[0][charge_s1.getCoord()] << ") = " << temp << endl;
+		    
+		  }
 
 		}
-
-		return wmv;
+		cout << "wmv_c1 = " << wmv_c1 << ", wmv_c0 = " << wmv_c0 << endl;
+		cout << "returning wmv = " << wmv_c1 << endl;
+		return (wmv_c1 - wmv_c0);
 	}
 
 	void calcW(string cycle){
 		cout << "Calculation of W matrix started.. " << endl;
 		double G;
-		double convert = T*MEADUNITS;
 
 		 // create wmatrix
-		 for(unsigned int i = 0; i<titGroupList.size(); i++)
-		 {
-		  wmatrix.push_back( vector< vector< vector<double> > >() );
-		  for(unsigned int j = 0; j<titGroupList.size(); j++)
+		for(unsigned int i = 0; i<titGroupList.size(); i++)
 		  {
-		   wmatrix.at(i).push_back( vector< vector<double> >() );
+		    wmatrix.push_back( vector< vector< vector<double> > >() );
+		    for(unsigned int j = 0; j<titGroupList.size(); j++)
+		      {
+			wmatrix.at(i).push_back( vector< vector<double> >() );
 			/* there are no matrix entries for reference states
 			 that's why we take only the number of states-1 */
 			for(unsigned int state1 = 0; state1<titGroupList.at(i).getNrStates()-1; state1++)
-			{
-			 wmatrix.at(i).at(j).push_back( vector<double>() );
-			 for(unsigned int state2 = 0; state2<titGroupList[j].getNrStates()-1; state2++)
-			 {
-			  wmatrix.at(i).at(j).at(state1).push_back(0.0);
-			 }
-			}
+			  {
+			    wmatrix.at(i).at(j).push_back( vector<double>() );
+			    for(unsigned int state2 = 0; state2<titGroupList[j].getNrStates()-1; state2++)
+			      {
+				wmatrix.at(i).at(j).at(state1).push_back(0.0);
+			      }
+			  }
+		      }
 		  }
-		 }
 
-		 // have to make diff of both cycles or just read one cycle
-		 string currentCycle = "cycle0";
-		 for(unsigned int i = 0; i<titGroupList.size(); i++)
+		// have to make diff of both cycles or just read one cycle
+		for(unsigned int i = 0; i<titGroupList.size(); i++)
 		 {
-			 Residue currentTitGroup_i = titGroupList.at(i);
-
-		  // read potentials of residue 1
-			 stringstream currentPotat;
-			 currentPotat << currentCycle << "." << currentTitGroup_i.getIdentifier() << ".potat";
-			 for(unsigned int j = 0; j<titGroupList.size(); j++)
+		   Residue currentTitGroup_i = titGroupList.at(i);
+		   cout << "i has name: " << currentTitGroup_i.getResidueName() << endl;
+		   // read potentials of residue 1
+		   for(unsigned int j = 0; j<titGroupList.size(); j++)
+		     {
+		       cout << "at i,j: " << i << ", " << j << endl;
+		       Residue currentTitGroup_j = titGroupList.at(j);
+		       Residue currentTitGroup_j_Ref = titGroupList.at(j);
+		       cout << "j has name: " << currentTitGroup_j.getResidueName() << endl;
+		       // diagonal elements to be zero
+		       if ( currentTitGroup_i.getResidueName() == currentTitGroup_j.getResidueName() )
 			 {
-				 Residue currentTitGroup_j = titGroupList.at(j);
-				 // diagonal elements to be zero
-				 if ( currentTitGroup_i.getResidueName() == currentTitGroup_j.getResidueName() )
+			   cout << "both have same name: " << currentTitGroup_i.getResidueName() << endl;
+
+			   for(unsigned int state1 = 1; state1<currentTitGroup_i.getNrStates(); state1++)
+			     {
+			       for(unsigned int state2 = 1; state2<currentTitGroup_j.getNrStates(); state2++)
 				 {
-					 for(unsigned int state1 = 1; state1<currentTitGroup_i.getNrStates(); state1++)
-					 {
-						 for(unsigned int state2 = 1; state2<currentTitGroup_j.getNrStates(); state2++)
-						 {
-							 wmatrix[i][j][state1-1][state2-1] = 0.0;
-						 }
-					 }
-					 continue;
+				   wmatrix[i][j][state1-1][state2-1] = 0.0;
 				 }
-
-				 // Switch titGroup i to reference state
-				 switchState(currentTitGroup_i, 0);
-
-				 // run over all non-reference states
-				 for(unsigned int state1 = 1; state1<currentTitGroup_i.getNrStates(); state1++)
-				 {
-					 for(unsigned int state2 = 1; state2<currentTitGroup_j.getNrStates(); state2++)
-					 {
-						 // get charge of current state in residue 2
-						 // Switch titGroup j to current state2 (!= (reference which is 0))
-						 switchState(currentTitGroup_j, state2);
-
-
-						 // Wmv
-						 G = calcWmv(state1, currentTitGroup_j, currentTitGroup_i, cycle);
-
-						 G = G * convert; // kt->e^2/A
-
-						 // update matrix
-						 wmatrix[i][j][state1-1][state2-1] = G;
-					 }
-				 }
+			     }
+			   continue;
 			 }
-		 }
 
+		       
+		       // run over all non-reference states
+		       for(unsigned int state1 = 1; state1<currentTitGroup_i.getNrStates(); state1++)
+			 {
+			   for(unsigned int state2 = 1; state2<currentTitGroup_j.getNrStates(); state2++)
+			     {
+
+			       cout << "state1 is " << state1 << endl;
+			       cout << "state2 is " << state2 << endl;
+
+			       // get charge of current state in residue 2
+			       // Switch titGroup j to current state2 (!= (reference which is 0))
+			       // Switch titGroup i to reference state
+			       switchState(currentTitGroup_i, 1);
+			       switchState(currentTitGroup_j, state2+1);
+			       switchState(currentTitGroup_j_Ref, 1);
+			 
+			       // Wmv
+			       //						 G = calcWmv(state1, currentTitGroup_j, currentTitGroup_i, cycle);
+
+			       //			       cout << "G cycle0 is " << calcWmv(state1, pstat, pref, "cycle0");
+			       //			       cout << "G cycle1 is " << calcWmv(state1, pstat, pref, "cycle1");
+
+			       G = calcWmv(state1, currentTitGroup_i, currentTitGroup_j_Ref, currentTitGroup_j, cycle); // in kJ/mol
+			       cout << "G: cycle1 - cycl0 difference is " << G << endl; 
+
+			       cout << "writing at " << i << ", " << j << ", " << state1-1 << ", " << state2-1 << endl;
+			       // update matrix
+			       wmatrix[i][j][state1-1][state2-1] = G*E2A; 
+
+			     }
+			 }
+		     }
+		 }
+		 cout << "finished." << endl;
+		 
 	    // symmetrize matrix
 		 double dev=0.0, w1=0.0, w2=0.0, ave=0.0;
-
+		 
 		 cout << "Symmetrizing W matrix ... ";
-
+		 
 		 // setup output stream for symmetry check
 		 ostringstream log;
 		 log.setf(ios_base::scientific);
@@ -721,7 +762,7 @@ public:
 	}
 
 
-	void calcPkint(string cycleName){
+	void calcPkint(string cycleName, string refPQRFileName){
 
 		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
@@ -859,7 +900,7 @@ public:
 		  refAllAtomList.insert(refAllAtomList.end(), residueAtoms.begin(), residueAtoms.end());
 		}
 
-		writePQR(refAllAtomList, "refAllAtomList.pqr");
+		writePQR(refAllAtomList, refPQRFileName);
 
 
 		float bornEner = 0;
@@ -901,17 +942,17 @@ public:
 
 				//Residue titGroup = titGroup !
 				//				vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList); // from whole protein without patched atoms in currentTitGroup
-			vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList);
-			stringstream ss;
+				vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList);
+				/*	stringstream ss;
 			ss << "pAtomList_" << currentTitGroup.getIdentifier() << ".pqr"; 
 			writePQR(pAtomList, ss.str());
-
+				*/
 
 				vector<Atom> mAtomList = deleteAtoms(currentOrigTitGroup.getAtomList(), refAtomList); // not patched
-			stringstream ss2;
+				/*			stringstream ss2;
 		        ss2 << "mAtomList_" << currentTitGroup.getIdentifier() << ".pqr"; 
 			writePQR(mAtomList, ss2.str());
-
+				*/
 
 				for (unsigned int j = 0; j < pAtomList.size(); j++){
 					Atom currentAtom = pAtomList.at(j);
@@ -1000,8 +1041,8 @@ public:
 				boost::filesystem::wpath file(pdeFile);
 
 				if(boost::filesystem::exists(file)){
-					pde.LoadPDE (pdeFile.c_str());
-					pde.Solve();
+				  pde.LoadPDE (pdeFile.c_str());
+				  pde.Solve();
 				}
 
 			} else {
@@ -1014,12 +1055,14 @@ public:
 						string potatFile = cycleName+"."+prefix+".potat";
 						boost::filesystem::wpath potfile(potatFile);
 
-						if(boost::filesystem::exists(file) && !boost::filesystem::exists(potfile)){
-							pde.LoadPDE (pdeFile.c_str());
-							pde.Solve();
-						} else {
-							cout << potatFile << ".. already calculated." << endl;
-						}
+						if(boost::filesystem::exists(file)){
+						  // && !boost::filesystem::exists(potfile)){
+						  pde.LoadPDE (pdeFile.c_str());
+						  pde.Solve();
+						} 
+						//else {
+						//	cout << potatFile << ".. already calculated." << endl;
+						//}
 					}
 				}
 			}

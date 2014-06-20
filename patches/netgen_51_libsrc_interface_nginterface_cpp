@@ -1,0 +1,48 @@
+--- /scratch/scratch/sakalli/temp/netgen-5.1/libsrc/interface/nginterface.cpp	2013-06-25 13:28:58.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/netgen-5.1/libsrc/interface/nginterface.cpp	2014-01-17 19:28:03.513347216 +0100
+@@ -3,7 +3,6 @@
+ #include <meshing.hpp>
+ #include <csg.hpp>
+ 
+-
+ #ifdef SOCKETS
+ #include "../sockets/sockets.hpp"
+ #endif
+@@ -452,6 +451,37 @@
+   mesh->VolumeElement(ei).SetIndex(index);
+ }
+ 
++/// Added by Ilkay Sakalli
++void Ng_addElIndex(const int el)
++{
++  mesh->elList.Append(el);
++}
++int Ng_elIndexSize()
++{
++  return mesh->elList.Size();
++}
++int Ng_getElIndex(const int idx)
++{
++  return mesh->elList[idx];
++}
++void Ng_addIpPoint(NG_POINT p)
++{
++  mesh->ipList.Append(p[0]);
++  mesh->ipList.Append(p[1]);
++  mesh->ipList.Append(p[2]);
++}
++int Ng_ipPointSize()
++{
++  return mesh->ipList.Size();
++}
++void Ng_setIpPoint(const int idx, double* p)
++{
++  p[0] = mesh->ipList[idx*3];
++  p[1] = mesh->ipList[idx*3+1];
++  p[2] = mesh->ipList[idx*3+2];
++}
++
++
+ char * Ng_GetElementMaterial (int ei)
+ {
+   static char empty[] = "";

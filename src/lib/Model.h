@@ -39,7 +39,6 @@ public:
 
 
 	  int mask = 1;
-
 	  if (generator == "standard" && cavity && !boost::filesystem::exists( "cavity.vol" )){
 	    // cavity is calculated
 	    cout << "Calculating cavities..." << endl;
@@ -396,6 +395,7 @@ private:
 
 		// Set the Meshing Parameters to be used
 		string debug = ini.get<string>("model.debug");
+		string jobname = ini.get<string>("general.jobname");
 		string meshMoleculeSurface, meshMoleculeVolume;
 		if (mode == "protein" || mode == "cavity"){
 			meshMoleculeSurface = ini.get<string>("meshing.molecule_surface");
@@ -440,8 +440,10 @@ private:
 		  Ng_STL_Generate_SecondOrder(stl_geom, ngVolume);
 		}
 
-		if (debug == "analyze"){
-			Ng_SaveMesh(ngVolume,"surface_so.vol");
+		if (debug == "analyze" && mode == "protein"){
+		  stringstream fileName;
+		  fileName << jobname << "_surface_so.vol";
+		  Ng_SaveMesh(ngVolume,fileName.str().c_str());
 		}
 
 		if (mode == "protein" && boost::filesystem::exists( "cavity.vol" )){
@@ -486,8 +488,10 @@ private:
 
 
 
-		if (debug == "analyze"){
-			Ng_SaveMesh(ngVolume,"proteinVolume.vol");
+		if (debug == "analyze" && mode == "protein"){		  
+		  stringstream fileName;
+		  fileName << jobname << "_volume_so.vol";
+		  Ng_SaveMesh(ngVolume,fileName.str().c_str());
 		}
 
 		Ng_Mesh* bSurface;
@@ -506,8 +510,8 @@ private:
 			Ng_SetProperties(ngVolume, 1, 1, 1, 0);
 			Ng_SetProperties(bSurface, 1, 1, 1, 0);
 
-			Ng_SaveMesh(ngVolume,"before_ngVol.vol");
-			Ng_SaveMesh(bSurface,"before_bSurface.vol");
+			// Ng_SaveMesh(ngVolume,"before_ngVol.vol");
+			// Ng_SaveMesh(bSurface,"before_bSurface.vol");
 
 			cout << "Merging Mesh with boundary....." << endl;
 			ngSurface = Ng_MergeMesh( bSurface, ngVolume );
@@ -515,8 +519,8 @@ private:
 				cout << "Error in Surface merging....Aborting!!" << endl;
 				exit(1);
 			}
-			cout << "saving merge mesh" << endl;
-			Ng_SaveMesh(bSurface,"merged_mesh_after.vol");
+			//			cout << "saving merge mesh" << endl;
+			// Ng_SaveMesh(bSurface,"merged_mesh_after.vol");
 
 			cout << "Merging complete" << endl;
 
@@ -567,13 +571,13 @@ private:
 
 		}
 
-		Ng_SaveMesh(bSurface,"before_last_so.vol");
+		// Ng_SaveMesh(bSurface,"before_last_so.vol");
 
 		if (ini.get<string>("meshing.second_order_surface") == "yes"){
 		    cout << "Last second order meshing" << endl;
 		    Ng_Generate_SecondOrder(bSurface);
 		  }
-		Ng_SaveMesh(bSurface,"after_last_so.vol");
+		//		Ng_SaveMesh(bSurface,"after_last_so.vol");
 
 		cout << "Meshing successfully completed....!!" << endl;
 

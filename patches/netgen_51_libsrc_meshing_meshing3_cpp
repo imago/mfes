@@ -1,0 +1,104 @@
+--- /scratch/scratch/sakalli/temp/netgen-5.1/libsrc/meshing/meshing3.cpp	2013-06-25 13:28:59.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/netgen-5.1/libsrc/meshing/meshing3.cpp	2014-01-15 12:12:36.804270002 +0100
+@@ -46,6 +46,7 @@
+   tolfak = 1;
+ 
+   LoadRules (NULL, rulep);
++
+   adfront = new AdFront3;
+ 
+   problems.SetSize (rules.Size());
+@@ -64,12 +65,14 @@
+ 
+ Meshing3 :: ~Meshing3 ()
+ {
++
+   delete adfront;
+   for (int i = 0; i < rules.Size(); i++)
+     {
+       delete [] problems[i];
+       delete rules[i];
+     }
++
+ }
+ 
+ 
+@@ -274,7 +277,6 @@
+ 
+       // (*testout) << endl << "base = " << bel << endl;
+ 
+-
+       Point3d pmid = Center (p1, p2, p3);
+ 
+       double his = (Dist (p1, p2) + Dist(p1, p3) + Dist(p2, p3)) / 3;
+@@ -310,7 +312,6 @@
+       // loktestmode = testmode =  (adfront->GetFace (baseelem).GetNP() == 4) && (rules.Size() == 5);
+ 
+       loktestmode = stat.qualclass > 5;
+-      
+ 
+       if (loktestmode)
+ 	{
+@@ -351,7 +352,6 @@
+       else
+ 	allowpoint = 2;
+ 
+-
+       
+       if (stat.qualclass >= mp.starshapeclass &&
+ 	  mp.baseelnp != 4)   
+@@ -372,8 +372,11 @@
+ 	    if (groupfaces[i].GetNP() != 3) 
+ 	      onlytri = 0;
+ 	  
+-	  if (onlytri && groupfaces.Size() <= 20 + 2*stat.qualclass &&
+-	      FindInnerPoint (grouppoints, groupfaces, inp))
++	  /*	      PrintMessage(1, "before crash");
++	      FindInnerPoint (grouppoints, groupfaces, inp);
++	      PrintMessage(1, "after crash");
++	    if (onlytri && groupfaces.Size() <= 20 + 2*stat.qualclass &&
++	    FindInnerPoint (grouppoints, groupfaces, inp))
+ 	    {
+ 	      (*testout) << "inner point found" << endl;
+ 
+@@ -407,8 +410,9 @@
+ 		}
+ 	      continue;
+ 	    }
++	  */
+ 	}
+-      
++	  
+       found = 0;
+       hasfound = 0;
+       minerr = 1e6;
+@@ -611,7 +615,7 @@
+ 	  locelements.SetSize (0);
+ 	}
+       
+-      
++
+ 
+       if (hasfound)
+ 	{
+@@ -711,9 +715,9 @@
+   
+   PrintMessage (5, "");  // line feed after statistics
+ 
+-  for (i = 1; i <= ruleused.Size(); i++)
+-    (*testout) << setw(4) << ruleused.Get(i)
+-	       << " times used rule " << rules.Get(i) -> Name() << endl;
++  //  for (i = 1; i <= ruleused.Size(); i++)
++  //  (*testout) << setw(4) << ruleused.Get(i)
++  //	       << " times used rule " << rules.Get(i) -> Name() << endl;
+ 
+ 
+   if (!mp.baseelnp && adfront->Empty())
+@@ -722,6 +726,7 @@
+   if (mp.baseelnp && adfront->Empty (mp.baseelnp))
+     return MESHING3_OK;
+ 
++  
+   if (stat.vol < -1e-15)
+     return MESHING3_NEGVOL;
+ 

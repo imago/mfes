@@ -1,0 +1,249 @@
+--- /scratch/scratch/sakalli/temp/netgen-5.1/nglib/nglib.cpp	2013-06-25 13:28:56.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/netgen-5.1/nglib/nglib.cpp	2014-02-28 13:30:58.766410065 +0100
+@@ -141,6 +141,24 @@
+    }
+ 
+ 
++  // Changes the bc number of a VOL mesh
++  DLL_HEADER Ng_Mesh * Ng_SetProperties(Ng_Mesh * mesh, int surfnr, int bcnr, int domin, int domout)
++  {
++    Mesh * m = (Mesh*) mesh;
++    int maxsteps = m->GetNSE();
++    SurfaceElementIndex sei;
++    for (sei = 0; sei < maxsteps; sei++)
++      {
++	//  if ((*m)[sei].GetIndex()){
++	m->GetFaceDescriptor((*m)[sei].GetIndex ()).SetSurfNr (surfnr);
++	m->GetFaceDescriptor((*m)[sei].GetIndex ()).SetBCProperty (bcnr);
++	m->GetFaceDescriptor((*m)[sei].GetIndex ()).SetDomainIn (domin);
++	m->GetFaceDescriptor((*m)[sei].GetIndex ()).SetDomainOut (domout);
++	//  }
++	 
++      }
++    return ( (Ng_Mesh*)m );
++  }
+ 
+ 
+    // Merge another mesh file into the currently loaded one
+@@ -184,13 +202,149 @@
+ 
+ 
+ 
+-   // Merge another mesh file into the currently loaded one
+-   DLL_HEADER Ng_Result Ng_MergeMesh( Ng_Mesh* mesh1, Ng_Mesh* mesh2)
+-   {
+-      return NG_ERROR;
+-   }
++  // Merge another mesh file into the currently loaded one
++  DLL_HEADER Ng_Result Ng_MergeMesh( Ng_Mesh* mesh1, Ng_Mesh* mesh2)
++  {
+ 
++    Ng_Result status = NG_OK;
++    Mesh * m = (Mesh*)mesh1;
++    Mesh * m2 = (Mesh*)mesh2;
+ 
++    if(!m)
++      {
++	status = NG_ERROR;
++      }
++
++    if(status == NG_OK)
++      {
++	const int num_pts = m->GetNP();
++	int surfindex_offset = 0;
++
++	int i;
++
++	int oldnp = m->GetNP();
++	int oldne = m->GetNSeg();
++
++	for(SurfaceElementIndex si = 0; si < m->GetNSE(); si++)
++	  for(int j=1; j<=(*m)[si].GetNP(); j++) (*m)[si].GeomInfoPi(j).trignum = -1;
++
++	int max_surfnr = 0;
++	for (i = 1; i <= m->GetNFD(); i++)
++	  max_surfnr = max2 (max_surfnr, m->GetFaceDescriptor(i).SurfNr());
++	max_surfnr++;
++
++	if(max_surfnr < surfindex_offset) max_surfnr = surfindex_offset;
++
++	         
++	int maxsteps = m2->GetNSE();
++	SurfaceElementIndex sei;
++	for (sei = 0; sei < maxsteps; sei++)
++	  {
++	    int j;
++	    int surfnr, bcp, domin, domout, nep = 3, faceind = 0;
++	     
++	    surfnr = m2->GetFaceDescriptor((*m2)[sei].GetIndex ()).SurfNr()+1;
++	    bcp = m2->GetFaceDescriptor((*m2)[sei].GetIndex ()).BCProperty()+1;
++	    domin = m2->GetFaceDescriptor((*m2)[sei].GetIndex ()).DomainIn()+1; 
++	    domout = m2->GetFaceDescriptor((*m2)[sei].GetIndex ()).DomainOut()+1; 
++
++	    for (j = 1; j <= m->facedecoding.Size(); j++)
++	      if (m->GetFaceDescriptor(j).SurfNr() == surfnr &&
++		  m->GetFaceDescriptor(j).BCProperty() == bcp &&
++		  m->GetFaceDescriptor(j).DomainIn() == domin &&
++		  m->GetFaceDescriptor(j).DomainOut() == domout)
++		faceind = j;
++
++	    if (!faceind)
++	      {
++		faceind = m->AddFaceDescriptor (FaceDescriptor(surfnr, domin, domout, 0));
++		if(m->GetDimension() == 2) bcp++;
++		m->GetFaceDescriptor(faceind).SetBCProperty (bcp);
++	      }
++
++	    Element2d tri(nep);
++	    tri.SetIndex(faceind);
++
++	    Element2d sel = (*m2)[sei];
++	                      
++	    for (j = 1; j <= nep; j++)
++	      {
++		tri.PNum(j) = sel.PNum(j) + oldnp;
++	      }
++
++
++	    for (j = 1; j <= nep; j++)
++	      {
++		tri.GeomInfoPi(j).trignum = -1;
++	      }
++
++	    m->AddSurfaceElement (tri);
++	  }
++	        
++	for (ElementIndex ei = 0; ei < m2->GetNE(); ei++)
++	  {
++	    Element el;
++	      
++	    int hi = (*m2)[ei].GetIndex() + 1;
++	    if (hi == 0) hi = 1;
++	    el.SetIndex(hi);
++	      
++	    int nep = (*m2)[ei].GetNP();
++	    el.SetNP(nep);
++
++	    for (int j = 0; j < nep; j++)
++	      el[j] = (*m2)[ei][j] + oldnp;
++
++	    m->AddVolumeElement (el);
++	  }
++
++	         
++	PointIndex pi;
++	maxsteps = m2->GetNP();
++	for (pi = PointIndex::BASE; pi < maxsteps+PointIndex::BASE; pi++)
++	  {
++	    Point3d p;
++	    p.X() = (*m2)[pi](0)/1.0;
++	    p.Y() = (*m2)[pi](1)/1.0;
++	    p.Z() = (*m2)[pi](2)/1.0;
++	    m->AddPoint (p);
++	     
++	  }  
++	         
++	for (unsigned int i = 1; i <= m2->GetNSeg(); i++){
++	  Segment & seg = m2->LineSegment (i);
++	   
++	  seg.surfnr1--;
++	  seg.surfnr2--;
++	  if(seg.surfnr1 >= 0)  seg.surfnr1 = seg.surfnr1 + max_surfnr;
++	  if(seg.surfnr2 >= 0)  seg.surfnr2 = seg.surfnr2 + max_surfnr;
++	  seg[0] = seg[0] +oldnp;
++	  seg[1] = seg[1] +oldnp;
++	  seg.edgenr = seg.edgenr + oldne;
++	  seg.epgeominfo[1].edgenr = seg.epgeominfo[1].edgenr + oldne;
++	  m->AddSegment (seg);
++	}
++	         
++
++	m->CalcSurfacesOfNode ();
++
++	m->topology -> Update();
++	m->clusters -> Update();
++
++	m->SetNextMajorTimeStamp();
++
++	if(m->GetNP() > num_pts)
++	  {
++	    status = NG_OK;
++	  }
++	else
++	  {
++	    status = NG_ERROR;
++	  }
++      }
++    return status;
++
++  }
+ 
+ 
+    // Manually add a point to an existing mesh object
+@@ -964,6 +1118,9 @@
+    {
+       uselocalh = 1;
+ 
++      blockfill = 1;
++      filldist = 0.1;
++
+       maxh = 1000;
+       minh = 0.0;
+ 
+@@ -1038,8 +1195,56 @@
+    // 
+    DLL_HEADER void Ng_Meshing_Parameters :: Transfer_Parameters()
+    {
++      stlparam.yangle = 60; // 60 auch ok // 30
++      stlparam.contyangle = 20; // 20
++      stlparam.edgecornerangle = 60; // 60
++      stlparam.chartangle = 30; // 30 ok// 15
++      // very coarse parameters
++      stlparam.resthlinelengthfac = 0.2;
++      stlparam.atlasminh = 0.1; // 0.1
++      stlparam.resthsurfcurvfac = 0.25;
++      stlparam.resthsurfcurvenable = 0;
++      stlparam.resthatlasfac = 2;
++      stlparam.resthatlasenable = 0; // 1
++      stlparam.resthchartdistfac = 0.8;
++      stlparam.resthchartdistenable = 0; // 1
++      stlparam.resthlinelengthfac = 0.2;
++      stlparam.resthlinelengthenable = 0; // 1
++      stlparam.resthcloseedgefac = 0.5; // 0.5
++      stlparam.resthcloseedgeenable = 1;
++      stlparam.resthedgeanglefac = 0.25;
++      stlparam.resthedgeangleenable = 0;
++      stlparam.resthsurfmeshcurvfac = 0; // 1
++      stlparam.resthsurfmeshcurvenable = 0;
++
++      cout << "yangle: " << stlparam.yangle << endl; 
++      cout << "contyagnle: " << stlparam.contyangle << endl;
++      cout << "edgecornerangle: " << stlparam.edgecornerangle  << endl;
++      cout << "chartatngle: " << stlparam.chartangle  << endl;
++      // very coarse parameters
++      cout << "resthlinelengthfac: " << stlparam.resthlinelengthfac  << endl;
++      cout << "atlasminh: " << stlparam.atlasminh  << endl;
++      cout << "resthsurfcurvfac: " << stlparam.resthsurfcurvfac  << endl;
++      cout << "resthsurfcurvenable: " << stlparam.resthsurfcurvenable  << endl;
++      cout << "resthatlasfac: " << stlparam.resthatlasfac  << endl;
++      cout << "resthatlasenable: " << stlparam.resthatlasenable  << endl;
++      cout << "resthchartdistfac: " << stlparam.resthchartdistfac  << endl;
++      cout << "resthchartdistenable: " << stlparam.resthchartdistenable  << endl;
++      cout << "resthlinelengthfac: " << stlparam.resthlinelengthfac  << endl;
++      cout << "resthlinelengthenable: " << stlparam.resthlinelengthenable  << endl;
++      cout << "resthcloseedgefac: " << stlparam.resthcloseedgefac  << endl;
++      cout << "resthcloseedgeenable: " << stlparam.resthcloseedgeenable  << endl;
++      cout << "resthedgeanglefac: " << stlparam.resthedgeanglefac  << endl;
++      cout << "resthedgeangleenable: " << stlparam.resthedgeangleenable << endl;
++      cout << "resthsurfmeshcurvfac: " << stlparam.resthsurfmeshcurvfac  << endl;
++      cout << "resthsurfmeshcurvenable: " << stlparam.resthsurfmeshcurvenable  << endl;
++
++
+       mparam.uselocalh = uselocalh;
+       
++      //      mparam.blockfill = blockfill;
++      // mparam.filldist = filldist;
++
+       mparam.maxh = maxh;
+       mparam.minh = minh;
+ 

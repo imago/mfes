@@ -1,0 +1,37 @@
+--- /scratch/scratch/sakalli/temp/ngsolve-5.1/comp/postproc.hpp	2013-06-25 13:22:31.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/ngsolve-5.1/comp/postproc.hpp	2014-01-17 13:42:29.370456248 +0100
+@@ -46,6 +46,34 @@
+ 		  LocalHeap & clh);
+   
+ 
++  // Added by Ilkay Sakalli
++  template <class SCAL>
++  extern NGS_DLL_HEADER
++  int CalcElFlux (const MeshAccess & ma, 
++		     const GridFunction & bu,
++		     const FlatVector<double> & point,
++		     const Array<int> & domains,
++		     FlatVector<SCAL> & flux,
++		     const BilinearFormIntegrator & bli,
++		     bool applyd,
++		     LocalHeap & lh,
++		     int elnr,
++		     IntegrationPoint ip,
++		     int component // = 0
++		  );
++  /*
++  int CalcElFlux (const MeshAccess & ma, 
++		     const GridFunction & u,
++		     const FlatVector<double> & point,
++		     const Array<int> & domains,
++		     FlatVector<SCAL> & flux,
++		     const BilinearFormIntegrator & bli,
++		     bool applyd,
++		     LocalHeap & lh,
++		     int elnr,
++		     IntegrationPoint ip,
++		     int component = 0);
++  */
+ 
+   template <class SCAL>
+   extern NGS_DLL_HEADER

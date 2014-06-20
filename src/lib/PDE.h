@@ -69,23 +69,23 @@ public:
 
 		string extend_preconditioner = " -cylce=6 -smoother=block -coarsetype=direct -coarsesmoothingsteps=0 -notest";
 
-//		boost::filesystem::wpath file(L"pka_cycle0.pde");
-//		if(boost::filesystem::exists(file))
-//			boost::filesystem::remove(file);
-
 		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
 			string prefix = currentTitGroup.getIdentifier();
 
-			if ( !boost::filesystem::exists( "cycle0."+prefix+".potat" ) ){
-				ofstream potfile;
+			//	if ( !boost::filesystem::exists( "cycle0."+prefix+".potat" ) ){
+			ofstream potfile;
 
-				if (i > 0){
-				  potfile.open("pka_cycle0_"+prefix+".pde", ios::in | ios::out | ios::app);
-				}
-				else {
-				  potfile.open("pka_cycle0_"+prefix+".pde");
-				}
+				//				if (i > 0){
+				//  potfile.open("pka_cycle0_"+prefix+".pde", ios::in | ios::out | ios::app);
+				//}
+				//else {		
+			if(boost::filesystem::exists("pka_cycle0_"+prefix+".pde")){
+			  boost::filesystem::remove("pka_cycle0_"+prefix+".pde");
+			  cout << "removing pde file: " << "pka_cycle0_"+prefix+".pde" << endl;
+			}				  		
+			potfile.open("pka_cycle0_"+prefix+".pde", ios::out);
+				  //				}
 				potfile << "###################################################" << endl;
 				potfile << "#" << endl;
 				potfile << "#  Initialization: " << prefix << endl;
@@ -181,7 +181,7 @@ public:
 				potfile << endl;
 				potfile.close();
 
-			}
+				//			}
 
 		}
 
@@ -198,20 +198,19 @@ public:
 
 		bool init = true;
 
+		if(boost::filesystem::exists("pka_cycle1.pde")){
+		  boost::filesystem::remove("pka_cycle1.pde");
+		  cout << "removing pde file: " << "pka_cycle1.pde" << endl;
+		}
+
 		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
 			string prefix = currentTitGroup.getIdentifier();
 
-			if ( !boost::filesystem::exists( "cycle1."+prefix+".potat" ) ){
-				ofstream potfile;
-				
-				if (i > 0){
-				  potfile.open("pka_cycle1.pde", ios::in | ios::out | ios::app);
-				}
-				else {
-				  potfile.open("pka_cycle1.pde");
-				}
-				
+			//			if ( !boost::filesystem::exists( "cycle1."+prefix+".potat" ) ){
+			ofstream potfile;	
+			potfile.open("pka_cycle1.pde", ios::in | ios::out | ios::app);
+							
 				if (init){
 
 					potfile << "shared = pointcharges" << endl;
@@ -312,7 +311,7 @@ public:
 				potfile << endl;
 				potfile << endl;
 				potfile.close();
-			}
+				// }
 
 		}
 

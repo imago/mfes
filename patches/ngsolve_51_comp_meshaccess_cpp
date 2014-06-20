@@ -1,0 +1,44 @@
+--- /scratch/scratch/sakalli/temp/ngsolve-5.1/comp/meshaccess.cpp	2013-06-25 13:22:31.000000000 +0200
++++ /scratch/scratch/sakalli/ngsolve/sources/ngsolve-5.1/comp/meshaccess.cpp	2014-01-17 19:31:15.409355462 +0100
+@@ -681,12 +681,41 @@
+       }
+   }
+ 
++  /// Added by Ilkay Sakalli
++  void MeshAccess :: addElIndex(const int el) const
++  {
++    Ng_addElIndex(el);
++  }
++  int MeshAccess :: getElIndexSize() const
++  {
++    return Ng_elIndexSize();
++  }
++  int MeshAccess :: getElIndex(const int idx) const
++  {
++    return Ng_getElIndex(idx);
++  }
++  void MeshAccess :: addIpPoint(double* ip) const
++  {
++    Ng_addIpPoint(ip);
++  }
++  int MeshAccess :: getIpPointSize() const
++  {
++    return Ng_ipPointSize();
++  }
++  void MeshAccess :: setIpPoint(const int idx, double *p) const
++  {
++    Ng_setIpPoint(idx, p);
++  }
++
++
++
+ 
+   void MeshAccess :: SetPointSearchStartElement(const int el) const
+   {
+     Ng_SetPointSearchStartElement(el+1);
+   }
+ 
++
+   int MeshAccess :: FindElementOfPoint (FlatVector<double> point,
+ 					IntegrationPoint & ip, 
+ 					bool build_searchtree,

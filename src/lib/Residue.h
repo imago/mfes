@@ -14,8 +14,9 @@ using namespace std;
 class Residue {
 public:
 	Residue():
-	    resName(""),
-	    resNumber(-1)
+          resName(""),
+          resNumber(-1),
+ 	  hasCycle(false)
 	{
 		born[0][0] = born[0][1] = born[0][2] = born[1][0] = born[1][1] = born[1][2] = 0.0f;
 		back[0][0] = back[0][1] = back[0][2] = back[1][0] = back[1][1] = back[1][2] = 0.0f;
@@ -73,8 +74,13 @@ public:
 
 	void setTCycle(tCycle &_cycle){
 		cycle = _cycle;
+		hasCycle = true;
 	}
-
+	
+	bool haveCycle(){
+	  return hasCycle;
+	}
+	
 	tCycle getTCycle(){
 	    return cycle;
 	}
@@ -95,6 +101,12 @@ public:
 		return back[cycleNr][stateNr];
 	}
 
+	void print(){
+	  for (unsigned int i = 0; i < atomList.size(); i++){
+	    Atom currentAtom = atomList.at(i);
+	    cout << currentAtom.pqrLine() << endl;
+	  }
+	}
 
 private:
 	string resName;
@@ -102,6 +114,7 @@ private:
 	char chainID;
 	vector<Atom> atomList;
 	tCycle cycle;
+	bool hasCycle;
 	float born[2][3];
 	float back[2][3];
 };
