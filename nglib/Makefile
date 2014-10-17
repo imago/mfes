@@ -2,12 +2,13 @@ OBJS1 = writePotatAscii.o
 OBJS2 = energydiff.o
 OBJS3 = pointcharges.o
 OBJS4 = precalculation.o
+OBJS5 = writedx.o
 CC = ngscxx
 DEBUG = 
 CFLAGS = -Wall -c $(DEBUG) -I/scratch/scratch/sakalli/ngsolve/sources/MUMPS_4.10.0/include/
 LFLAGS = -Wall $(DEBUG)
 
-all: writePotatAscii.so energydiff.so pointcharges.so precalculation.so
+all: writePotatAscii.so energydiff.so pointcharges.so precalculation.so writedx.so
 
 writePotatAscii.so: $(OBJS1)
 	$(CC) -shared -fopenmp -fpic $(LFLAGS) $(OBJS1) -lngsolve -o $@
@@ -21,6 +22,9 @@ pointcharges.so: $(OBJS3)
 precalculation.so: ${OBJS4}
 	$(CC) -shared -fopenmp -fpic $(LFLAGS) $(OBJS4) -lngsolve -o $@
 
+writedx.so: ${OBJS5}
+	$(CC) -shared -fopenmp -fpic $(LFLAGS) $(OBJS5) -lngsolve -o $@
+
 writePotatAscii.o: writePotatAscii.cpp
 	$(CC) $(CFLAGS) -O2 -fopenmp -fpic -DNETGEN_ELTRANS -DUSE_TIMEOFDAY -DLAPACK -I. -I$(NETGENDIR)/../include -I/usr/include/tcl8.5/ -c writePotatAscii.cpp
 
@@ -32,6 +36,9 @@ pointcharges.o: pointcharges.cpp
 
 precalculation.o: precalculation.cpp 
 	$(CC) $(CFLAGS) -O2 -fopenmp -fpic  -DNETGEN_ELTRANS -DUSE_TIMEOFDAY -DLAPACK -I. -I$(NETGENDIR)/../include -I/usr/include/tcl8.5/ -c precalculation.cpp
+
+writedx.o: writedx.cpp 
+	$(CC) $(CFLAGS) -O2 -fopenmp -fpic  -DNETGEN_ELTRANS -DUSE_TIMEOFDAY -DLAPACK -I. -I$(NETGENDIR)/../include -I/usr/include/tcl8.5/ -c writedx.cpp
 
 
 clean:
