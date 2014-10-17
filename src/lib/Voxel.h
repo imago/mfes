@@ -49,7 +49,7 @@ public:
     }
 
   cout << "rmax = " << rmax << endl;
-    int increase = 5; //ceil(rmax)+1;
+  int increase = ceil(rmax)+1; //ceil(rmax); // 5 also works?
 
   clock_t t2 = clock();
 

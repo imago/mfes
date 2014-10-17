@@ -29,7 +29,6 @@ float SIZEMAX = 400.0f;
 float minx,miny,minz,maxx,maxy,maxz;
 double s;
 bool usePredef = false;
-float _extendedRadius = 0;
 
 class STLFacet
 {
@@ -49,19 +48,25 @@ public:
 		string debug = ini.get<string>("model.debug");
 		PR = atof(ini.get<string>("experiment.probe_radius").c_str());
 
+		double probeRadius = ini.get<double>("experiment.probe_radius");
+
 		bool calc_cavity = false;
 		unsigned int gridSize;
+		float extendR = 0;
+
 		if (mode == "protein") {
 		    gridSize = ini.get<unsigned int>("model.grid_resolution");
 		} else if (mode == "residue")  {
 			gridSize = ini.get<unsigned int>("model.grid_residue_resolution");
+		} else if (mode == "exclusion")  {
+			gridSize = ini.get<unsigned int>("model.grid_resolution");
+			probeRadius = 1.4;;
+			extendR = 2; // ion exclusion layer distance [Angstroem]
 		} else {
 			// cavity calculation is turned on
 			gridSize = 512;
 			calc_cavity = true;
 		}
-
-		double probeRadius = ini.get<double>("experiment.probe_radius");
 
 		cout << "grid size: " << gridSize << endl;
 		cout << "probe radius: " << probeRadius << endl;
@@ -80,7 +85,7 @@ public:
 			mol->xpoints[i] = currentCoord.X();
 			mol->ypoints[i] = currentCoord.Y();
 			mol->zpoints[i] = currentCoord.Z();
-			mol->rpoints[i] = currentAtom.getRadius(); //+extendedRadius;
+			mol->rpoints[i] = currentAtom.getRadius() + extendR; 
 			if (debug == "yes")
 				cout << "x, y, z, r: " << mol->xpoints[i] << ", " << mol->ypoints[i] << ", " << mol->zpoints[i] << ", " << mol->rpoints[i] << endl;
 		}

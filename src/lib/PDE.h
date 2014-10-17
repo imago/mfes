@@ -3,9 +3,11 @@
 
 #include "Residue.h"
 #include <vector>
+#include "Defs.h"
 
 class PDE {
 public:
+
 	PDE(){
 		;
 	}
@@ -14,6 +16,13 @@ public:
 		string maxsteps = ini.get<string>("solver.maxsteps");
 		string eps_in = ini.get<string>("experiment.eps_in");
 		string eps_out = ini.get<string>("experiment.eps_out");
+
+		float ionc = 0;
+		boost::optional<string> ionc_opt = ini.get_optional<string>("experiment.ionc");
+
+		if(ionc_opt){
+		  ionc = ini.get<float>("experiment.ionc");
+		}
 
 
 		ofstream energyFile;
@@ -27,14 +36,22 @@ public:
 		energyFile << endl;
 		energyFile << "define constant eps0 = 8.8541878e-22" << endl;
 		energyFile << "define constant q0 = 1.60217646e-19" << endl;
+		energyFile << "define constant ionc = " << ionc << endl;
 		energyFile << endl;
 		energyFile << "define constant heapsize = " << HEAPSIZE << endl;
 		energyFile << endl;
 		energyFile << "define coefficient epsilon_solv" << endl;
-		energyFile << "(" << eps_out << "*eps0),(" << eps_in << "*eps0),(" << eps_out << "*eps0)" << endl;
+		if (ionc == 0)
+		  energyFile << "(" << eps_out << "*eps0),(" << eps_in << "*eps0),(" << eps_out << "*eps0)" << endl;
+		else
+		  energyFile << "(" << eps_out << "*eps0),(" << eps_out << "*eps0),(" << eps_in << "*eps0),("<< eps_out <<"*eps0)" << endl;
+
 		energyFile << endl;
 		energyFile << "define coefficient epsilon_ref" << endl;
-		energyFile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),("<< eps_in <<"*eps0)" << endl;
+		energyFile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),("<< eps_in <<"*eps0),("<< eps_in <<"*eps0)" << endl;
+		energyFile << endl;
+		energyFile << "define coefficient kappa" << endl;
+		energyFile << "("<< DL <<"*ionc),0,0,0" << endl;
 		energyFile << endl;
 		energyFile << "define fespace v -order="<<solOrder<<" -type=h1ho -dirichlet=[1]" << endl;
 		energyFile << endl;
@@ -43,9 +60,11 @@ public:
 		energyFile << endl;
 		energyFile << "define bilinearform a_solv -fespace=v -symmetric" << endl;
 		energyFile << "laplace epsilon_solv" << endl;
+		energyFile << "mass kappa" << endl;
 		energyFile << endl;
 		energyFile << "define bilinearform a_ref -fespace=v -symmetric" << endl;
 		energyFile << "laplace epsilon_ref" << endl;
+		energyFile << "mass kappa" << endl;
 		energyFile << endl;
 		energyFile << "define linearform f -fespace=v" << endl;
 		energyFile << endl;
@@ -68,6 +87,14 @@ public:
 		string eps_out = ini.get<string>("experiment.eps_out");
 
 		string extend_preconditioner = " -cylce=6 -smoother=block -coarsetype=direct -coarsesmoothingsteps=0 -notest";
+
+		float ionc = 0;
+		boost::optional<string> ionc_opt = ini.get_optional<string>("experiment.ionc");
+
+		if(ionc_opt){
+		  ionc = ini.get<float>("experiment.ionc");
+		}
+
 
 		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
@@ -101,15 +128,23 @@ public:
 				potfile << endl;
 				potfile << "define constant eps0 = 8.8541878e-22" << endl;
 				potfile << "define constant q0 = 1.60217646e-19" << endl;
+				potfile << "define constant ionc = " << ionc << endl;
 				potfile << endl;
 				potfile << "define constant heapsize = " << HEAPSIZE << endl;
 				potfile << endl;
 				potfile << "define coefficient epsilon_solv" << endl;
-				potfile << "(" << eps_out << "*eps0),(" << eps_in << "*eps0),("<< eps_out << "*eps0)" << endl;
+				if (ionc == 0)
+				  potfile << "(" << eps_out << "*eps0),(" << eps_in << "*eps0),(" << eps_out << "*eps0)" << endl;
+				else
+				  potfile << "(" << eps_out << "*eps0),(" << eps_out << "*eps0),(" << eps_in << "*eps0),("<< eps_out <<"*eps0)" << endl;
 				potfile << endl;
 				potfile << "define coefficient epsilon_ref" << endl;
-				potfile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),(" << eps_in << "*eps0)" << endl;
+				potfile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),("<< eps_in <<"*eps0),("<< eps_in <<"*eps0)" << endl;
 				potfile << endl;
+				potfile << "define coefficient kappa" << endl;
+				potfile << "(" << DL << "*ionc),0,0,0" << endl;
+				potfile << endl;
+
 
 				unsigned int nrStates = currentTitGroup.getNrStates();
 				string create = "";
@@ -122,9 +157,12 @@ public:
 				potfile << endl;
 				potfile << "define bilinearform a_solv_"<<prefix<<" -fespace=v -symmetric" << endl;
 				potfile << "laplace epsilon_solv" << endl;
+				potfile << "mass kappa" << endl;
 				potfile << endl;
 				potfile << "define bilinearform a_ref_"<<prefix<<" -fespace=v -symmetric" << endl;
 				potfile << "laplace epsilon_ref" << endl;
+				potfile << "mass kappa" << endl;
+
 				potfile << endl;
 				potfile << "define preconditioner c_solv_"<<prefix<<" -type=multigrid -bilinearform=a_solv_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl;
 				potfile << "define preconditioner c_ref_"<<prefix<<" -type=multigrid -bilinearform=a_ref_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl << endl;
@@ -194,6 +232,14 @@ public:
 		string eps_in = ini.get<string>("experiment.eps_in");
 		string eps_out = ini.get<string>("experiment.eps_out");
 
+		float ionc = 0;
+		boost::optional<string> ionc_opt = ini.get_optional<string>("experiment.ionc");
+
+		if(ionc_opt){
+		  ionc = ini.get<float>("experiment.ionc");
+		}
+
+
 		string extend_preconditioner = " -cylce=6 -smoother=block -coarsetype=direct -coarsesmoothingsteps=0 -notest";
 
 		bool init = true;
@@ -220,14 +266,24 @@ public:
 					potfile << endl;
 					potfile << "define constant eps0 = 8.8541878e-22" << endl;
 					potfile << "define constant q0 = 1.60217646e-19" << endl;
+					potfile << "define constant ionc = " << ionc << endl;
+
 					potfile << endl;
 					potfile << "define constant heapsize = " << HEAPSIZE << endl;
 					potfile << endl;
 					potfile << "define coefficient epsilon_solv" << endl;
-					potfile << "(" << eps_out << "*eps0),(" << eps_in << "*eps0),(" << eps_out << "*eps0)" << endl;
+					if (ionc == 0)
+					  potfile << "(" << eps_out << "*eps0),(" << eps_in << "*eps0),(" << eps_out << "*eps0)" << endl;
+					else
+					  potfile << "(" << eps_out << "*eps0),(" << eps_out << "*eps0),(" << eps_in << "*eps0),("<< eps_out <<"*eps0)" << endl;
 					potfile << endl;
 					potfile << "define coefficient epsilon_ref" << endl;
-					potfile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),(" << eps_in << "*eps0)" << endl;
+					potfile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),("<< eps_in <<"*eps0),("<< eps_in <<"*eps0)" << endl;
+					potfile << endl;
+					potfile << "define coefficient kappa" << endl;
+					potfile << "(" <<  DL << "*ionc),0,0,0" << endl;
+					potfile << endl;
+
 					potfile << endl;
 					potfile << "###################################################" << endl;
 					potfile << "#" << endl;
@@ -245,9 +301,13 @@ public:
 					potfile << endl;
 					potfile << "define bilinearform a_solv_"<<mol<<" -fespace=v -symmetric" << endl;
 					potfile << "laplace epsilon_solv" << endl;
+					potfile << "mass kappa" << endl;
+
 					potfile << endl;
 					potfile << "define bilinearform a_ref_"<<mol<<" -fespace=v -symmetric" << endl;
 					potfile << "laplace epsilon_ref" << endl;
+					potfile << "mass kappa" << endl;
+
 					potfile << endl;
 					potfile << "define preconditioner c_solv_"<<mol<<" -type=multigrid -bilinearform=a_solv_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl;
 					potfile << "define preconditioner c_ref_"<<mol<<" -type=multigrid -bilinearform=a_ref_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl << endl;

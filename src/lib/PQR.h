@@ -226,6 +226,13 @@ public:
 		if (ini.get<string>("experiment.cavity") == "yes")
 			molecule.calcModel(atomList, ini, "cavity.vol", true);
 
+		boost::optional<string> ionc = ini.get_optional<string>("experiment.ionc");
+		if(ionc){
+		  if(ini.get<float>("experiment.ionc") != 0){
+		    molecule.calcIonLayer(atomList, ini, "exclusion.vol");
+		  }
+		}
+
 		molecule.calcModel(atomList, ini);
 
 	}
@@ -234,13 +241,13 @@ public:
 		cout << "Calculating deltaG ..." << endl;
 		ngsolve::PDE pde;
 
-	//	using namespace nglib;
+
 
 		string pdeFile = "energy.pde";
 
 		try {
-		    pde.LoadPDE (pdeFile.c_str());
-		    pde.Solve();
+		  pde.LoadPDE (pdeFile.c_str());
+		  pde.Solve();
 		} catch(ngstd::Exception & e) {
 			std::cout << "Caught exception: " << std::endl
 				<< e.What() << std::endl;
@@ -389,16 +396,16 @@ public:
 	void calcExplicitModels(INI &ini){
 		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
-			if (getCycle0Shift(currentTitGroup.getResidueName(), 1) == NOT_IN_ST){
+			if (getCycle0Shift(currentTitGroup.getResidueName(), 1) == NOT_IN_ST || explicitModels){
 				string fname = currentTitGroup.getIdentifier()+".vol";
 				vector<Atom> currentAtomList = currentTitGroup.getAtomList();
 				molecule.calcModel(currentAtomList, ini, fname);
 			} 
 			// Write out PQR files
 			for (unsigned int j = 1; j <= currentTitGroup.getNrStates(); j++){
-				writePQR(currentTitGroup, j);
+			  writePQR(currentTitGroup, j);
 			}
-
+			
 		}
 
 	}

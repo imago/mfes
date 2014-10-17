@@ -21,6 +21,9 @@ struct Triangle{
 // standard: mu = lambda = 0.5
 // meshlab: mu = -0.53, lambad = 0.5
 
+// kappa squared times I/eps_r [1/(eps_0)] but in Angstroem
+#define DL 8.43249149e-22
+
 #define CONVERT 5.74346052632
 		//5.74342695
 

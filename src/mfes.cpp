@@ -8,12 +8,12 @@
  ============================================================================
  */
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/timer.hpp>
+#include "lib/boost/property_tree/ptree.hpp"
+#include "lib/boost/property_tree/ini_parser.hpp"
+#include "lib/boost/program_options.hpp"
+#include "lib/boost/filesystem.hpp"
+#include "lib/boost/algorithm/string.hpp"
+#include "lib/boost/timer.hpp"
 
 #include <iostream>
 #include <vector>
@@ -35,16 +35,17 @@ void calcModelVolume(vector<PQR> &pqrList, INI &ini){
 
 
 void calcDeltaG(vector<PQR> &pqrList, INI &ini){
-	if ( !boost::filesystem::exists("result.out" ) ) {
+  //	if ( !boost::filesystem::exists("result.out" ) ) {
 	  for (unsigned int i = 0; i < pqrList.size(); i++){
 	    PQR currentPQR = pqrList.at(i);
 	    currentPQR.calcModel(ini);
 	    currentPQR.writePDE(ini, "energy");
 	    currentPQR.calcDeltaG();
 	  }
-	} else {
+  /*     	} else {
 	  cout << "Calculations already done." << endl;
 	}
+  */
 
 
 }
@@ -60,8 +61,8 @@ void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 	      currentPQR.parseSTFiles();
 	    currentPQR.calcResidues(ini);
 	    currentPQR.calcModel(ini);
-	    if (currentPQR.explicitModels)
-	      currentPQR.calcExplicitModels(ini);
+	    //	    if (currentPQR.explicitModels)
+	    currentPQR.calcExplicitModels(ini);
 	    currentPQR.writePDE(ini);
 	    currentPQR.calcPotat("cycle0");	      
 	    currentPQR.calcPotat("cycle1");
