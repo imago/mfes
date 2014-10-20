@@ -42,22 +42,28 @@ lGrid createGrid(short i)
 	return g;
 }
 
-void signDistanceGridMol(lGrid g, Molecule mol, double PR)
+void signDistanceGridMol(lGrid g, Molecule mol, double PR, int gridSize)
 {
 	int i;
 	int a,b,c;
 	int len = mol->npoints;
 	int icx,icy,icz;
 	int r;
+	int halfLength = 256;
 	float s = 512/g->N;
+	if (gridSize > 512){
+	  s = gridSize/g->N;
+	  halfLength = gridSize/2;
+	}
+
 	float dx,dy,dz,fr;
 	
 	for (i=0;i<len;i++){
 		r = (int)((mol->rpoints[i]+PR)/s)+1;
 		//printf("r = %d\n",r);
-		icx = (mol->xpoints[i]+256)/s;
-		icy = (mol->ypoints[i]+256)/s;
-		icz = (mol->zpoints[i]+256)/s;
+		icx = (mol->xpoints[i]+halfLength)/s;
+		icy = (mol->ypoints[i]+halfLength)/s;
+		icz = (mol->zpoints[i]+halfLength)/s;
 		//printf("s gx gy gz mx my mz %f %d %d %d %f %f %f\n",s,g->matrix[icx][icy][icz].point.x,g->matrix[icx][icy][icz].point.y,g->matrix[icx][icy][icz].point.z,mol->xpoints[i],mol->ypoints[i],mol->zpoints[i]);
 		for (a=icx-r;a<=icx+r;a++)
 		for (b=icy-r;b<=icy+r;b++)
@@ -146,7 +152,7 @@ int findProbesMol(lGrid g, float PR)
 	return co;
 }
 
-void shrink(lGrid g, double PR)
+void shrink(lGrid g, double PR, int gridSize)
 {
 	int xp,xn,yp,yn,zp,zn;
 	int i,j,k;
@@ -155,6 +161,9 @@ void shrink(lGrid g, double PR)
 	float dx,dy,dz;
 	int l = g->N;
 	float s = 512/g->N;
+	if (gridSize > 512)
+	  s = gridSize/g->N;
+
 	float temp_dist;
 	PPoint* nb_head, *nb_orig, *nb_next_head,*nb_next_orig;
 	

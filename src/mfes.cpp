@@ -88,6 +88,30 @@ void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 	  }*/
 }
 
+void checkBoundary(INI &ini){
+  string boundary = ini.get<std::string>("model.boundary");
+  if ( !boost::filesystem::exists( boundary ) ) {
+    std::cout << "Boundary surface given in config not found!" << std::endl;
+    exit(1);
+  }
+}
+
+void cleanFiles(INI &ini){
+  vector<string> fileList = {"test.out", "times"};
+  string surface_stl = ini.get<std::string>("model.surface_stl");
+  fileList.push_back(surface_stl);
+  string volume_vol = ini.get<std::string>("model.volume_vol");
+  fileList.push_back(volume_vol);
+
+  for (int i = 0; i < fileList.size(); i++){
+    string file = fileList.at(i);
+    if (boost::filesystem::exists(file)) {
+      boost::filesystem::remove(file);
+      cout << file << " removed." << endl;
+    }
+  }
+}
+
 
 int main(int argc, char* argv[]) {
 
@@ -98,8 +122,9 @@ int main(int argc, char* argv[]) {
 
         po::options_description desc("Allowed options");
         desc.add_options()
-            ("help", "produce help message")
-            ("ini", po::value<string>(), "set configuration file")
+          ("help,h", "produce help message")
+	  ("ini,i", po::value<string>()->default_value("config.ini"), "set configuration file")
+	  ("cleanfiles,c", "clean files before new run")
         ;
 
         po::variables_map vm;
@@ -111,27 +136,30 @@ int main(int argc, char* argv[]) {
             return 0;
         }
 
+
         if (vm.count("ini")) {
-            cout << "Configuration file is set to "
-                 << vm["ini"].as<string>() << ".\n";
-        } else {
-            cout << "Please set configuration file!\n";
+	  if ( !boost::filesystem::exists( vm["ini"].as<string>() ) ) {
+            cout << "Configuration file: " << vm["ini"].as<string>() << " could not be found!" << endl;
 	    exit(1);
+	  } 
+	}else { 
+	  cout << "Configuration file is set to "
+	       << vm["ini"].as<string>() << ".\n";
         }
 
         boost::property_tree::ptree ini;
         boost::property_tree::ini_parser::read_ini(vm["ini"].as<string>(), ini);
-        cout << "Starting job " << ini.get<std::string>("general.jobname") << endl;
+
+	if (vm.count("cleanfiles")) {
+	  cout << "Cleaning files ..." << endl;
+	  cleanFiles(ini);
+	  cout << "done." << endl;
+	  exit(1);
+	}
+
+        cout << "Starting job \"" << ini.get<std::string>("general.jobname") << "\"" << endl;
         string location = ini.get<std::string>("general.molecule");
         string mode = ini.get<std::string>("general.mode");
-
-	string boundary = ini.get<std::string>("model.boundary");
-	if ( !boost::filesystem::exists( boundary ) )
-	  {
-	    std::cout << "Boundary surface given in config not found!" << std::endl;
-	    exit(1);
-	  }
-
 
         vector<PQR> pqrList;
 
@@ -162,13 +190,15 @@ int main(int argc, char* argv[]) {
 	  cout << "Calculation of model volume selected." << endl;
 	  calcModelVolume( pqrList, ini );
 	} else if ( mode == "energy") {
-        	cout << "Calculation of energy difference selected." << endl;
-            calcDeltaG( pqrList, ini );
+	  cout << "Calculation of energy difference selected." << endl;
+	  checkBoundary(ini);
+	  calcDeltaG( pqrList, ini );
         } else if (mode == "pka") { // pKa calculation
-        	cout << "Calculation pKa values selected." << endl;
-            calcpKa( pqrList, ini);
+	  cout << "Calculation pKa values selected." << endl;
+	  checkBoundary(ini);
+	  calcpKa( pqrList, ini);
         } else {
-        	cout << "Please set 'mode' to 'model', 'energy' or 'pka' in your configuration!" << endl;
+	  cout << "Please set 'mode' to 'model', 'energy' or 'pka' in your configuration!" << endl;
         }
 
     }

@@ -66,9 +66,10 @@ public:
 	  string volume_vol = ini.get<string>("model.volume_vol");
 	  string surface_stl = ini.get<string>("model.surface_stl");
 	  string generator = ini.get<string>("model.generator");
-	  string generatorResidue = ini.get<string>("model.generator_residue");
 	  int generatorResolution = atoi(ini.get<string>("model.grid_resolution").c_str());
-	  int generatorModelResolution = atoi(ini.get<string>("model.grid_residue_resolution").c_str());
+
+	  string generatorResidue = ini.get_optional<string>("model.generator_residue").get_value_or("standard");
+	  int generatorModelResolution = atoi(ini.get_optional<string>("model.grid_residue_resolution").get_value_or("256").c_str());
 
 	  boost::optional<string> ionc = ini.get_optional<string>("experiment.ionc");
 
@@ -478,7 +479,7 @@ private:
 	    exit(1);
 	  }
 	  
-	  if (ini.get<string>("meshing.second_order_surface") == "yes"){
+	  if (ini.get_optional<string>("meshing.second_order_surface").get_value_or("no") == "yes"){
 	    cout << "Generating second order geometry mesh" << endl;
 	    Ng_STL_Generate_SecondOrder(stl_geom, ngVolume);
 	  }
@@ -672,7 +673,7 @@ private:
 	      string boundary = ini.get<string>("model.boundary");
 	      bSurface = nglib::Ng_LoadMesh(boundary.c_str());
 	      
-	      if (ini.get<string>("meshing.second_order_surface") == "yes"){
+	      if (ini.get_optional<string>("meshing.second_order_surface").get_value_or("no") == "yes"){
 		cout << "Generating second order for volume mesh" << endl;
 		Ng_Generate_SecondOrder(bSurface);
 	      }
@@ -696,7 +697,7 @@ private:
 	      cout << "Merging complete" << endl;
 	      
 	      
-	      string refineFile = ini.get<string>("model.refine_file");
+	      string refineFile = ini.get_optional<string>("model.refine_file").get_value_or("");
 	      if (refineFile != ""){
 		cout << "Setting local refinement ....." << endl;
 		ifstream in(refineFile.c_str());
@@ -744,7 +745,7 @@ private:
 	  
 	
 	    // Ng_SaveMesh(bSurface,"before_last_so.vol");
-	    if (ini.get<string>("meshing.second_order_surface") == "yes"){
+	    if (ini.get_optional<string>("meshing.second_order_surface").get_value_or("no") == "yes"){
 	      cout << "Last second order meshing" << endl;
 	      Ng_Generate_SecondOrder(bSurface);
 	    }
@@ -788,48 +789,49 @@ private:
 		istringstream ss(line);
 		string mode = "";
 		unsigned int steps = 0;
+		string progress = "*";
 
 		while (ss >> mode >> steps){
 			if (mode == "t"){
-			        cout << "taubin smoothing steps: " << steps << endl;
-				for (unsigned int i = 0; i < steps; i++){
-				        cout << "*";
-					tri::UpdateNormal<mMesh>::PerFace(mSurface);
-					tri::Smooth<mMesh>::VertexCoordTaubin(mSurface,1,TAUBIN_LAMBDA,TAUBIN_MU);
-				}
+			  cout << "taubin smoothing steps: " << steps << endl;
+			  for (unsigned int i = 0; i < steps; i++){
+			    cout << "\r" << i+1 << "/" << steps << flush;
+			    tri::UpdateNormal<mMesh>::PerFace(mSurface);
+			    tri::Smooth<mMesh>::VertexCoordTaubin(mSurface,1,TAUBIN_LAMBDA,TAUBIN_MU);
+			  }
 			} else if (mode == "lap"){
-                       	        cout << "laplace smoothing steps: " << steps << endl;
-				for (unsigned int i = 0; i < steps; i++){
-				        cout << "*";
-				        tri::UpdateNormal<mMesh>::PerFace(mSurface);
-					tri::Smooth<mMesh>::VertexCoordLaplacian(mSurface,1);
-				}
+			  cout << "laplace smoothing steps: " << steps << endl;
+			  for (unsigned int i = 0; i < steps; i++){
+			    cout << "\r" << i+1 << "/" << steps << flush;
+			    tri::UpdateNormal<mMesh>::PerFace(mSurface);
+			    tri::Smooth<mMesh>::VertexCoordLaplacian(mSurface,1);
+			  }
 			} else if (mode == "hc"){
-  			        cout << "hc laplace smoothing steps: " << steps << endl;
-				for (unsigned int i = 0; i < steps; i++){
-                                        cout << "*";
-					tri::UpdateNormal<mMesh>::PerFace(mSurface);
-					tri::Smooth<mMesh>::VertexCoordLaplacianHC(mSurface,1);
-				}
+			  cout << "hc laplace smoothing steps: " << steps << endl;
+			  for (unsigned int i = 0; i < steps; i++){
+			    cout << "\r" << i+1 << "/" << steps << flush;
+			    tri::UpdateNormal<mMesh>::PerFace(mSurface);
+			    tri::Smooth<mMesh>::VertexCoordLaplacianHC(mSurface,1);
+			  }
 			} else if (mode == "aw"){
-			        cout << "angle weighted laplace smoothing steps: " << steps << endl;
-				for (unsigned int i = 0; i < steps; i++){
-                                        cout << "*";
-					tri::UpdateNormal<mMesh>::PerFace(mSurface);
-					tri::Smooth<mMesh>::VertexCoordLaplacianAngleWeighted(mSurface,1, CF_LAMBDA);
-				}
-			}	else if (mode == "lapsd"){
-			        cout << "scale dependent laplace smoothing steps: " << steps << endl;
-				for (unsigned int i = 0; i < steps; i++){
-				        cout << "*";
-					tri::UpdateNormal<mMesh>::PerFace(mSurface);
-//					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
-					tri::Smooth<mMesh>::VertexCoordScaleDependentLaplacian_Fujiwara(mSurface,1, 0.0025);
-				}
-
+			  cout << "angle weighted laplace smoothing steps: " << steps << endl;
+			  for (unsigned int i = 0; i < steps; i++){
+			    cout << "\r" << i+1 << "/" << steps << flush;
+			    tri::UpdateNormal<mMesh>::PerFace(mSurface);
+			    tri::Smooth<mMesh>::VertexCoordLaplacianAngleWeighted(mSurface,1, CF_LAMBDA);
+			  }
+			} else if (mode == "lapsd"){
+			  cout << "scale dependent laplace smoothing steps: " << steps << endl;
+			  for (unsigned int i = 0; i < steps; i++){
+			    cout << "\r" << i+1 << "/" << steps << flush;
+			    tri::UpdateNormal<mMesh>::PerFace(mSurface);
+			    //					tri::UpdateNormal<mMesh>::PerFaceNormalized(mSurface);
+			    tri::Smooth<mMesh>::VertexCoordScaleDependentLaplacian_Fujiwara(mSurface,1, 0.0025);
+			  }
+			  
 			}
 			cout << endl;
-
+			
 		}
 		//		vector<mMesh::FaceType *> SelfIntersectList;
 		// tri::Clean<mMesh>::SelfIntersections(mSurface, SelfIntersectList);
