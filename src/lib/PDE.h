@@ -51,7 +51,7 @@ public:
 		energyFile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),("<< eps_in <<"*eps0),("<< eps_in <<"*eps0)" << endl;
 		energyFile << endl;
 		energyFile << "define coefficient kappa" << endl;
-		energyFile << "("<< DL <<"*ionc),0,0,0" << endl;
+		energyFile << "(("<< DL <<"*eps0)*ionc),0,0,0" << endl;
 		energyFile << endl;
 		energyFile << "define fespace v -order="<<solOrder<<" -type=h1ho -dirichlet=[1]" << endl;
 		energyFile << endl;
@@ -142,7 +142,7 @@ public:
 				potfile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),("<< eps_in <<"*eps0),("<< eps_in <<"*eps0)" << endl;
 				potfile << endl;
 				potfile << "define coefficient kappa" << endl;
-				potfile << "(" << DL << "*ionc),0,0,0" << endl;
+				potfile << "((" << DL << "*eps0)*ionc),0,0,0" << endl;
 				potfile << endl;
 
 
@@ -281,7 +281,7 @@ public:
 					potfile << "(" << eps_in << "*eps0),(" << eps_in << "*eps0),("<< eps_in <<"*eps0),("<< eps_in <<"*eps0)" << endl;
 					potfile << endl;
 					potfile << "define coefficient kappa" << endl;
-					potfile << "(" <<  DL << "*ionc),0,0,0" << endl;
+					potfile << "((" <<  DL << "*eps0)*ionc),0,0,0" << endl;
 					potfile << endl;
 
 					potfile << endl;
