@@ -36,6 +36,7 @@ public:
 
 		string debug = ini.get<string>("model.debug");
 		double probeRadius = atof(ini.get_optional<string>("experiment.probe_radius").get_value_or("1.4").c_str());
+		double ionExclR = atof(ini.get_optional<string>("experiment.ionr").get_value_or("2").c_str());
 		bool calc_cavity = false;
 		unsigned int gridSize = 512;
 		float extendR = 0;
@@ -46,7 +47,7 @@ public:
 			gridSize = ini.get<unsigned int>("model.grid_residue_resolution");
 		} else if (mode == "exclusion")  {
 			gridSize = ini.get<unsigned int>("model.grid_resolution");
-			extendR = ION_EXCL_R; // ion exclusion layer distance [Angstroem]
+			extendR = ionExclR; // ion exclusion layer distance [Angstroem]
 		} else {
 			// cavity calculation is turned on
 			calc_cavity = true;

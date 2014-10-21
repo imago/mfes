@@ -1,5 +1,5 @@
 options.localh  1
-options.meshsize  1e6
+options.meshsize  0.5
 options.minmeshsize  0
 meshoptions.fineness  1
 options.grading  1
