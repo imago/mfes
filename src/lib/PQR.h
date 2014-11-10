@@ -396,15 +396,24 @@ public:
 	void calcExplicitModels(INI &ini){
 		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
-			if (getCycle0Shift(currentTitGroup.getResidueName(), 1) == NOT_IN_ST || explicitModels){
-				string fname = currentTitGroup.getIdentifier()+".vol";
-				vector<Atom> currentAtomList = currentTitGroup.getAtomList();
-				molecule.calcModel(currentAtomList, ini, fname);
-			} 
 			// Write out PQR files
 			for (unsigned int j = 1; j <= currentTitGroup.getNrStates(); j++){
 			  writePQR(currentTitGroup, j);
 			}
+
+			if (getCycle0Shift(currentTitGroup.getResidueName(), 1) == NOT_IN_ST || explicitModels){
+				string fname = currentTitGroup.getIdentifier()+".vol";
+				vector<Atom> currentAtomList = currentTitGroup.getAtomList();
+				boost::optional<string> ionc = ini.get_optional<string>("experiment.ionc");
+				if(ionc){
+				  if(ini.get<float>("experiment.ionc") != 0){
+				    molecule.calcIonLayer(atomList, ini, currentTitGroup.getIdentifier()+".vol_exclusion");
+				  }
+				}
+
+
+				molecule.calcModel(currentAtomList, ini, fname);
+			} 
 			
 		}
 
@@ -579,18 +588,19 @@ public:
 		vector<Atom> mstatAtomList = mstat.getAtomList();
 		vector<Atom> mrefAtomList = mref.getAtomList();
 
-		if (mref.haveCycle())
+		/*		if (mref.haveCycle())
 		  cout << "cycle for mref is set" << endl;
 
 		if (mstat.haveCycle())
 		  cout << "cycle for mstat is set" << endl;
-
-		cout << "mref group: " << mref.getResidueName() << endl;
+		*/
+		/*		cout << "mref group: " << mref.getResidueName() << endl;
 		mref.print();
 		cout << "mstat group: " << mstat.getResidueName() << endl;
 		mstat.print();
 		cout << "getting potentials from" << ref.getResidueName() << endl;
 		ref.print();
+		*/
 		tCycle pp_s1 = ref.getTCycle();
 		//		tCycle pp_s0 = ref.getTCycle();
 
@@ -605,8 +615,8 @@ public:
 		  Atom charge_s0 = mrefAtomList.at(i);
 		  i++;
 
-		  cout << "charge_s0 is " << charge_s0.getCharge() << endl;
-		  cout << "charge_s1 is " << charge_s1.getCharge() << endl;
+		  //		  cout << "charge_s0 is " << charge_s0.getCharge() << endl;
+		  //		  cout << "charge_s1 is " << charge_s1.getCharge() << endl;
 
 		  if (charge_s0.getCharge() == 0 && charge_s1.getCharge() == 0 )
 		    continue;
@@ -624,8 +634,8 @@ public:
 		  }
 					  
 		  if (cycle == "cycle1" || cycle == "diff"){
-		    cout << "Lookint at charge_s1 (" << charge_s1.getCoord().X() << ", " << charge_s1.getCoord().Y() << ", " << charge_s1.getCoord().Z() << ")" << endl;
-		    cout << "Lookint at charge_s0 (" << charge_s0.getCoord().X() << ", " << charge_s0.getCoord().Y() << ", " << charge_s0.getCoord().Z() << ")" << endl;
+		    //  cout << "Lookint at charge_s1 (" << charge_s1.getCoord().X() << ", " << charge_s1.getCoord().Y() << ", " << charge_s1.getCoord().Z() << ")" << endl;
+		    // cout << "Lookint at charge_s0 (" << charge_s0.getCoord().X() << ", " << charge_s0.getCoord().Y() << ", " << charge_s0.getCoord().Z() << ")" << endl;
 		    float temp = (charge_s1.getCharge() - charge_s0.getCharge()) * (
 										    pp_s1.p[state][charge_s1.getCoord()] - pp_s1.p[0][charge_s1.getCoord()]
 										    );
@@ -633,13 +643,13 @@ public:
 										 pp_s1.p[state][charge_s1.getCoord()] - pp_s1.p[0][charge_s1.getCoord()]
 										 ); 
 		
-		    cout << "(" << charge_s1.getCharge() << " - " << charge_s0.getCharge() << ") * (" << pp_s1.p[state][charge_s1.getCoord()] << " - " << pp_s1.p[0][charge_s1.getCoord()] << ") = " << temp << endl;
+		    // cout << "(" << charge_s1.getCharge() << " - " << charge_s0.getCharge() << ") * (" << pp_s1.p[state][charge_s1.getCoord()] << " - " << pp_s1.p[0][charge_s1.getCoord()] << ") = " << temp << endl;
 		    
 		  }
 
 		}
-		cout << "wmv_c1 = " << wmv_c1 << ", wmv_c0 = " << wmv_c0 << endl;
-		cout << "returning wmv = " << wmv_c1 << endl;
+		// cout << "wmv_c1 = " << wmv_c1 << ", wmv_c0 = " << wmv_c0 << endl;
+		// cout << "returning wmv = " << wmv_c1 << endl;
 		return (wmv_c1 - wmv_c0);
 	}
 
@@ -671,18 +681,18 @@ public:
 		for(unsigned int i = 0; i<titGroupList.size(); i++)
 		 {
 		   Residue currentTitGroup_i = titGroupList.at(i);
-		   cout << "i has name: " << currentTitGroup_i.getResidueName() << endl;
+		   // cout << "i has name: " << currentTitGroup_i.getResidueName() << endl;
 		   // read potentials of residue 1
 		   for(unsigned int j = 0; j<titGroupList.size(); j++)
 		     {
-		       cout << "at i,j: " << i << ", " << j << endl;
+		       // cout << "at i,j: " << i << ", " << j << endl;
 		       Residue currentTitGroup_j = titGroupList.at(j);
 		       Residue currentTitGroup_j_Ref = titGroupList.at(j);
-		       cout << "j has name: " << currentTitGroup_j.getResidueName() << endl;
+		       //  cout << "j has name: " << currentTitGroup_j.getResidueName() << endl;
 		       // diagonal elements to be zero
 		       if ( currentTitGroup_i.getResidueName() == currentTitGroup_j.getResidueName() )
 			 {
-			   cout << "both have same name: " << currentTitGroup_i.getResidueName() << endl;
+			   //  cout << "both have same name: " << currentTitGroup_i.getResidueName() << endl;
 
 			   for(unsigned int state1 = 1; state1<currentTitGroup_i.getNrStates(); state1++)
 			     {
@@ -701,8 +711,8 @@ public:
 			   for(unsigned int state2 = 1; state2<currentTitGroup_j.getNrStates(); state2++)
 			     {
 
-			       cout << "state1 is " << state1 << endl;
-			       cout << "state2 is " << state2 << endl;
+			       //  cout << "state1 is " << state1 << endl;
+			       // cout << "state2 is " << state2 << endl;
 
 			       // get charge of current state in residue 2
 			       // Switch titGroup j to current state2 (!= (reference which is 0))
@@ -718,9 +728,9 @@ public:
 			       //			       cout << "G cycle1 is " << calcWmv(state1, pstat, pref, "cycle1");
 
 			       G = calcWmv(state1, currentTitGroup_i, currentTitGroup_j_Ref, currentTitGroup_j, cycle); // in kJ/mol
-			       cout << "G: cycle1 - cycl0 difference is " << G << endl; 
+			       // cout << "G: cycle1 - cycl0 difference is " << G << endl; 
 
-			       cout << "writing at " << i << ", " << j << ", " << state1-1 << ", " << state2-1 << endl;
+			       // cout << "writing at " << i << ", " << j << ", " << state1-1 << ", " << state2-1 << endl;
 			       // update matrix
 			       wmatrix[i][j][state1-1][state2-1] = G*E2A; 
 
@@ -773,7 +783,7 @@ public:
 
 		for (unsigned int i = 0; i < titGroupList.size(); i++){
 			Residue currentTitGroup = titGroupList.at(i);
-			if (cycleName == "cycle0" && getCycle0Shift(titGroupList.at(i).getResidueName(), 1) != NOT_IN_ST){
+			if (cycleName == "cycle0" && (getCycle0Shift(titGroupList.at(i).getResidueName(), 1) != NOT_IN_ST && !explicitModels) ){
 				tCycle cycle;
 				currentTitGroup.setTCycle(cycle);
 			} else {
@@ -944,43 +954,49 @@ public:
 				float back0 = 0;
 				float back1 = 0;
 				
-//				cout << "Calculating BACK" << endl;
-//				cout << "================" << endl;
+				//				cout << "Calculating BACK" << endl;
+				//				cout << "================" << endl;
 
 				//Residue titGroup = titGroup !
 				//				vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList); // from whole protein without patched atoms in currentTitGroup
 				vector<Atom> pAtomList = deleteAtoms(refAllAtomList, refAtomList);
-				/*	stringstream ss;
+				stringstream ss;
 			ss << "pAtomList_" << currentTitGroup.getIdentifier() << ".pqr"; 
 			writePQR(pAtomList, ss.str());
-				*/
+				
 
 				vector<Atom> mAtomList = deleteAtoms(currentOrigTitGroup.getAtomList(), refAtomList); // not patched
-				/*			stringstream ss2;
+				stringstream ss2;
 		        ss2 << "mAtomList_" << currentTitGroup.getIdentifier() << ".pqr"; 
 			writePQR(mAtomList, ss2.str());
-				*/
+				
 
 				for (unsigned int j = 0; j < pAtomList.size(); j++){
 					Atom currentAtom = pAtomList.at(j);
-					back1 += currentAtom.getCharge() * (cycle.p[0][currentAtom.getCoord()] - cycle.p[stateNr][currentAtom.getCoord()]);
-					//					Point3<float> c = currentAtom.getCoord();
-					//					cout << "Looking at pcharge (" << c.X() << ", " << c.Y() << ", " << c.Z() << endl;
-					//					cout << "back1 = " << currentAtom.getCharge() << " * ( " << cycle.p[0][currentAtom.getCoord()] << " - " << cycle.p[stateNr][currentAtom.getCoord()] << " ) = " << back1 << endl;
-
+					if (currentAtom.getCharge() != 0){
+					  back1 += currentAtom.getCharge() * (cycle.p[0][currentAtom.getCoord()] - cycle.p[stateNr][currentAtom.getCoord()]);
+					  if (cycle.p[0][currentAtom.getCoord()] != 0){
+					    Point3<float> c = currentAtom.getCoord();
+					    //		    cout << "Looking at pcharge (" << c.X() << ", " << c.Y() << ", " << c.Z() << endl;
+					    // cout << "back1 = " << currentAtom.getCharge() << " * ( " << cycle.p[0][currentAtom.getCoord()] << " - " << cycle.p[stateNr][currentAtom.getCoord()] << " ) = " << back1 << endl;
+					  }
+					}
 				}
 
 				for (unsigned int j = 0; j < mAtomList.size(); j++){
 					Atom currentAtom = mAtomList.at(j);
-					back0 += currentAtom.getCharge() * (cycle.m[0][currentAtom.getCoord()] - cycle.m[stateNr][currentAtom.getCoord()]);
-					//					Point3<float> c = currentAtom.getCoord();
-
-					//					cout << "Looking at mcharge (" << c.X() << ", " << c.Y() << ", " << c.Z() << endl;
-					//					cout << "back2 = " << currentAtom.getCharge() << " * ( " << cycle.m[0][currentAtom.getCoord()] << " - " << cycle.m[stateNr][currentAtom.getCoord()] << " ) = " << back0 << endl;
-
+					if (currentAtom.getCharge() != 0){
+					  back0 += currentAtom.getCharge() * (cycle.m[0][currentAtom.getCoord()] - cycle.m[stateNr][currentAtom.getCoord()]);
+					  if (cycle.m[0][currentAtom.getCoord()] != 0){
+					    Point3<float> c = currentAtom.getCoord();
+					    
+					    //  cout << "Looking at mcharge (" << c.X() << ", " << c.Y() << ", " << c.Z() << endl;
+					    //		    cout << "back2 = " << currentAtom.getCharge() << " * ( " << cycle.m[0][currentAtom.getCoord()] << " - " << cycle.m[stateNr][currentAtom.getCoord()] << " ) = " << back0 << endl;
+					  }
+					}
 				}
 				backEner = (back1-back0);
-//				cout << "returning (" << back1 << "-" << back0 << ") =" << backEner << endl; 
+				// cout << "returning (" << back1 << "-" << back0 << ") =" << backEner << endl; 
 
 				unsigned int cycleNr = 0;
 				if (cycleName == "cycle1")
@@ -1055,7 +1071,7 @@ public:
 			} else {
 				for (unsigned int i = 0; i < titGroupList.size(); i++){
 					ngsolve::PDE pde;
-					if (getCycle0Shift(titGroupList.at(i).getResidueName(), 1) == NOT_IN_ST){
+					if (getCycle0Shift(titGroupList.at(i).getResidueName(), 1) == NOT_IN_ST || explicitModels){
 						string prefix = titGroupList.at(i).getIdentifier();
 						pdeFile = "pka_"+cycleName+"_"+prefix+".pde";
 						boost::filesystem::wpath file(pdeFile);
@@ -1118,7 +1134,7 @@ public:
 			  for (unsigned int stateNr = 1; stateNr < nrStates; stateNr++){
 				  float born, back, shift, result;
 				  float cycle0Shift = getCycle0Shift(currentTitGroup.getResidueName(), stateNr+1);
-				  if ( cycle0Shift != NOT_IN_ST){
+				  if ( cycle0Shift != NOT_IN_ST && !explicitModels){
 					  if (cycleName == "cycle0"){
 						  cout << "using precalculated values." << endl;
 						  cycle0Shift *= CONVERT;
@@ -1176,21 +1192,40 @@ public:
 						  shift = 0;
 						  result = shift + ( born - back );
 					  } else {
-						  born = currentTitGroup.getBorn(1, stateNr) - currentTitGroup.getBorn(0, stateNr);
-						  back = currentTitGroup.getBack(1, stateNr) - currentTitGroup.getBack(0, stateNr);
-						  shift = getShift(currentTitGroup.getResidueName(), stateNr);
-						  shift *= CONVERT;
-						  result = shift+(born - back);
-					  }
+					    /*
+					    float born0, born1, back0, back1;
+					    born0 = currentTitGroup.getBorn(0, stateNr);
+					    born1 = currentTitGroup.getBorn(1, stateNr);
+					    back0 = currentTitGroup.getBack(0, stateNr);
+					    back1 = currentTitGroup.getBack(1, stateNr);
+					    shift = getShift(currentTitGroup.getResidueName(), stateNr);
+					    shift *= CONVERT;
+					    result = (shift-(born0 + back0))+(born1+back1);
+					  cout << currentTitGroup.getIdentifier() << ": R -> " << getState(currentTitGroup.getResidueName(), stateNr) << endl;
+					  cout << "Gborn0: " << born0 << endl;
+					  cout << "Gback0: " << back0 << endl;
+					  cout << "Gborn1: " << born1 << endl;
+					  cout << "Gback1: " << back1 << endl;
+					  cout << "intrinsic pka = ("<< shift << " - ( " << born0 << " + " << back0 << ")) + ("<< born1 << " + " << back1 << ") = " << result << " [kJ/mol]" << endl;
+					  cout << "-> " << result/CONVERT << " []" << endl;
 
+					  // write pkint [kJ/mol] and transition identifier to pkint file
+					  out << result << " " << getState(currentTitGroup.getResidueName(), stateNr) << " ";
+					    */
+					    born = currentTitGroup.getBorn(1, stateNr) - currentTitGroup.getBorn(0, stateNr);
+					    back = currentTitGroup.getBack(1, stateNr) - currentTitGroup.getBack(0, stateNr);
+					    shift = getShift(currentTitGroup.getResidueName(), stateNr);
+					    shift *= CONVERT;
+					    result = shift+(born - back);
+					  }
 					  cout << currentTitGroup.getIdentifier() << ": R -> " << getState(currentTitGroup.getResidueName(), stateNr) << endl;
 					  cout << "Gborn: " << born << endl;
 					  cout << "Gback: " << back << endl;
 					  cout << "intrinsic pka = "<< shift << " + ( " << born << " - " << back << ") = " << result << " [kJ/mol]" << endl;
 					  cout << "-> " << result/CONVERT << " []" << endl;
-
 					  // write pkint [kJ/mol] and transition identifier to pkint file
 					  out << result << " " << getState(currentTitGroup.getResidueName(), stateNr) << " ";
+
 				  }
 
 			  }

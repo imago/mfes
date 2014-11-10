@@ -29,24 +29,22 @@ public:
   void calcIonLayer(vector<Atom> &atomList, INI &ini, string fname = "exclusion.vol"){
     LSMS lmSurface;
     mMesh mSurface;
-    cout << "Calculating ion exclusion layer..." << endl;
-    boost::timer t;
-    ofstream time;
-    time.open ("times");
     int mask = 1;
     
+    //    if (fname == "exclusion.vol") {
     if (!boost::filesystem::exists( "exclusion.stl" )){
+      cout << "Calculating ion exclusion layer " << fname << "..." << endl;
+      boost::timer t;
+      ofstream time;
+      time.open ("times");
       if (lmSurface.calcMC(mSurface, atomList, ini, "exclusion")){	      
 	clean(mSurface);
 	smooth(mSurface, ini);
 	tri::io::ExporterSTL<mMesh>::Save(mSurface,"exclusion.stl",false);
-      }
-    }
-    tri::io::ImporterSTL<mMesh>::Open(mSurface, string("exclusion.stl").c_str(), mask);	
 
-    double currentTime = t.elapsed();
-    time << "exclusion_surface " << currentTime << " s" << endl;
-    cout << "mFES: ion exclusion layer surface calculation took " << currentTime << " seconds." <<endl;
+	double currentTime = t.elapsed();
+	time << "exclusion_surface " << currentTime << " s" << endl;
+	cout << "mFES: ion exclusion layer " << fname << "surface calculation took " << currentTime << " seconds." <<endl;
     
     /*    t.restart();
     convert(mSurface, ini, fname, "exclusion");
@@ -54,7 +52,13 @@ public:
     time << "exclusion_volume " << currentTime << " s" << endl;
     cout << "mFES: ion exclusion layer VOL meshing took " << currentTime << " seconds." <<endl;
     */
-    time.close();
+	time.close();
+      }
+    }
+    //    tri::io::ImporterSTL<mMesh>::Open(mSurface, string("exclusion.stl").c_str(), mask);
+	//    } else {	
+    //  }
+
 
   }
 
@@ -176,14 +180,36 @@ public:
 	    time << "protein_volume " << currentTime << " s" << endl;
 	    cout << "mFES: protein model VOL meshing took " << currentTime << " seconds." <<endl;
 	    time.close();
-	  }
-	  else if (fname != ""){
-	    // group model with id nr is calculated
-	    if ( !boost::filesystem::exists( fname ) ){
+	  
+	  } else if (fname != ""){
+	    // group model with id nr will be calculated
+	     // residue exclusion layer calculation
+	    string exclusionstlFile = fname+"_exclusion.stl";
+	    string exclusionGroups = ini.get<string>("pka.explicit_models");
+
+	    if (!boost::filesystem::exists( exclusionstlFile.c_str() ) ){
+	      cout << "group model calculation " << fname << endl;
+	   
+	      if (generatorResidue == "standard"){
+		lmSurface.calcMC(mSurface, atomList, ini, "residue_exclusion");
+		clean(mSurface);
+		smooth(mSurface, ini);
+		tri::io::ExporterSTL<mMesh>::Save(mSurface,exclusionstlFile.c_str(),false);
+	      } else {
+		Voxel vSurface;
+		vSurface.calcSurface(mSurface, atomList, ini, exclusionstlFile, generatorModelResolution, true);
+		clean(mSurface);
+		tri::io::ImporterSTL<mMesh>::Open(mSurface, exclusionstlFile.c_str(), mask);
+	      }
+	      
+	    }
+
+	    if ( !boost::filesystem::exists( fname )  ){
 	      string stlFile = fname+".stl";
 	      ofstream time;
 	      time.open ("times", ios::app);
 	      boost::timer t;
+	      // group model calculation
 	      if ( !boost::filesystem::exists( stlFile )){
 		
 		if (generatorResidue == "standard"){
@@ -197,7 +223,7 @@ public:
 		  clean(mSurface);
 		  tri::io::ImporterSTL<mMesh>::Open(mSurface, stlFile.c_str(), mask);
 		}
-		
+
 		double currentTime = t.elapsed();
 		time << "model_surface " << currentTime << " s" << endl;
 		cout << "mFES: residue model surface calculation took " << currentTime << " seconds." <<endl;
@@ -219,7 +245,45 @@ public:
 		cout << "mFES: residue model VOL meshing took " << currentTime << " seconds." <<endl;
 		time.close();
 	      }
-	      
+	      /*
+	      // group model exclusion layer calculation
+	      cout << "now at group model exclusion layer" << endl;
+	      if ( !boost::filesystem::exists( exclusionstlFile )){
+		
+		if (generatorResidue == "standard"){
+		  lmSurface.calcMC(mSurface, atomList, ini, "residue_exclusion");
+		  clean(mSurface);
+		  smooth(mSurface, ini);
+		  tri::io::ExporterSTL<mMesh>::Save(mSurface, exclusionstlFile.c_str(),false);
+		} else {
+		  Voxel vSurface;
+		  vSurface.calcSurface(mSurface, atomList, ini, exclusionstlFile, generatorModelResolution, true);
+		  clean(mSurface);
+		  tri::io::ImporterSTL<mMesh>::Open(mSurface, exclusionstlFile.c_str(), mask);
+		}
+		
+		double currentTime = t.elapsed();
+		time << "model_exclusion_surface " << currentTime << " s" << endl;
+		cout << "mFES: residue exclusion model surface calculation took " << currentTime << " seconds." <<endl;
+		
+		t.restart();
+		convert(mSurface, ini, fname, "residue");
+		currentTime = t.elapsed();
+		time << "model_exclusion_volume " << currentTime << " s" << endl;
+		cout << "mFES: residue exclusion model VOL meshing took " << currentTime << " seconds." <<endl;
+		time.close();
+	      }
+	      else {
+		cout << "model exclusion surface found: " << exclusionstlFile << endl;
+		tri::io::ImporterSTL<mMesh>::Open(mSurface, exclusionstlFile.c_str(), mask);
+		t.restart();
+		convert(mSurface, ini, fname, "residue");
+		double currentTime = t.elapsed();
+		time << "model_exlcusion_volume " << currentTime << " s" << endl;
+		cout << "mFES: residue exlcusion model VOL meshing took " << currentTime << " seconds." <<endl;
+		time.close();
+	      }
+*/	      
 	    }
 	  }
 
@@ -532,24 +596,31 @@ private:
 
 	  if (exclusionSurface){
 	    
-	    string exclusion = "exclusion.vol";
+	    string exclusionVol = "exclusion.vol";
+	    string exclusionStl = "exclusion.stl";
+
+	    if (fname != "")
+	      exclusionVol = fname+"_exclusion.vol";
+	    if (fname != "")
+	      exclusionStl = fname+"_exclusion.stl";
+
 	    Ng_Mesh *exclusionVolume;
 	    exclusionVolume = Ng_NewMesh();
 	    setMeshingOptions(mp, meshMoleculeSurface);
 	    mp.optsurfmeshenable = 1;
 	    mp.optvolmeshenable  = 0;
 	    
-	    if (!boost::filesystem::exists( "exclusion.vol" )){
+	    if (!boost::filesystem::exists( exclusionVol )){
 	      Ng_STL_Geometry *exclusion_geom = Ng_STL_NewGeometry();
 	      
-	      cout << "Loading exclusion.stl" << endl;
-	      exclusion_geom = Ng_STL_LoadGeometry("exclusion.stl");
+	      cout << "Loading exclusion " <<  exclusionStl << endl;
+	      exclusion_geom = Ng_STL_LoadGeometry( exclusionStl.c_str());
 	      if(!exclusion_geom)
 		{
-		  cout << "Error reading in STL File: exclusion.stl" << endl;
+		  cout << "Error reading in STL File: " << exclusionStl << endl;
 		  return 1;
 		}
-	      cout << "Successfully loaded STL File: exclusion.stl" << endl;
+	      cout << "Successfully loaded STL File: " << exclusionStl << endl;
 	      
 	      cout << "Initialise the STL Geometry structure for ion exclusion layer...." << endl;
 	      ngSurface = Ng_STL_InitSTLGeometry(exclusion_geom);
@@ -571,10 +642,10 @@ private:
 		cout << "Error in Surface Meshing ion exclusion layer....Aborting!!" << endl;
 		exit(1);
 	      }
-	      Ng_SaveMesh(exclusionVolume,exclusion.c_str());
+	      Ng_SaveMesh(exclusionVolume,exclusionVol.c_str());
 	      
 	    } else {
-	      exclusionVolume = nglib::Ng_LoadMesh(exclusion.c_str());
+	      exclusionVolume = nglib::Ng_LoadMesh(exclusionVol.c_str());
 	    }
 		  
 	    //		  Ng_MergeMesh( ngVolume, exclusion.c_str());

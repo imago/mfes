@@ -23,10 +23,18 @@ public:
 	};
 	~Voxel(){};
 
-	int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileName, int gridSize = 64)
+	int calcSurface(mMesh &mSurface, vector<Atom> &atomList, INI& ini, string fileName, int gridSize = 64, bool exclusion = false)
 {
   //    int gridSize = atoi(ini.get<string>("model.grid_resolution").c_str());
 	rball = atof(ini.get<string>("experiment.probe_radius").c_str());
+
+	float extendR = 0;
+	if (exclusion){
+	  float ionc = atof(ini.get<string>("experiment.ionc").c_str());
+	  if (ionc > 0){
+	    extendR = atof(ini.get<string>("experiment.ionr").c_str());
+	  }
+	}
 
   int nx = gridSize;   // number of intervals
   int ny = gridSize;
@@ -42,14 +50,15 @@ public:
   for (unsigned int i = 0; i < atomList.size(); i++)
     {
 	  Point3<float> coord = atomList.at(i).getCoord();
-	  double r = atomList.at(i).getRadius();
+	  double r = atomList.at(i).getRadius()+extendR;
 	  pnts.Append (Point<3>(coord.X(),coord.Y(),coord.Z()));
 	  rad.Append (r);
 	  if (r > rmax) rmax = r;
     }
+  rmax += extendR;
 
-  cout << "rmax = " << rmax << endl;
   int increase = ceil(rmax)+1; //ceil(rmax); // 5 also works?
+  cout << "rmax = " << rmax << endl;
 
   clock_t t2 = clock();
 
@@ -70,10 +79,10 @@ public:
     for (int iy = 0; iy <= ny; iy++)
       for (int iz = 0; iz <= nz; iz++)
         {
-          int ind = ix + (nx+1) * (iy + (ny+1)*iz);
-          gridpoints[ind] = Point<3> (pmin(0) + (pmax(0)-pmin(0))*ix/nx,
-                                      pmin(1) + (pmax(1)-pmin(1))*iy/ny,
-                                      pmin(2) + (pmax(2)-pmin(2))*iz/nz);
+	  int ind = ix + (nx+1) * (iy + (ny+1)*iz);
+	  gridpoints[ind] = Point<3> (pmin(0) + (pmax(0)-pmin(0))*ix/(nx),
+                                      pmin(1) + (pmax(1)-pmin(1))*iy/(ny),
+                                      pmin(2) + (pmax(2)-pmin(2))*iz/(nz));
         }
 
   double diag = sqrt ( sqr ((pmax(0)-pmin(0)) / nx) +
@@ -83,8 +92,8 @@ public:
   SetValues (pmin, pmax, diag, gridpoints, values, dvalues);
 
     // smoothing ...
-
-    int smoothingsteps = 1;
+    // not always working without intersection e.g. (2lzt, no opt, ARG-61)
+    int smoothingsteps = 0;
 
     for (int j = 0; j < smoothingsteps; j++)
 

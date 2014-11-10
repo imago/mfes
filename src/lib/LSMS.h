@@ -48,6 +48,11 @@ public:
 		} else if (mode == "exclusion")  {
 			gridSize = ini.get<unsigned int>("model.grid_resolution");
 			extendR = ionExclR; // ion exclusion layer distance [Angstroem]
+			probeRadius = atof(ini.get_optional<string>("experiment.exclusion_probe_radius").get_value_or("0.3").c_str());
+		} else if (mode == "residue_exclusion")  {
+			gridSize = ini.get<unsigned int>("model.grid_residue_resolution");
+			extendR = ionExclR; // ion exclusion layer distance [Angstroem]
+			probeRadius = atof(ini.get_optional<string>("experiment.exclusion_probe_radius").get_value_or("0.3").c_str());
 		} else {
 			// cavity calculation is turned on
 			calc_cavity = true;

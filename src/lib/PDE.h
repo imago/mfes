@@ -161,7 +161,7 @@ public:
 				potfile << endl;
 				potfile << "define bilinearform a_ref_"<<prefix<<" -fespace=v -symmetric" << endl;
 				potfile << "laplace epsilon_ref" << endl;
-				potfile << "mass kappa" << endl;
+				//				potfile << "mass kappa" << endl;
 
 				potfile << endl;
 				potfile << "define preconditioner c_solv_"<<prefix<<" -type=multigrid -bilinearform=a_solv_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl;
@@ -191,6 +191,9 @@ public:
 					potfile << "numproc bvp np_solv_"<< j <<"_"<<prefix<<" -gridfunction=u_solv_" << prefix <<" -bilinearform=a_solv_" << prefix <<" -linearform=f_state_solv_"<< j <<"_"<<prefix<<" -preconditioner=c_solv_"<< prefix <<" -maxsteps=" << maxsteps << endl;
 					potfile << "numproc writepotat npeval_solv_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<prefix<<" -pqrfile=" << prefix << ".state" << j <<".pqr  -potatfile=cycle0."<<prefix<<".potat -statenr="<< stateIndex << " " << create << endl;
 					potfile  << endl;
+					// Debug
+					//			potfile << "numproc energydiff npeval_solv_diff_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<prefix<<" -gridfunction0=u_ref_"<<prefix<<" -pqrfile=" << prefix << ".state" << j <<".pqr" <<endl;
+
 
 				}
 				potfile << endl;
@@ -214,6 +217,9 @@ public:
 					potfile << "numproc pointcharges ps_ref_" << j <<"_"<<prefix<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -pqrfile=" << prefix <<".state" << j << ".pqr -interpolate" << endl;
 					potfile << "numproc bvp np_ref_" << j << "_"<<prefix<<" -gridfunction=u_ref_"<<prefix<<" -bilinearform=a_ref_"<<prefix<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -preconditioner=c_ref_"<<prefix<<"  -maxsteps=" << maxsteps << endl;
 					potfile << "numproc writepotat npeval_ref_"<<j<<"_"<<prefix<<" -gridfunction=u_ref_"<<prefix<<" -pqrfile=" << prefix << ".state" << j <<".pqr -potatfile=cycle0." << prefix << ".potat -statenr=" << stateIndex << endl;
+					
+					// Debug
+					//				potfile << "numproc energydiff npeval_ref_diff_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<prefix<<" -gridfunction0=u_ref_"<<prefix<<" -pqrfile=" << prefix << ".state" << j <<".pqr" <<endl;
 				}
 				potfile << endl;
 				potfile << endl;
@@ -259,6 +265,16 @@ public:
 							
 				if (init){
 
+					potfile << "###################################################" << endl;
+					potfile << "#" << endl;
+					potfile << "#  Initialization: " << mol << endl;
+					potfile << "#" << endl;
+					potfile << "###################################################" << endl;
+					potfile << endl;
+					potfile << endl;
+					potfile << "mesh = "<<mol<<".vol" << endl;
+					potfile << endl;
+
 					potfile << "shared = pointcharges" << endl;
 					potfile << "shared = energydiff" << endl;
 					potfile << "shared = writePotatAscii" << endl;
@@ -285,15 +301,6 @@ public:
 					potfile << endl;
 
 					potfile << endl;
-					potfile << "###################################################" << endl;
-					potfile << "#" << endl;
-					potfile << "#  Initialization: " << mol << endl;
-					potfile << "#" << endl;
-					potfile << "###################################################" << endl;
-					potfile << endl;
-					potfile << endl;
-					potfile << "mesh = "<<mol<<".vol" << endl;
-					potfile << endl;
 					potfile << "define fespace v -order="<< solOrder<<" -type=h1ho -dirichlet=[1]" << endl;
 					potfile << endl;
 					potfile << "define gridfunction u_solv_"<<mol<<" -fespace=v" << endl;
@@ -306,7 +313,7 @@ public:
 					potfile << endl;
 					potfile << "define bilinearform a_ref_"<<mol<<" -fespace=v -symmetric" << endl;
 					potfile << "laplace epsilon_ref" << endl;
-					potfile << "mass kappa" << endl;
+					//					potfile << "mass kappa" << endl;
 
 					potfile << endl;
 					potfile << "define preconditioner c_solv_"<<mol<<" -type=multigrid -bilinearform=a_solv_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl;
@@ -342,6 +349,9 @@ public:
 					potfile << "numproc pointcharges ps1_solv_"<<prefix<<" -linearform=f_state_solv_" << j << "_"<< prefix << " -pqrfile=" << prefix <<".state" << j <<".pqr   -interpolate " << endl;
 					potfile << "numproc bvp np_solv_"<< j <<"_"<<prefix<<" -gridfunction=u_solv_" << mol <<" -bilinearform=a_solv_" << mol <<" -linearform=f_state_solv_"<< j <<"_"<<prefix<<" -preconditioner=c_solv_"<< mol <<" -maxsteps=" << maxsteps << endl;
 					potfile << "numproc writepotat npeval_solv_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<mol<<" -pqrfile=" << molecule <<"  -potatfile=cycle1."<<prefix<<".potat -statenr="<< stateIndex << " " << create << " -predef" << endl;
+
+					// Debug
+					// potfile << "numproc energydiff npeval_diff_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<mol<<" -gridfunction0=u_ref_"<<mol<<" -pqrfile="<<molecule<<endl;
 					potfile  << endl;
 
 				}
@@ -366,6 +376,9 @@ public:
 					potfile << "numproc pointcharges ps_ref_" << j <<"_"<<prefix<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -pqrfile=" << prefix <<".state" << j << ".pqr -interpolate" << endl;
 					potfile << "numproc bvp np_ref_" << j << "_"<<prefix<<" -gridfunction=u_ref_"<<mol<<" -bilinearform=a_ref_"<<mol<<" -linearform=f_state_ref_" << j << "_"<<prefix<<" -preconditioner=c_ref_"<<mol<<"  -maxsteps=" << maxsteps << endl;
 					potfile << "numproc writepotat npeval_ref_"<<j<<"_"<<prefix<<" -gridfunction=u_ref_"<<mol<<" -pqrfile=" << molecule << " -potatfile=cycle1." << prefix << ".potat -statenr=" << stateIndex << " -predef" <<  endl;
+
+					// Debug
+					//					potfile << "numproc energydiff npeval_diff_"<<j<<"_"<<prefix<<" -gridfunction=u_solv_"<<mol<<" -gridfunction0=u_ref_"<<mol<<" -pqrfile="<<molecule<<endl;
 
 				}
 				potfile << endl;

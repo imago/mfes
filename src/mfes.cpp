@@ -61,8 +61,10 @@ void calcpKa(vector<PQR> &pqrList, boost::property_tree::ptree &ini){
 	      currentPQR.parseSTFiles();
 	    currentPQR.calcResidues(ini);
 	    currentPQR.calcModel(ini);
+
 	    //	    if (currentPQR.explicitModels)
 	    currentPQR.calcExplicitModels(ini);
+
 	    currentPQR.writePDE(ini);
 	    currentPQR.calcPotat("cycle0");	      
 	    currentPQR.calcPotat("cycle1");
