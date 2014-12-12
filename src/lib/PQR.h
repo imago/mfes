@@ -1109,7 +1109,13 @@ public:
 		}
 	}
 
-	void writeOutPkint(string cycleName, string fileName){
+	void writeOutPkint(string cycleName, string fileName, INI &ini){
+	         string eps_in = ini.get<string>("experiment.eps_in");
+	         string eps_out = ini.get<string>("experiment.eps_out");
+	         bool eps_same = false;
+   	         if (eps_in == eps_out)
+		   eps_same = true;
+
 		 ofstream out( fileName.c_str() );
 		 out.setf(ios_base::scientific);
 		 out.precision(6);
@@ -1141,12 +1147,15 @@ public:
 						  born = 0; //currentTitGroup.getBorn(cycleNr, stateNr);
 						  back = 0; //currentTitGroup.getBack(cycleNr, stateNr);
 						  shift = getShift(currentTitGroup.getResidueName(), stateNr)*CONVERT;
-						  result = cycle0Shift + ( born - back );
+						  if (eps_same)
+						    result = 0;
+						  else
+						    result = cycle0Shift + ( born - back );
 
 						  cout << currentTitGroup.getIdentifier() << ": R -> " << getState(currentTitGroup.getResidueName(), stateNr) << endl;
 						  cout << "Gborn: " << born << endl;
 						  cout << "Gback: " << back << endl;
-						  cout << "intrinsic pka = "<< shift << " + " << (cycle0Shift-shift) << " + ( " << born << " - " << back << ") = " << result << " [kJ/mol]" << endl;
+						  cout << "intrinsic pka = "<< shift << " + " << (cycle0Shift) << " + ( " << born << " - " << back << ") = " << result << " [kJ/mol]" << endl;
 						  cout << "-> " << result/CONVERT << " []" << endl;
 
 					  } else if (cycleName == "cycle1") {
@@ -1167,12 +1176,15 @@ public:
 						  born = currentTitGroup.getBorn(1, stateNr) - 0; //currentTitGroup.getBorn(0, stateNr);
 						  back = currentTitGroup.getBack(1, stateNr) - 0; //currentTitGroup.getBack(0, stateNr);
 						  shift = getShift(currentTitGroup.getResidueName(), stateNr)*CONVERT;
-						  result = shift+(born - back)-(cycle0Shift-shift);
+						  if (eps_same)
+						    result = 0;
+						  else 
+						    result = shift+(born - back)-(cycle0Shift);
 
 						  cout << currentTitGroup.getIdentifier() << ": R -> " << getState(currentTitGroup.getResidueName(), stateNr) << endl;
 						  cout << "Gborn: " << born << endl;
 						  cout << "Gback: " << back << endl;
-						  cout << "intrinsic pka = "<< shift << " + ( " << born << " - " << back << ") - " << (cycle0Shift-shift) << " = " << result << " [kJ/mol]" << endl;
+						  cout << "intrinsic pka = "<< shift << " + ( " << born << " - " << back << ") - " << (cycle0Shift) << " = " << result << " [kJ/mol]" << endl;
 						  cout << "-> " << result/CONVERT << " []" << endl;
 					  }
 

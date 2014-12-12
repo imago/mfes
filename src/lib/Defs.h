@@ -13,7 +13,7 @@ struct Triangle{
 };
 
 /// 1 kJ/mol in e^2/(A*mol)
-#define E2A 7.197585e-4;
+#define E2A 7.197585e-4; // try: 7.202395747302217e-4 ?
 
 #define CF_LAMBDA 0.5
 #define TAUBIN_LAMBDA 0.5
