@@ -690,7 +690,7 @@ public:
 		       Residue currentTitGroup_j_Ref = titGroupList.at(j);
 		       //  cout << "j has name: " << currentTitGroup_j.getResidueName() << endl;
 		       // diagonal elements to be zero
-		       if ( currentTitGroup_i.getResidueName() == currentTitGroup_j.getResidueName() )
+		       if ( currentTitGroup_i.getResidueName() == currentTitGroup_j.getResidueName() && i == j)
 			 {
 			   //  cout << "both have same name: " << currentTitGroup_i.getResidueName() << endl;
 
@@ -701,7 +701,7 @@ public:
 				   wmatrix[i][j][state1-1][state2-1] = 0.0;
 				 }
 			     }
-			   continue;
+			     continue;
 			 }
 
 		       
@@ -728,18 +728,23 @@ public:
 			       //			       cout << "G cycle1 is " << calcWmv(state1, pstat, pref, "cycle1");
 
 			       G = calcWmv(state1, currentTitGroup_i, currentTitGroup_j_Ref, currentTitGroup_j, cycle); // in kJ/mol
-			       // cout << "G: cycle1 - cycl0 difference is " << G << endl; 
 
-			       // cout << "writing at " << i << ", " << j << ", " << state1-1 << ", " << state2-1 << endl;
+			       G *= E2A;
+
+			       //			       cout << currentTitGroup_i.getResidueName() << " " << i << " with " << currentTitGroup_j.getResidueName()  << " " << j ;
+
+			       //			       cout << "G: cycle1 - cycl0 difference is " << G << endl; 
+
+			       //			       cout << "writing at " << i << ", " << j << ", " << state1-1 << ", " << state2-1 << endl;
 			       // update matrix
-			       wmatrix[i][j][state1-1][state2-1] = G*E2A; 
+			       wmatrix[i][j][state1-1][state2-1] = G; 
 
 			     }
 			 }
 		     }
 		 }
 		 cout << "finished." << endl;
-		 
+
 	    // symmetrize matrix
 		 double dev=0.0, w1=0.0, w2=0.0, ave=0.0;
 		 
@@ -764,6 +769,11 @@ public:
 				 ave = 0.5*(w1+w2);
 				 wmatrix[i][j][state1-1][state2-1] = ave;
 				 wmatrix[j][i][state2-1][state1-1] = ave;
+
+
+				 //				 cout << titGroupList.at(i).getResidueName() << " " << i << " with " << titGroupList.at(j).getResidueName() << " " << j;
+				 //				 cout << "w1: " << w1 << ", w2: " << w2 << endl;
+
 				 // write symmetry check to log file
 				 log << titGroupList.at(i).getResidueName() << "[" << state1+1 << "]/";
 				 log << titGroupList.at(j).getResidueName() << "[" << state2+1 << "]: ";
@@ -775,6 +785,7 @@ public:
 		 }
 
 		 cout << "finished." << endl;
+
 //		 cout << log.str() << endl;
 	}
 
@@ -1059,14 +1070,16 @@ public:
 		try {
 			if (cycleName == "cycle1"){
 				ngsolve::PDE pde;
-
+				bool skip = false;
 				pdeFile = "pka_"+cycleName+".pde";
 				boost::filesystem::wpath file(pdeFile);
 
-				if(boost::filesystem::exists(file)){
+				if(boost::filesystem::exists(file) && !skip){
 				  pde.LoadPDE (pdeFile.c_str());
 				  pde.Solve();
-				}
+				} else {
+				    cout << "cycle1 computation skipped manually." << endl;		 		  }
+			
 
 			} else {
 				for (unsigned int i = 0; i < titGroupList.size(); i++){
@@ -1079,11 +1092,13 @@ public:
 						boost::filesystem::wpath potfile(potatFile);
 
 						if(boost::filesystem::exists(file)){
+						  //if(boost::filesystem::exists(file)
 						  // && !boost::filesystem::exists(potfile)){
+
 						  pde.LoadPDE (pdeFile.c_str());
 						  pde.Solve();
 						} 
-						//else {
+						//						else {
 						//	cout << potatFile << ".. already calculated." << endl;
 						//}
 					}

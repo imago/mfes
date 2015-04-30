@@ -56,6 +56,8 @@ public:
 		} else {
 			// cavity calculation is turned on
 			calc_cavity = true;
+			probeRadius = atof(ini.get_optional<string>("experiment.cavity_probe_radius").get_value_or("0.3").c_str());
+			gridSize = ini.get_optional<unsigned int>("model.grid_cavity_resolution").get_value_or(256);
 		}
 
 		cout << "grid size: " << gridSize << endl;
