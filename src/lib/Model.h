@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include "lib/boost/timer.hpp"
+#include <boost/timer.hpp>
 
 #include "LSMS.h"
 #include "Voxel.h"

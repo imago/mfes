@@ -8,12 +8,12 @@
  ============================================================================
  */
 
-#include "lib/boost/property_tree/ptree.hpp"
-#include "lib/boost/property_tree/ini_parser.hpp"
-#include "lib/boost/program_options.hpp"
-#include "lib/boost/filesystem.hpp"
-#include "lib/boost/algorithm/string.hpp"
-#include "lib/boost/timer.hpp"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/timer.hpp>
 
 #include <iostream>
 #include <vector>
