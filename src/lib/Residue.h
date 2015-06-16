@@ -1,3 +1,12 @@
+/** @file Residue.h
+ *  @brief Holds the general description of a residue in proteins.
+ *
+ *  A datastructure for residues is built, knowing if they are titratable groups,
+ *  their atom lists and other information.
+ *
+ *  @author Ilkay Sakalli
+ */
+
 #ifndef RESIDUE_H
 #define RESIDUE_H
 
@@ -10,6 +19,20 @@
 #include "tCycle.h"
 
 using namespace std;
+
+/**
+ * @class Residue
+ *
+ * @brief This class is a datastructure to represent residues in proteins. 
+ *
+ * Residues in proteins may be titratable groups and have different states, 
+ * have a residue name, chain ID, an atom list, are assigned to one of both
+ * titratable group approaches to compute pKA values and hold born or back
+ * energy terms.
+ *
+ * @author Ilkay Sakalli
+ *
+ */ 
 
 class Residue {
 public:

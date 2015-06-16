@@ -1,8 +1,32 @@
+/** @file ST.h
+ *  @brief ST file parser and titratable group builder
+ *
+ *  Using this file, titratable groups are build as residues, have a state
+ *  and their state may be changed depending on the framework to compute
+ *  pKA values.
+ *
+ *  @author Ilkay Sakalli
+ */
+
 #include "Charge.h"
 #include <vector>
 #include <string>
 
 using namespace std;
+/**
+ * @class ST
+ *
+ * @brief This class is a datastructure to represent ST files. These files hold
+ *        all information about titratable groups in the protein.
+ *
+ * Titratable groups are generated and have a state. They can ge shifted to another 
+ * state depending on the framework of pKA compuations. Every titratable group type
+ * may have an average energy shift value for one-cycle approach computations.
+ *
+ * @author Ilkay Sakalli
+ *
+ */ 
+
 
 class ST {
 public:

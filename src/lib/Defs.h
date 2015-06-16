@@ -1,3 +1,14 @@
+/** @file Defs.h
+ *  @brief Some definitions used in the whole application.
+ *
+ *  This file contains definitions of factors for energy conversions,
+ *  model meshing parameters, max skip values for performance issues,
+ *  temperature used in computations, maximum heapsize (NETGEN)
+ *  and a struct class for triangles.
+ *
+ *  @author Ilkay Sakalli
+ */
+
 #include "VCG.h"
 
 #ifndef DEF

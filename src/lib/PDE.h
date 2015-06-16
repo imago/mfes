@@ -1,9 +1,33 @@
+/** @file PDE.h
+ *  @brief Input file generation for NGSolve.
+ *
+ *  Depending on the mode mFES is, here PDE files are generated for potential
+ *  energy difference compuations or for generation of PKINT files to compute
+ *  pKA values and W-matrix elements to be used by Karlsberg2 program.
+ *
+ *  @author Ilkay Sakalli
+ */
+
 #ifndef PDE_H
 #define PDE_H
 
 #include "Residue.h"
 #include <vector>
 #include "Defs.h"
+
+/**
+ * @class PDE
+ *
+ * @brief This class holds the information to generate PDE files which can are
+ *        used to compute potential energies. 
+ *
+ * Potential energies are computed using PDE files. These input files are written 
+ * for NETGEN to use its interface to solve the linear Poisson-Boltzmann equation
+ * via NGSolve library and other libraries provided by mFES.
+ *
+ * @author Ilkay Sakalli
+ *
+  */ 
 
 class PDE {
 public:
