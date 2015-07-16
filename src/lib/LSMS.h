@@ -223,8 +223,8 @@ public:
       f.v[1] = currentTriangle.t2;
       f.v[2] = currentTriangle.t3;
       
-      FaceIterator fi=Allocator<mMesh>::AddFaces(mSurface,1);
-      VertexIterator vi=Allocator<mMesh>::AddVertices(mSurface,3);
+      FaceIterator fi=vcg::tri::Allocator<mMesh>::AddFaces(mSurface,1);
+      VertexIterator vi=vcg::tri::Allocator<mMesh>::AddVertices(mSurface,3);
       for(int k=0;k<3;++k)
 	{
 	  (*vi).P().Import(f.v[k]);

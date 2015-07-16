@@ -175,8 +175,8 @@ int main(int argc, char* argv[]) {
   cout << "to modify and analyze surfaces in general." << endl;
   cout << "----------------------------------------------------------------------" << endl << endl;
 
-  char *username = "USER";
-  char *pwd = "PWD";
+  const char *username = "USER";
+  const char *pwd = "PWD";
   char hostname[1024];
   hostname[1023] = '\0';
   gethostname(hostname, 1023);

@@ -11,6 +11,9 @@
  *
  */
 
+#include <ngstd.hpp>
+namespace ngfem { using ngstd::Allocator; }
+namespace ngcomp { using ngstd::Allocator; }
 
 #include <solve.hpp>
 #include <iostream>
@@ -326,13 +329,15 @@ class PQR {
    */  
   void calcDeltaG(){
     cout << "Calculating deltaG ..." << endl;
-    ngsolve::PDE pde;
+    // ngsolve::PDE pde;
    
     string pdeFile = "energy.pde"; 
 
     try {
-      pde.LoadPDE (pdeFile.c_str());
-      pde.Solve();
+      // pde.LoadPDE (pdeFile.c_str());
+      // pde.Solve();
+      shared_ptr<ngcomp::PDE> pde = ngcomp::LoadPDE (pdeFile);
+      pde->Solve();
     } catch(ngstd::Exception & e) {
       std::cout << "Caught exception: " << std::endl
 		<< e.What() << std::endl;
@@ -1302,21 +1307,25 @@ class PQR {
     string pdeFile;
     try {
       if (cycleName == "cycle1"){
-	ngsolve::PDE pde;
+	// ngsolve::PDE pde;
 	bool skip = false;
 	pdeFile = "pka_"+cycleName+".pde";
 	boost::filesystem::wpath file(pdeFile);
 	
 	if(boost::filesystem::exists(file) && !skip){
-	  pde.LoadPDE (pdeFile.c_str());
-	  pde.Solve();
+          
+          shared_ptr<ngcomp::PDE> pde = ngcomp::LoadPDE (pdeFile);
+          pde->Solve();
+
+	  // pde.LoadPDE (pdeFile.c_str());
+	  // pde.Solve();
 	} else {
 	  cout << "cycle1 computation skipped manually." << endl;		 		  }
 	
 	
       } else {
 	for (unsigned int i = 0; i < titGroupList.size(); i++){
-	  ngsolve::PDE pde;
+          // ngsolve::PDE pde;
 	  if (getCycle0Shift(titGroupList.at(i).getResidueName(), 1) == NOT_IN_ST || explicitModels){
 	    string prefix = titGroupList.at(i).getIdentifier();
 	    pdeFile = "pka_"+cycleName+"_"+prefix+".pde";
@@ -1328,8 +1337,11 @@ class PQR {
 	      //if(boost::filesystem::exists(file)
 	      // && !boost::filesystem::exists(potfile)){
 	      
-	      pde.LoadPDE (pdeFile.c_str());
-	      pde.Solve();
+	      // pde.LoadPDE (pdeFile.c_str());
+	      // pde.Solve();
+              shared_ptr<ngcomp::PDE> pde = ngcomp::LoadPDE (pdeFile);
+              pde->Solve();
+
 	    } 
 	    //						else {
 	    //	cout << potatFile << ".. already calculated." << endl;

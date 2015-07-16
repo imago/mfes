@@ -7,12 +7,16 @@
 
 
 #include <gprim.hpp>
+
 #include <lib/Voxel/adtree.h>
 #include <lib/Voxel/help.h>
 #include <lib/Voxel/optmem.h>
 
 using namespace netgen;
 
+using netgen::Array;
+using netgen::Vec;
+using netgen::Point;
 
 class Voxel {
 
@@ -40,9 +44,9 @@ public:
   int ny = gridSize;
   int nz = gridSize;
 
-  Array<Point<3> > gridpoints(long(nx+1)*(ny+1)*(nz+1));
-  Array<float> values(long(nx+1)*(ny+1)*(nz+1));
-  Array<Vec<3> > dvalues(long(nx+1)*(ny+1)*(nz+1));
+  netgen::Array<Point<3> > gridpoints(long(nx+1)*(ny+1)*(nz+1));
+  netgen::Array<float> values(long(nx+1)*(ny+1)*(nz+1));
+  netgen::Array<netgen::Vec<3> > dvalues(long(nx+1)*(ny+1)*(nz+1));
 
   clock_t t1 = clock();
   rmax = 0;
@@ -85,9 +89,9 @@ public:
                                       pmin(2) + (pmax(2)-pmin(2))*iz/(nz));
         }
 
-  double diag = sqrt ( sqr ((pmax(0)-pmin(0)) / nx) +
-                        sqr ((pmax(1)-pmin(1)) / ny) +
-                        sqr ((pmax(2)-pmin(2)) / nz));
+  double diag = sqrt ( netgen::sqr ((pmax(0)-pmin(0)) / nx) +
+                       netgen::sqr ((pmax(1)-pmin(1)) / ny) +
+                       netgen::sqr ((pmax(2)-pmin(2)) / nz));
     
   SetValues (pmin, pmax, diag, gridpoints, values, dvalues);
 
@@ -162,15 +166,15 @@ private:
 	double rmax;
 	ofstream stlout;
 
-	Array<Point<3> > pnts;
-	Array<double> rad;
+        netgen::Array<Point<3> > pnts;
+        netgen::Array<double> rad;
 	Point3dTree * searchtree;
 
-void SetValues (Point<3> pmin, Point<3> pmax, double diag,
+void SetValues (Point<3> pmin, netgen::Point<3> pmax, double diag,
                 // int nx, int ny, int nz,
-                Array<Point<3> > & gridpoints,
-                Array<float> & values,
-                Array<Vec<3> >  & dvalues)
+                netgen::Array<netgen::Point<3> > & gridpoints,
+                netgen::Array<float> & values,
+                netgen::Array<netgen::Vec<3> >  & dvalues)
 {
   int cnt = 0;
 
@@ -180,7 +184,7 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
 #pragma omp parallel
   {
-    Array<int> indices1, indices;
+    netgen::Array<int> indices1, indices;
 
 
 #pragma omp for
@@ -211,20 +215,20 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
         Point<3> p = gridpoints[ind];
 
-        searchtree -> GetIntersecting (p - Vec<3>(extend,extend,extend), p+Vec<3>(extend,extend,extend), indices1);
+        searchtree -> GetIntersecting (p - netgen::Vec<3>(extend,extend,extend), p+netgen::Vec<3>(extend,extend,extend), indices1);
         double minf = 1e10;
-        Vec<3> df;
+        netgen::Vec<3> df;
 
 
         indices.SetSize(0);
         for (int j = 0; j < indices1.Size(); j++)
-          if (Dist2 (pnts[indices1[j]], p) < sqr(rad[indices1[j]]+2*rball))
+          if (Dist2 (pnts[indices1[j]], p) < netgen::sqr(rad[indices1[j]]+2*rball))
             indices.Append (indices1[j]);
 
         for (int jj = 0; jj < indices.Size(); jj++)
           {
             int j = indices[jj];
-            // double fj = rad[j] * (Dist2 (p, pnts[j]) / sqr(rad[j]) - 1);
+            // double fj = rad[j] * (Dist2 (p, pnts[j]) / netgen::sqr(rad[j]) - 1);
             double fj = Dist (p, pnts[j]) - rad[j];
             if (fj < minf)
               {
@@ -263,9 +267,9 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
               Point<3> c1 = pnts[j];
               Point<3> c2 = pnts[k];
 
-              Vec<3> ex = c2-c1;
+              netgen::Vec<3> ex = c2-c1;
               double dist2 = ex.Length2();
-              if (dist2 > sqr(r1+r2+2*rball)) continue;
+              if (dist2 > netgen::sqr(r1+r2+2*rball)) continue;
               double dist = sqrt(dist2);
               ex /= dist;
 
@@ -274,18 +278,18 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
               double py = sqrt ( Dist2(p,c1) - px*px );
 
-              double tx = 1.0 / (2*dist) * (sqr(dist)+(r1-r2)*(2*rball+r1+r2));
-              double ty = sqrt (sqr(r1+rball) - tx*tx);
+              double tx = 1.0 / (2*dist) * (netgen::sqr(dist)+(r1-r2)*(2*rball+r1+r2));
+              double ty = sqrt (netgen::sqr(r1+rball) - tx*tx);
 
               // if ( (py / px < ty / tx) &&  (py / (dist-px) < ty / (dist-tx)))
               if ( (py * tx < ty * px) && ( (dist-tx)*py < ty * (dist-px) ) )
                 {
-                  // double fj = rball * (1-(sqr(px-tx)+sqr(py-ty)) / sqr(rball));
-                  double fj = rball - sqrt(sqr(px-tx)+sqr(py-ty));
+                  // double fj = rball * (1-(netgen::sqr(px-tx)+netgen::sqr(py-ty)) / netgen::sqr(rball));
+                  double fj = rball - sqrt(netgen::sqr(px-tx)+netgen::sqr(py-ty));
 
                   double x0 = tx - ty/(ty-py) * (tx-px);
                   Point<3> p0 = c1+x0*ex;
-                  Vec<3> dir = p - p0;
+                  netgen::Vec<3> dir = p - p0;
                   dir.Normalize();
                   if (fj < minf)
                     {
@@ -326,34 +330,34 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
                 Point<3> c2 = pnts[k];
                 Point<3> c3 = pnts[l];
 
-                if (Dist2(c1, p) > sqr(r1+2*rball)) continue;
-                if (Dist2(c2, p) > sqr(r2+2*rball)) continue;
-                if (Dist2(c3, p) > sqr(r3+2*rball)) continue;
+                if (Dist2(c1, p) > netgen::sqr(r1+2*rball)) continue;
+                if (Dist2(c2, p) > netgen::sqr(r2+2*rball)) continue;
+                if (Dist2(c3, p) > netgen::sqr(r3+2*rball)) continue;
 
 
-                Vec<3> t1 = c2-c1;
-                Vec<3> t2 = c3-c1;
-                Vec<3> n = Cross(t1, t2);
+                netgen::Vec<3> t1 = c2-c1;
+                netgen::Vec<3> t2 = c3-c1;
+                netgen::Vec<3> n = Cross(t1, t2);
                 n.Normalize();
 
-                Mat<2> mat;
-                Vec<2> rhs, sol;
+                netgen::Mat<2> mat;
+                netgen::Vec<2> rhs, sol;
                 mat(0,0) = t1*t1;
                 mat(0,1) = mat(1,0) = t1*t2;
                 mat(1,1) = t2*t2;
 
-                rhs(0) = 0.5 * (sqr(r1+rball) - sqr(r2+rball) + Dist2(c1,c2));
-                rhs(1) = 0.5 * (sqr(r1+rball) - sqr(r3+rball) + Dist2(c1,c3));
+                rhs(0) = 0.5 * (netgen::sqr(r1+rball) - netgen::sqr(r2+rball) + Dist2(c1,c2));
+                rhs(1) = 0.5 * (netgen::sqr(r1+rball) - netgen::sqr(r3+rball) + Dist2(c1,c3));
 
                 mat.Solve (rhs, sol);
 
                 Point<3> cp = c1 + sol(0) * t1 + sol(1) * t2;
-                if ( sqr(r1+rball) <= Dist2(c1,cp) ) continue;
+                if ( netgen::sqr(r1+rball) <= Dist2(c1,cp) ) continue;
 
-                double lamn = sqrt ( sqr(r1+rball) - Dist2(c1,cp) );
+                double lamn = sqrt ( netgen::sqr(r1+rball) - Dist2(c1,cp) );
                 // c = cp +/- lamn n
 
-                Vec<2> rhs2, sol2;
+                netgen::Vec<2> rhs2, sol2;
                 rhs2(0) = t1 * (p-c1);
                 rhs2(1) = t2 * (p-c1);
                 mat.Solve (rhs2, sol2);
@@ -382,7 +386,7 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
                       {
                         minf = fj;
 
-                        Vec<3> dir;
+                        netgen::Vec<3> dir;
                         if (lamn2 > 0)
                           dir = sp1-p;
                         else
@@ -393,7 +397,7 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
                     */
                     if (lamn2 > 0)
                       {
-                        Vec<3> dir = sp1-p;
+                        netgen::Vec<3> dir = sp1-p;
                         double len = dir.Length();
                         double fj = rball - len;
                         if (fj < minf)
@@ -405,7 +409,7 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
                       }
                     else
                       {
-                        Vec<3> dir = sp2-p;
+                        netgen::Vec<3> dir = sp2-p;
                         double len = dir.Length();
                         double fj = rball - len;
                         if (fj < minf)
@@ -475,29 +479,29 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
                           
 
-                          if (Dist2(c1, p) > sqr(r1+2*rball)) continue;
+                          if (Dist2(c1, p) > netgen::sqr(r1+2*rball)) continue;
 
-                          if (Dist2(c2, p) > sqr(r2+2*rball)) continue;
+                          if (Dist2(c2, p) > netgen::sqr(r2+2*rball)) continue;
 
-                          if (Dist2(c3, p) > sqr(r3+2*rball)) continue;
+                          if (Dist2(c3, p) > netgen::sqr(r3+2*rball)) continue;
 
-                          if (Dist2(c4, p) > sqr(r4+2*rball)) continue;
-
-                          
+                          if (Dist2(c4, p) > netgen::sqr(r4+2*rball)) continue;
 
                           
 
-                          Vec<3> v1 = c2-c1;
+                          
 
-                          Vec<3> v2 = c3-c1;
+                          netgen::Vec<3> v1 = c2-c1;
 
-                          Vec<3> v3 = c4-c1;
+                          netgen::Vec<3> v2 = c3-c1;
+
+                          netgen::Vec<3> v3 = c4-c1;
 
                           
 
-                          Mat<3> mat;
+                          netgen::Mat<3> mat;
 
-                          Vec<3> rhs, sol;
+                          netgen::Vec<3> rhs, sol;
 
                           for (int j = 0; j < 3; j++)
 
@@ -565,7 +569,7 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
                           double vmax = -1e99;
 
-                          Vec<3> vdir;
+                          netgen::Vec<3> vdir;
 
                           
 
@@ -591,11 +595,11 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
                               
 
-                              Vec<3> t1 = fc2-fc1;
+                              netgen::Vec<3> t1 = fc2-fc1;
 
-                              Vec<3> t2 = fc3-fc1;
+                              netgen::Vec<3> t2 = fc3-fc1;
 
-                              Vec<3> n = Cross(t1, t2);
+                              netgen::Vec<3> n = Cross(t1, t2);
 
                               n.Normalize();
 
@@ -605,9 +609,9 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
                               
 
-                              Mat<2> mat;
+                              netgen::Mat<2> mat;
 
-                              Vec<2> rhs, sol;
+                              netgen::Vec<2> rhs, sol;
 
                               mat(0,0) = t1*t1;
 
@@ -617,9 +621,9 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
                               
 
-                              rhs(0) = 0.5 * (sqr(fr1+rball) - sqr(fr2+rball) + Dist2(fc1,fc2));
+                              rhs(0) = 0.5 * (netgen::sqr(fr1+rball) - netgen::sqr(fr2+rball) + Dist2(fc1,fc2));
 
-                              rhs(1) = 0.5 * (sqr(fr1+rball) - sqr(fr3+rball) + Dist2(fc1,fc3));
+                              rhs(1) = 0.5 * (netgen::sqr(fr1+rball) - netgen::sqr(fr3+rball) + Dist2(fc1,fc3));
 
                               
 
@@ -629,7 +633,7 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
                               Point<3> cp = fc1 + sol(0) * t1 + sol(1) * t2;
 
-                              if ( sqr(fr1+rball) <= Dist2(fc1,cp) )
+                              if ( netgen::sqr(fr1+rball) <= Dist2(fc1,cp) )
 
                               {
 
@@ -641,7 +645,7 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
                               
 
-                              double lamn = sqrt ( sqr(fr1+rball) - Dist2(fc1,cp) );
+                              double lamn = sqrt ( netgen::sqr(fr1+rball) - Dist2(fc1,cp) );
 
                               // c = cp +/- lamn n
 
@@ -657,7 +661,7 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
                               
 
-                              Vec<3> dir = sp1-p;
+                              netgen::Vec<3> dir = sp1-p;
 
                               double len = dir.Length();
 
@@ -714,21 +718,21 @@ void SetValues (Point<3> pmin, Point<3> pmax, double diag,
 
 
 
-void WriteTrig (Point<3> p1, Point<3> p2, Point<3> p3, Vec<3> n)
+void WriteTrig (Point<3> p1, Point<3> p2, Point<3> p3, netgen::Vec<3> n)
 {
 
   if (Dist (p1, p2) < 1e-10) return;
   if (Dist (p1, p3) < 1e-10) return;
   if (Dist (p2, p3) < 1e-10) return;
 
-  Vec<3> nt = Cross(p2-p1,p3-p1);
+  netgen::Vec<3> nt = Cross(p2-p1,p3-p1);
   if (nt.Length() < 1e-5 * (p2-p1).Length() * (p3-p1).Length())
     {
       // if (nt.Length() < 1e-12 * (p2-p1).Length() * (p3-p1).Length()) return;
       cout << "flat trig: " << nt.Length() / ((p2-p1).Length() * (p3-p1).Length()) << endl;
     }
 
-  if (nt * n < 0) Swap (p2, p3);
+  if (nt * n < 0) netgen::Swap (p2, p3);
 
   stlout << "facet normal " << n(0) << " " << n(1) << " " << n(2) << "\n";
   stlout << "  outer loop" << "\n";
@@ -745,7 +749,7 @@ double CutEdge (double f1, double f2)
   return f1/(f1-f2);
 }
 
-void MakeTetSTL (Point<3> pnts[], double valtet[4], Vec<3> dvaltet[4])
+void MakeTetSTL (Point<3> pnts[], double valtet[4], netgen::Vec<3> dvaltet[4])
 {
   int npos = 0;
   for (int j = 0; j < 4; j++)
@@ -788,7 +792,7 @@ void MakeTetSTL (Point<3> pnts[], double valtet[4], Vec<3> dvaltet[4])
       int pi2 = edges[j][1];
       if ((valtet[pi1] > 0) != (valtet[pi2] > 0))
         {
-          Vec<3> ve = pnts[pi2]-pnts[pi1];
+          netgen::Vec<3> ve = pnts[pi2]-pnts[pi1];
           double lam = CutEdge (valtet[pi1], valtet[pi2]);
           cutp[cutpi] = pnts[pi1] + lam * (pnts[pi2]-pnts[pi1]);
           cutpi++;
@@ -797,11 +801,11 @@ void MakeTetSTL (Point<3> pnts[], double valtet[4], Vec<3> dvaltet[4])
 
 
   // calc grad f (normal vector)
-  Mat<3,3> mat;
+  netgen::Mat<3,3> mat;
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       mat(i,j) = pnts[i](j) - pnts[3](j);
-  Vec<3> rhs, sol;
+  netgen::Vec<3> rhs, sol;
   for (int i = 0; i < 3; i++)
     rhs(i) = valtet[i] - valtet[3];
   mat.Solve (rhs, sol);
@@ -819,7 +823,7 @@ void MakeTetSTL (Point<3> pnts[], double valtet[4], Vec<3> dvaltet[4])
 
 void MakeCubeSTL (//Point<3> p1, Point<3> p2,
                   Point<3> pointcube[8],
-                  double valcube[8], Vec<3> dvalcube[8])
+                  double valcube[8], netgen::Vec<3> dvalcube[8])
 {
   const int tets[6][4] =
     { { 0, 1, 2, 4 },
@@ -830,7 +834,7 @@ void MakeCubeSTL (//Point<3> p1, Point<3> p2,
       { 3, 6, 5, 7 } };
 
   double valtet[4];
-  Vec<3> dvaltet[4];
+  netgen::Vec<3> dvaltet[4];
   Point<3> pnts[4];
 
   for (int j = 0; j < 6; j++)
@@ -850,12 +854,12 @@ void MakeCubeSTL (//Point<3> p1, Point<3> p2,
 
 void MakeSTL (Point<3> pmin, Point<3> pmax,
               int nx, int ny, int nz,
-              Array<Point<3> > & gridpoints,
-              Array<float> & values,
-              Array<Vec<3> > & dvalues)
+              netgen::Array<Point<3> > & gridpoints,
+              netgen::Array<float> & values,
+              netgen::Array<netgen::Vec<3> > & dvalues)
 {
   double valcube[8];
-  Vec<3> dvalcube[8];
+  netgen::Vec<3> dvalcube[8];
   Point<3> pointcube[8];
 
   cout << "Writing stl file" << endl;
