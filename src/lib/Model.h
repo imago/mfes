@@ -25,6 +25,7 @@ using namespace std;
 using namespace vcg;
 
 #include <meshing.hpp>  
+#include <stlgeom.hpp>  
 
 namespace nglib {
 
@@ -565,7 +566,7 @@ public:
     cout << "options.meshsize = " << mp.maxh << endl;
     cout << "options.minmeshsize = " << mp.minh << endl;
     cout << "meshoptions.fineness = " << mp.fineness << endl;
-    cout << "************** blockfill currently not available in netgen 6 ******* " << endl;
+    // cout << "************** blockfill currently not available in netgen 6 ******* " << endl;
     /*
     cout << "meshoptions.blockfill = " << mp.blockfill << endl;
     cout << "meshoptions.filldist = " << mp.filldist << endl;
@@ -621,14 +622,14 @@ public:
       /// Meshing property with the given value.
         /*
       if (variable == "meshoptions.blockfill"){
-	mp.blockfill = atoi(value.c_str());
+        netgen::mparam.blockfill = atoi(value.c_str());
       }
       
       if (variable == "meshoptions.filldist"){
-	mp.filldist = atof(value.c_str());
-      }
-      */
-      cout << "************** blockfill currently not available in netgen 6 ******* " << endl;      
+        netgen::mparam.filldist = atof(value.c_str());
+        }*/
+
+        cout << "************** blockfill currently not available in netgen 6 ******* " << endl;      
       
       if (variable == "options.localh"){
 	/// Switch to enable / disable usage of local mesh size modifiers
@@ -738,6 +739,31 @@ public:
     }
     // optimize by default is 1, because if number of
     // optsteps is 0, then no optimization made
+
+      stlparam.yangle = 60; // 60 auch ok // 30
+      stlparam.contyangle = 20; // 20
+      stlparam.edgecornerangle = 60; // 60
+      stlparam.chartangle = 30; // 30 ok// 15
+      // very coarse parameters
+      stlparam.resthlinelengthfac = 0.2;
+      stlparam.atlasminh = 0.1; // 0.1
+      stlparam.resthsurfcurvfac = 0.25;
+      stlparam.resthsurfcurvenable = 0;
+      stlparam.resthatlasfac = 2;
+      stlparam.resthatlasenable = 0; // 1
+      stlparam.resthchartdistfac = 0.8;
+      stlparam.resthchartdistenable = 0; // 1
+      stlparam.resthlinelengthfac = 0.2;
+      stlparam.resthlinelengthenable = 0; // 1
+      stlparam.resthcloseedgefac = 0.5; // 0.5
+      stlparam.resthcloseedgeenable = 1;
+      stlparam.resthedgeanglefac = 0.25;
+      stlparam.resthedgeangleenable = 0;
+      stlparam.resthsurfmeshcurvfac = 0; // 1
+      stlparam.resthsurfmeshcurvenable = 0;
+
+
+
     
     in.close();
   }
