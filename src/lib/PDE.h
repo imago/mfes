@@ -94,8 +94,8 @@ public:
 		energyFile << endl;
 		energyFile << "numproc pointcharges ps1 -linearform=f -pqrfile="<<fileName<<" -interpolate" << endl;
 		energyFile << endl;
-		energyFile << "define preconditioner c -type=multigrid -bilinearform=a_solv -inverse=mumps" << endl;
-		energyFile << "define preconditioner c0 -type=multigrid -bilinearform=a_ref -inverse=mumps" << endl;
+		energyFile << "define preconditioner c -type=multigrid -bilinearform=a_solv -xxinverse=mumps" << endl;
+		energyFile << "define preconditioner c0 -type=multigrid -bilinearform=a_ref -xxinverse=mumps" << endl;
 		energyFile << endl;
 		energyFile << "numproc bvp np1 -gridfunction=u_solv -bilinearform=a_solv -linearform=f -preconditioner=c  -maxsteps=" << maxsteps << endl;
 		energyFile << "numproc bvp np10 -gridfunction=u_ref -bilinearform=a_ref -linearform=f -preconditioner=c0  -maxsteps=" << maxsteps << endl;
@@ -188,8 +188,8 @@ public:
 				//				potfile << "mass kappa" << endl;
 
 				potfile << endl;
-				potfile << "define preconditioner c_solv_"<<prefix<<" -type=multigrid -bilinearform=a_solv_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl;
-				potfile << "define preconditioner c_ref_"<<prefix<<" -type=multigrid -bilinearform=a_ref_"<<prefix<<" -inverse=mumps" << extend_preconditioner << endl << endl;
+				potfile << "define preconditioner c_solv_"<<prefix<<" -type=multigrid -bilinearform=a_solv_"<<prefix<<" -xxinverse=mumps" << extend_preconditioner << endl;
+				potfile << "define preconditioner c_ref_"<<prefix<<" -type=multigrid -bilinearform=a_ref_"<<prefix<<" -xxinverse=mumps" << extend_preconditioner << endl << endl;
 
 				potfile << endl;
 				potfile << "###################################################" << endl;
@@ -340,8 +340,8 @@ public:
 					//					potfile << "mass kappa" << endl;
 
 					potfile << endl;
-					potfile << "define preconditioner c_solv_"<<mol<<" -type=multigrid -bilinearform=a_solv_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl;
-					potfile << "define preconditioner c_ref_"<<mol<<" -type=multigrid -bilinearform=a_ref_"<<mol<<" -inverse=mumps" << extend_preconditioner << endl << endl;
+					potfile << "define preconditioner c_solv_"<<mol<<" -type=multigrid -bilinearform=a_solv_"<<mol<<" -xxinverse=mumps" << extend_preconditioner << endl;
+					potfile << "define preconditioner c_ref_"<<mol<<" -type=multigrid -bilinearform=a_ref_"<<mol<<" -xxinverse=mumps" << extend_preconditioner << endl << endl;
 					potfile << "numproc precalculation pre -pqrfile=" << molecule << endl;
 					potfile << endl;
 					init = false;

@@ -11,15 +11,15 @@ class NumProcEnergyCalc : public NumProc
 {
   protected:
 	///
-    BilinearForm * bfa;
+    shared_ptr<BilinearForm> bfa;
     ///
-    LinearForm * lff;
+    shared_ptr<LinearForm> lff;
     ///
-    GridFunction * gfu;
+    shared_ptr<GridFunction> gfu;
     ///
-    GridFunction * gfu0;
+    shared_ptr<GridFunction> gfu0;
     ///
-    GridFunction * gfv;
+    shared_ptr<GridFunction> gfv;
     ///
     Vector<double> point;
     ///
@@ -69,14 +69,10 @@ class NumProcEnergyCalc : public NumProc
   
   public:
     ///
-    NumProcEnergyCalc (PDE & apde, const Flags & flags);
+    NumProcEnergyCalc (shared_ptr<PDE> apde, const Flags & flags);
     ///
     virtual ~NumProcEnergyCalc();
 
-    static NumProc * Create (PDE & pde, const Flags & flags)
-    {
-      return new NumProcEnergyCalc (pde, flags);
-    }
     static void PrintDoc (ostream & ost);
 
     ///
@@ -94,16 +90,17 @@ class NumProcEnergyCalc : public NumProc
   };
 
 
-NumProcEnergyCalc :: NumProcEnergyCalc (PDE & apde, const Flags & flags)
+NumProcEnergyCalc :: NumProcEnergyCalc (shared_ptr<PDE> apde, const Flags & flags)
 : NumProc (apde), point(1)
 {
-	bfa = pde.GetBilinearForm (flags.GetStringFlag ("bilinearform", ""), 1); 
-    lff = pde.GetLinearForm (flags.GetStringFlag ("linearform", ""), 1);
-    gfu  = pde.GetGridFunction (flags.GetStringFlag ("gridfunction", ""), 0);
-    gfu0 = pde.GetGridFunction (flags.GetStringFlag ("gridfunction0", ""), 0);
-    gfv = pde.GetGridFunction (flags.GetStringFlag ("gridfunction2", ""), 1); 
+	bfa = apde->GetBilinearForm (flags.GetStringFlag ("bilinearform", ""), 1); 
+    lff = apde->GetLinearForm (flags.GetStringFlag ("linearform", ""), 1);
+    gfu  = apde->GetGridFunction (flags.GetStringFlag ("gridfunction", ""), 0);
+    gfu0 = apde->GetGridFunction (flags.GetStringFlag ("gridfunction0", ""), 0);
+    gfv = apde->GetGridFunction (flags.GetStringFlag ("gridfunction2", ""), 1); 
     pqrfile = flags.GetStringFlag ("pqrfile","pqr");
-    showsteps = flags.GetStringFlag (flags.GetStringFlag ("showsteps", ""), 0);
+    // showsteps = flags.GetStringFlag (flags.GetStringFlag ("showsteps", ""), 0);
+    showsteps = flags.StringFlagDefined (flags.GetStringFlag ("showsteps", ""));
 
     readMolecule();
 
@@ -133,14 +130,14 @@ NumProcEnergyCalc :: NumProcEnergyCalc (PDE & apde, const Flags & flags)
     text = flags.GetStringFlag ("text","energydiff");
 
     if(flags.StringFlagDefined("filename"))
-      filename = pde.GetDirectory() + dirslash + flags.GetStringFlag("filename","");
+      filename = apde->GetDirectory() + dirslash + flags.GetStringFlag("filename","");
     else
       filename = "err.out";
 
     applyd = flags.GetDefineFlag ("applyd");
     hermitsch = flags.GetDefineFlag ("hermitsch");
 
-    outputprecision = (pde.ConstantUsed("outputprecision")) ? int(pde.GetConstant("outputprecision")) : -1;
+    outputprecision = (apde->ConstantUsed("outputprecision")) ? int(apde->GetConstant("outputprecision")) : -1;
     if(flags.NumFlagDefined("outputprecision"))
       outputprecision = int(flags.GetNumFlag("outputprecision",-1));
 
@@ -212,8 +209,8 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 	double potential = 0;
 	double conversion = 1.602176565e-19 * 6.02214129e23 * 0.5 / 1000.0;
 
-	const BilinearFormIntegrator & bfi = (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
-	const BilinearFormIntegrator & bfi2 =  (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
+	shared_ptr<BilinearFormIntegrator> bfi = (bfa) ? bfa->GetIntegrator(0) : gfu->GetFESpace()->GetIntegrator();
+	shared_ptr<BilinearFormIntegrator> bfi2 =  (bfa) ? bfa->GetIntegrator(0) : gfu->GetFESpace()->GetIntegrator();
 	
 	cout.precision(dbl::digits10);
 
@@ -224,8 +221,8 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 		point(1) = currentAtom.y;
 		point(2) = currentAtom.z;
 		
-		FlatVector<double> pflux(bfi.DimFlux(), lh);
-		CalcPointFlux (ma, *gfu, point, domains,
+		FlatVector<double> pflux(bfi->DimFlux(), lh);
+		CalcPointFlux (*gfu, point, domains,
 				pflux, bfi, applyd, lh, component);
 	      
 		result = pflux(0);
@@ -233,7 +230,7 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 		if (showsteps)
 			cout << "(" << pflux(0)*conversion;
 	      
-		CalcPointFlux (ma, *gfu0, point, domains,
+		CalcPointFlux (*gfu0, point, domains,
 				pflux, bfi2, applyd, lh, component);
 
 		result -= pflux(0); 
@@ -256,7 +253,7 @@ void NumProcEnergyCalc :: Do(LocalHeap & lh)
 		cout << "The energy difference is " << setprecision(12) << energy << " [kJ/mol].\n";
 	}
         
-	pde.GetVariable(variablename,true) = result;
+	GetPDE()->GetVariable(variablename,true) = result;
 }
 
 void NumProcEnergyCalc :: PrintReport (ostream & ost)

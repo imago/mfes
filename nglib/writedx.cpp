@@ -12,13 +12,13 @@ class NumProcWriteDX : public NumProc
 {
   protected:
 	///
-    BilinearForm * bfa;
+    shared_ptr<BilinearForm> bfa;
     ///
-    LinearForm * lff;
+    shared_ptr<LinearForm> lff;
     ///
-    GridFunction * gfu;
+    shared_ptr<GridFunction> gfu;
     ///
-    GridFunction * gfv;
+    shared_ptr<GridFunction> gfv;
     ///
     Vector<double> point;
     ///
@@ -74,14 +74,10 @@ class NumProcWriteDX : public NumProc
   
   public:
     ///
-    NumProcWriteDX (PDE & apde, const Flags & flags);
+    NumProcWriteDX (shared_ptr<PDE> apde, const Flags & flags);
     ///
     virtual ~NumProcWriteDX();
 
-    static NumProc * Create (PDE & pde, const Flags & flags)
-    {
-      return new NumProcWriteDX (pde, flags);
-    }
     static void PrintDoc (ostream & ost);
 
     ///
@@ -99,13 +95,13 @@ class NumProcWriteDX : public NumProc
   };
 
 
-NumProcWriteDX :: NumProcWriteDX (PDE & apde, const Flags & flags)
+NumProcWriteDX :: NumProcWriteDX (shared_ptr<PDE> apde, const Flags & flags)
 : NumProc (apde), point(1)
 {
-	bfa = pde.GetBilinearForm (flags.GetStringFlag ("bilinearform", ""), 1); 
-    lff = pde.GetLinearForm (flags.GetStringFlag ("linearform", ""), 1);
-    gfu  = pde.GetGridFunction (flags.GetStringFlag ("gridfunction", ""), 0);
-    gfv = pde.GetGridFunction (flags.GetStringFlag ("gridfunction2", ""), 1); 
+	bfa = apde->GetBilinearForm (flags.GetStringFlag ("bilinearform", ""), 1); 
+    lff = apde->GetLinearForm (flags.GetStringFlag ("linearform", ""), 1);
+    gfu  = apde->GetGridFunction (flags.GetStringFlag ("gridfunction", ""), 0);
+    gfv = apde->GetGridFunction (flags.GetStringFlag ("gridfunction2", ""), 1); 
     pqrfile = flags.GetStringFlag ("pqrfile","pqr");
     dxfile = flags.GetStringFlag ("dxfile","output.dx");
     m_h = flags.GetNumFlag ("h",1);
@@ -152,14 +148,14 @@ NumProcWriteDX :: NumProcWriteDX (PDE & apde, const Flags & flags)
     text = flags.GetStringFlag ("text","energydiff");
 
     if(flags.StringFlagDefined("filename"))
-      filename = pde.GetDirectory() + dirslash + flags.GetStringFlag("filename","");
+      filename = apde->GetDirectory() + dirslash + flags.GetStringFlag("filename","");
     else
       filename = "err.out";
 
     applyd = flags.GetDefineFlag ("applyd");
     hermitsch = flags.GetDefineFlag ("hermitsch");
 
-    outputprecision = (pde.ConstantUsed("outputprecision")) ? int(pde.GetConstant("outputprecision")) : -1;
+    outputprecision = (apde->ConstantUsed("outputprecision")) ? int(apde->GetConstant("outputprecision")) : -1;
     if(flags.NumFlagDefined("outputprecision"))
       outputprecision = int(flags.GetNumFlag("outputprecision",-1));
 
@@ -291,13 +287,14 @@ void NumProcWriteDX :: Do(LocalHeap & lh)
  
   deque<float> result_left;
 
-  const BilinearFormIntegrator & bfi = (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
+  shared_ptr<BilinearFormIntegrator> bfi
+    = (bfa) ? bfa->GetIntegrator(0) : gfu->GetFESpace()->GetIntegrator();
 	
   cout.precision(dbl::digits10);
   cout << "init searchtree" << endl;
   Vec<3> any_point(0,0,0);
   IntegrationPoint ip;
-  ma.FindElementOfPoint(any_point,ip,true);
+  ma->FindElementOfPoint(any_point,ip,true);
 
   if (m_boxlength == -1)
     m_boxlength = m_length;
@@ -309,7 +306,7 @@ void NumProcWriteDX :: Do(LocalHeap & lh)
 
   cout << "xx=yy=zz: " << n << ", m_h: " << m_h << endl;
   cout << "boxlength = " << m_boxlength << ", molecule mod length: " << m_length << endl;
-  FlatVector<double> pflux(bfi.DimFlux(), lh);
+  FlatVector<double> pflux(bfi->DimFlux(), lh);
   for(unsigned int xx=0; xx<n; xx++) {
     
     cout << "\rGetting potentials at plane " << xx+1 << "/" << n << flush;
@@ -324,7 +321,7 @@ void NumProcWriteDX :: Do(LocalHeap & lh)
 
 	//		cout << xx+1 << " -> looking at: " << point(0) << ", " << point(1) << ", " << point(2) << endl;
 
-	CalcPointFlux (ma, *gfu, point, domains,
+	CalcPointFlux (*gfu, point, domains,
 		       pflux, bfi, applyd, lh, component);
 	      
 	result_left.push_back(pflux(0)*V2kT_div_e);

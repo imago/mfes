@@ -12,8 +12,8 @@ const double q0 = 1.60217646e-19;
 class NumProcPointCharges : public NumProc
 {
 protected:
-  LinearForm* lff;
-  GridFunction * gfu;
+  shared_ptr<LinearForm> lff;
+  shared_ptr<GridFunction> gfu;
   string pqrfile;
   bool interpolate;
   
@@ -41,10 +41,10 @@ public:
     In the constructor, the solver class gets the flags from the pde - input file.
     the PDE class apde constains all bilinear-forms, etc...
   */
-  NumProcPointCharges (PDE & apde, const Flags & flags)
+  NumProcPointCharges (shared_ptr<PDE> apde, const Flags & flags)
     : NumProc (apde)
   {
-      lff = pde.GetLinearForm (flags.GetStringFlag ("linearform", "f"));
+      lff = apde->GetLinearForm (flags.GetStringFlag ("linearform", "f"));
       pqrfile = flags.GetStringFlag ("pqrfile","");
       interpolate = flags.GetDefineFlag ("interpolate");
       
@@ -59,7 +59,7 @@ public:
   {
 	  Vec<3> p;
 	 
-	  for (int j = 0; j < ma.GetNP(); j++)
+	  for (int j = 0; j < ma->GetNP(); j++)
 	  {
 		  lff->GetVector().FVDouble() (j)  =  0;
 	  }
@@ -138,9 +138,9 @@ public:
 			  double mindist = 1e99;
 			  int minpi = -1;
 
-			  for (int j = 0; j < ma.GetNP(); j++)
+			  for (int j = 0; j < ma->GetNP(); j++)
 			  {
-				  p = ma.GetPoint<3> (j);
+                            p = ma->GetPoint<3> (j);
 				  //if (L2Norm (p-point) < mindist && L2Norm (p-point) != 0)
 				  if (L2Norm (p-point) < mindist )
 				  {
@@ -149,7 +149,7 @@ public:
 					 // cout << "Debug: p: " << p << ", point: " << point << ", i: " << i << ", mindist: " << mindist << ", minpi: " << minpi << ", L2Norm: " << L2Norm (p-point) << endl;
 				  }
 			  }
-			  p = ma.GetPoint<3> (minpi);
+			  p = ma->GetPoint<3> (minpi);
 			  cout << i << ": closest point to (" << point(0) << ", " << point(1) << ", " << point(2) << ") is point nr " << minpi << "(" << p(0) << ", " << p(1) << ", " << p(2) << "), dist = " << mindist <<", adding charge: " << charge << endl;
 
 			  lff->GetVector().FVDouble() (minpi)  +=  charge * q0;
@@ -182,14 +182,14 @@ public:
 			IntegrationPoint PtOnRef(0,0,0,1);
 
 			// cout << "point = " << point << endl;
-			elnr = ma.FindElementOfPoint(point,PtOnRef,true);
+			elnr = ma->FindElementOfPoint(point,PtOnRef,true);
 			// cout << "id = " << MyMPI_GetId() << "elnr = " << elnr << endl;
 
 			if (elnr == -1) continue;
-			const FESpace & fes = lff->GetFESpace();
-			fes.GetDofNrs (elnr, dnums);
+			shared_ptr<FESpace> fes = lff->GetFESpace();
+			fes->GetDofNrs (elnr, dnums);
 
-			const ScalarFiniteElement<3> & fel = dynamic_cast<const ScalarFiniteElement<3>&> (fes.GetFE (elnr, lh));
+			const ScalarFiniteElement<3> & fel = dynamic_cast<const ScalarFiniteElement<3>&> (fes->GetFE (elnr, lh));
 
 			FlatVector<> shape(dnums.Size(), lh);
 

@@ -30,7 +30,7 @@ protected:
   
 public:
     
-  NumProcPreCalculation (PDE & apde, const Flags & flags)
+  NumProcPreCalculation (shared_ptr<PDE> apde, const Flags & flags)
     : NumProc (apde)
   {
       pqrfile = flags.GetStringFlag ("pqrfile","");      
@@ -104,13 +104,16 @@ public:
 	  point(2) = currentAtom.z;
 
 	  IntegrationPoint PtOnRef(0,0,0,1);
-
-	  elnr = ma.FindElementOfPoint(point,PtOnRef,true);
+          
+          cout << "*********** precalculation of points currently not possible" << endl;
+          /*
+	  elnr = ma->FindElementOfPoint(point,PtOnRef,true);
 	  double p[3] = { PtOnRef(0), PtOnRef(1), PtOnRef(2) };
-	  ma.addElIndex(elnr);
-	  ma.addIpPoint(p);
+	  ma->addElIndex(elnr);
+	  ma->addIpPoint(p);
+          */
 	}
-        cout << ma.getElIndexSize() << " atoms preprocessed." << endl;
+    // cout << ma->getElIndexSize() << " atoms preprocessed." << endl;
   }
 
   virtual string GetClassName () const

@@ -13,13 +13,13 @@ class NumProcWritePotat : public NumProc
 {
 protected:
 	///
-    BilinearForm * bfa;
+    shared_ptr<BilinearForm> bfa;
     ///
-    LinearForm * lff;
+    shared_ptr<LinearForm> lff;
     ///
-    GridFunction * gfu;
+    shared_ptr<GridFunction> gfu;
     ///
-    GridFunction * gfv;
+    shared_ptr<GridFunction> gfv;
     ///
     Vector<double> point;
     ///
@@ -92,13 +92,13 @@ protected:
     list<Atom> molecule;
   
 public:
-    NumProcWritePotat (PDE & apde, const Flags & flags)
-    	: NumProc (apde), point(1)
+    NumProcWritePotat (shared_ptr<PDE> apde, const Flags & flags)
+      : NumProc (apde), point(1)
     {
-    	bfa = pde.GetBilinearForm (flags.GetStringFlag ("bilinearform", ""), 1);
-    	lff = pde.GetLinearForm (flags.GetStringFlag ("linearform", ""), 1);
-    	gfu  = pde.GetGridFunction (flags.GetStringFlag ("gridfunction", ""), 0);
-    	gfv = pde.GetGridFunction (flags.GetStringFlag ("gridfunction2", ""), 1);
+    	bfa = apde->GetBilinearForm (flags.GetStringFlag ("bilinearform", ""), 1);
+    	lff = apde->GetLinearForm (flags.GetStringFlag ("linearform", ""), 1);
+    	gfu  = apde->GetGridFunction (flags.GetStringFlag ("gridfunction", ""), 0);
+    	gfv = apde->GetGridFunction (flags.GetStringFlag ("gridfunction2", ""), 1);
     	pqrfile = flags.GetStringFlag ("pqrfile","pqr");
     	potatfile = flags.GetStringFlag ("potatfile","potat");
 	initsearchtree = flags.GetDefineFlag("initsearchtree");
@@ -135,14 +135,14 @@ public:
     	text = flags.GetStringFlag ("text","WritePotat");
 
     	if(flags.StringFlagDefined("filename"))
-    		filename = pde.GetDirectory() + dirslash + flags.GetStringFlag("filename","");
+    		filename = apde->GetDirectory() + dirslash + flags.GetStringFlag("filename","");
     	else
     		filename = "err.out";
 
     	applyd = flags.GetDefineFlag ("applyd");
     	hermitsch = flags.GetDefineFlag ("hermitsch");
 
-    	outputprecision = (pde.ConstantUsed("outputprecision")) ? int(pde.GetConstant("outputprecision")) : -1;
+    	outputprecision = (apde->ConstantUsed("outputprecision")) ? int(apde->GetConstant("outputprecision")) : -1;
     	if(flags.NumFlagDefined("outputprecision"))
     		outputprecision = int(flags.GetNumFlag("outputprecision",-1));
 
@@ -209,7 +209,7 @@ public:
     stringstream str(stringstream::out|stringstream::binary);
     
     if (MyMPI_GetNTasks() == 1 || MyMPI_GetId() != 0) {
-      const BilinearFormIntegrator & bfi = (bfa) ? *bfa->GetIntegrator(0) : *gfu->GetFESpace().GetIntegrator();
+      shared_ptr<BilinearFormIntegrator> bfi = (bfa) ? bfa->GetIntegrator(0) : gfu->GetFESpace()->GetIntegrator();
      
       unsigned int elnr, idx;
 	      
@@ -233,27 +233,31 @@ public:
 	      // normally done in adding pointcharges
 	      // just generated if no searchtree generated before
 	      IntegrationPoint PtOnRef(0,0,0,1);
-       	      elnr = ma.FindElementOfPoint(point,PtOnRef,true);
+       	      elnr = ma->FindElementOfPoint(point,PtOnRef,true);
 	      firstone = false;
 	    }
 
-	  FlatVector<double> pflux(bfi.DimFlux(), lh);
+	  FlatVector<double> pflux(bfi->DimFlux(), lh);
 
 	  // predef = false;
+          
+	  // if (!predef){
+	    CalcPointFlux (*gfu, point, domains, pflux, bfi, false, lh, component);
 
-	  if (!predef){
-	    CalcPointFlux (ma, *gfu, point, domains, pflux, bfi, false, lh, component);
+            cout << "****** predefined pointfluxin ngs6 currently not possible" << endl;
+      /*
 	  }
 	  else {
 	    idx = line.atomNo-1;
-	    elnr     = ma.getElIndex(idx);
-	    ma.setIpPoint(idx, p);
+	    elnr     = ma->getElIndex(idx);
+	    ma->setIpPoint(idx, p);
 
 	    IntegrationPoint ip (p[0], p[1], p[2], 1);
 	    
 	    CalcElFlux (ma, *gfu, point, domains, pflux, bfi, false, lh, elnr, ip, component);
 	    
 	  }
+      */
  
 	  str << point(0) << endl;
 	  str << point(1) << endl;
@@ -291,11 +295,6 @@ public:
     potfile.close();
 
   }
-
-    static NumProc * Create (PDE & pde, const Flags & flags)
-    {
-      return new NumProcWritePotat (pde, flags);
-    }
 
     virtual string GetClassName () const
     {
